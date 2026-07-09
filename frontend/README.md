@@ -71,19 +71,20 @@ frontend/
 
 ## 5. 역할분담
 
-| 담당 | 영역 | 라우트 |
-|---|---|---|
-| **A** | 지도 핵심 기능 | `/map`, 지도 → `/spots/[id]` 이동 |
-| **B** | 관광지 · 기록 · 업적 | `/event-regions`, `/spots/[id]`, `/records`, `/achievements` |
-| **C** | 기본 서비스 · 커뮤니티 | `/`, `/login`, `/home`, `/mypage`, `/notices`, `/contact`, `/events` |
+| 담당 | 이름 | 영역 | 라우트 |
+|---|---|---|---|
+| **A** | 박태현 | 지도 핵심 기능 | `/map`, 지도 → `/spots/[id]` 이동 |
+| **B** | 강수연 | 관광지 · 기록 · 업적 | `/event-regions`, `/spots/[id]`, `/records`, `/achievements` |
+| **C** | 김수빈 | 기본 서비스 · 커뮤니티 | `/`, `/login`, `/home`, `/mypage`, `/notices`, `/contact`, `/events` |
 
 ## 6. 브랜치 전략 (예시)
 
 `main` 은 항상 동작하는 상태로 두고, 각자 기능 브랜치에서 작업 후 PR로 머지합니다.
+브랜치 이름은 `CONTRIBUTING.md` 규칙에 따라 `종류/내용`(kebab-case) 형식을 사용합니다.
 
-- `feat/map` — A: 지도
-- `feat/tourism-record` — B: 관광지 / 기록 / 업적
-- `feat/layout-pages` — C: 기본 페이지 / 커뮤니티
+- `feature/map` — A 박태현: 지도
+- `feature/tourism-record` — B 강수연: 관광지 / 기록 / 업적
+- `feature/layout-pages` — C 김수빈: 기본 페이지 / 커뮤니티
 
 > 브랜치·커밋·PR 상세 규칙은 [`CONTRIBUTING.md`](./CONTRIBUTING.md) 를 참고하세요.
 

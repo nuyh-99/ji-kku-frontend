@@ -1,11 +1,11 @@
-// A 담당 · 지도 핵심 기능
+// A 박태현 · 지도 핵심 기능
 import PagePlaceholder from "@/components/common/PagePlaceholder";
 
 export default function MapPage() {
   return (
     <PagePlaceholder
       title="지도"
-      owner="A 담당 · 지도 핵심 기능"
+      owner="A 박태현 · 지도 핵심 기능"
       description="지역을 선택하고 방문 상태를 표시하며, 관광지에서 상세 페이지로 이동하는 핵심 화면입니다."
       todos={[
         "지역(시/군) 선택 UI",

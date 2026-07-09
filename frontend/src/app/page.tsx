@@ -1,18 +1,18 @@
 // 루트(/) 페이지 — 초기 세팅용 라우트 허브.
 // 팀원이 각 화면으로 이동해 자기 담당 페이지를 바로 열어볼 수 있게 만든 임시 화면입니다.
-// C 담당(기본 서비스 페이지)이 실제 랜딩/스플래시로 교체하세요.
+// C 김수빈(기본 서비스 페이지)이 실제 랜딩/스플래시로 교체하세요.
 import Link from "next/link";
 
 const groups = [
   {
-    owner: "A · 지도 핵심 기능",
+    owner: "A 박태현 · 지도 핵심 기능",
     routes: [
       { href: "/map", label: "/map · 지도" },
       { href: "/spots/spot-1", label: "/spots/[id] · 관광지 상세(지도→상세 이동)" },
     ],
   },
   {
-    owner: "B · 관광지 · 기록 · 업적",
+    owner: "B 강수연 · 관광지 · 기록 · 업적",
     routes: [
       { href: "/event-regions", label: "/event-regions · 추천/이벤트 지역" },
       { href: "/spots/spot-1", label: "/spots/[id] · 관광지 상세" },
@@ -21,7 +21,7 @@ const groups = [
     ],
   },
   {
-    owner: "C · 기본 서비스 · 커뮤니티",
+    owner: "C 김수빈 · 기본 서비스 · 커뮤니티",
     routes: [
       { href: "/login", label: "/login · 로그인" },
       { href: "/home", label: "/home · 홈" },
