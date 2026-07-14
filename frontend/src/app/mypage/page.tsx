@@ -30,6 +30,9 @@ const Header = styled.div`
 `;
 
 const BackBtn = styled.button`
+  position: absolute;
+  top: 40px;
+  left: 26px;
   background: none;
   border: none;
   cursor: pointer;
@@ -55,8 +58,8 @@ const Profile = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 16px;
-    gap: 4px;
+  margin-top: 60px;  
+  gap: 4px;
 `;
 
 const Avatar = styled.div`
@@ -64,12 +67,12 @@ const Avatar = styled.div`
   height: 60px;
   border-radius: 50%;
   background: #fff;
-  overflow: hidden;   // 사진이 원 밖으로 삐져나가지 않게 잘라줌
+  overflow: hidden;   
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover; // 비율 유지하면서 원을 꽉 채움
+    object-fit: cover; 
   }
 `;
 
@@ -100,57 +103,47 @@ const QuickMenu = styled.div`
   border-radius: 9px;
   display: grid;
   height: 83px;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   padding: 17px 32px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;      // flex 전용 속성 정리, grid에서도 동작
 `;
 
-
 const QuickMenuButton = styled.button`
+  width: 100%;              
   background: none;
   border: none;
-  cursor: pointer;
   display: flex;
+  height: 49px;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+  justify-content: center;
+  gap: 2px;
   position: relative;
 
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1px;
-    height: 49px;
-    background: #D9D9D9;
-  }
+    &:not(:last-child) {
+        border-right: 1px solid #D9D9D9; 
+    }
+
 
   img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
+    width: 24px;
+    height: 24px;
   }
 
   span {
-      color: #000;
-      text-align: center;
-      font-family: Pretendard, sans-serif;
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: normal;
-  }
+    color: #000;
+    text-align: center;
+    font-family: Pretendard, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  } 
 `;
 
 const MenuList = styled.div`
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 9px;
   overflow: hidden;
 `;
 
@@ -158,22 +151,21 @@ const MenuListButton = styled.button`
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  background: none;
-  border: none;
-  border-bottom: 1px solid #f2f2f2;
-  cursor: pointer;
+  gap: 8px;
+  padding: 18px 22px;
+  position: relative;
   text-align: left;
   transition: background 0.2s;
 
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: #fafafa;
-  }
+    &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 27px;             // 왼쪽 여백 (원하는 만큼 조절)
+        right: 27px;            // 오른쪽 여백 (원하는 만큼 조절)
+        height: 1px;
+        background: #D9D9D9;
+    }
 `;
 
 const MenuIcon = styled.span<{ bg?: string }>`
@@ -187,44 +179,49 @@ const MenuIcon = styled.span<{ bg?: string }>`
   background: ${({ bg }) => bg || 'transparent'};
 
   img {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
   }
 `;
 
 const MenuLabel = styled.span`
   flex: 1;
-  font-size: 15px;
-  color: #333;
+  color: #000;
+  font-family: Pretendard, SansSerif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
 `;
 
 const Chevron = styled.img`
-  width: 18px;
-  height: 18px;
+  width: 6px;
+  height: 12px;
   flex-shrink: 0;
   object-fit: contain;
 `;
 
 const Footer = styled.div`
-  padding: 24px 20px;
+  padding: 20px 22px;
 `;
 
 const LogoutBtn = styled.button`
   width: 100%;
-  padding: 16px;
-  border-radius: 999px;
-  background: #6ba18f;
+  height: 48px;              
+  padding: 0 64px;           
+  border-radius: 61px;
+  background: #6CA59C;
   color: #fff;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
+  display: flex;             
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
   transition: opacity 0.2s;
 
-  &:hover {
-    opacity: 0.9;
-  }
 `;
 
 export default function MyPage() {
@@ -240,22 +237,20 @@ export default function MyPage() {
     const onContact = () => console.log('contact 클릭');
     const onLogout = () => {
         console.log('로그아웃 클릭');
-        // 예: 로그아웃 API 호출 후 로그인 페이지로 이동
-        // router.push('/login');
     };
 
     const menuItems: MenuItem[] = [
-        { icon: '/assets/icons/notice.png', label: '공지사항', onClick: onNotice },
-        { icon: '/assets/icons/event.png', label: '이벤트 게시판', bg: '#4a90e2', onClick: onEvent },
-        { icon: '/assets/icons/mission.png', label: '진행중인 미션', onClick: onMission },
-        { icon: '/assets/icons/contact.png', label: 'contact', bg: '#5bc4e8', onClick: onContact },
+        { icon: '/assets/notice.png', label: '공지사항', onClick: onNotice },
+        { icon: '/assets/event.png', label: '이벤트 게시판', onClick: onEvent },
+        { icon: '/assets/mission.png', label: '진행중인 미션', onClick: onMission },
+        { icon: '/assets/contact.png', label: 'contact',onClick: onContact },
     ];
 
     return (
         <Wrapper>
             <Header>
                 <BackBtn onClick={goBack} aria-label="뒤로가기">
-                    <img src="/assets/icons/back.png" alt="뒤로가기" />
+                    <img src="/assets/back.png" />
                 </BackBtn>
 
                 <Profile>
@@ -289,7 +284,7 @@ export default function MyPage() {
                                 <img src={item.icon} alt="" />
                             </MenuIcon>
                             <MenuLabel>{item.label}</MenuLabel>
-                            <Chevron src="/assets/icons/chevron-right.png" alt="" />
+                            <Chevron src="/assets/Vector-right.png" alt="" />
                         </MenuListButton>
                     ))}
                 </MenuList>
