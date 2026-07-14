@@ -58,8 +58,8 @@ const Profile = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 60px;  
-  gap: 4px;
+  margin-top: 70px;  
+  gap: 0;
 `;
 
 const Avatar = styled.div`
@@ -104,7 +104,7 @@ const QuickMenu = styled.div`
   display: grid;
   height: 83px;
   grid-template-columns: repeat(3, 1fr);
-  padding: 17px 32px;
+  padding: 17px 0;
   align-items: center;      // flex 전용 속성 정리, grid에서도 동작
 `;
 
