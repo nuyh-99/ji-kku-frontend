@@ -105,7 +105,7 @@ const QuickMenu = styled.div`
   height: 83px;
   grid-template-columns: repeat(3, 1fr);
   padding: 17px 0;
-  align-items: center;      // flex 전용 속성 정리, grid에서도 동작
+  align-items: center;     
 `;
 
 const QuickMenuButton = styled.button`
@@ -161,8 +161,8 @@ const MenuListButton = styled.button`
         content: '';
         position: absolute;
         bottom: 0;
-        left: 27px;             // 왼쪽 여백 (원하는 만큼 조절)
-        right: 27px;            // 오른쪽 여백 (원하는 만큼 조절)
+        left: 27px;        
+        right: 27px;           
         height: 1px;
         background: #D9D9D9;
     }
