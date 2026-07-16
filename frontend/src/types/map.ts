@@ -23,6 +23,4 @@ export interface RegionShape {
  * - photo: 폴리곤 안에 사진을 clipPath로 클립해 채움
  */
 export type RegionFill =
-  | { type: "empty" }
-  | { type: "color"; value: string }
-  | { type: "photo"; src: string };
+  { type: "empty" } | { type: "color"; value: string } | { type: "photo"; src: string };
