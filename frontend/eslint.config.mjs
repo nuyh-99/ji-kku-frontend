@@ -65,6 +65,23 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    files: ["src/components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/features/*", "@/features/**", "@/app/*", "@/app/**"],
+              message:
+                "components는 공용 트리입니다. features/app을 import할 수 없습니다 (home 재사용을 위해).",
+            },
+          ],
+        },
+      ],
+    },
+  },
 
   // Prettier와 충돌하는 포맷 룰 비활성화 (반드시 마지막).
   eslintConfigPrettier,
