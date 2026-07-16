@@ -4,3 +4,4 @@ build
 out
 package-lock.json
 public
+.claude

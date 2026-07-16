@@ -1,6 +1,8 @@
 // API 공용 타입: 에러코드 표, ApiError, 공통 응답 envelope.
 // 에러코드는 노션 문서 기준. 새 코드가 추가되면 여기에도 함께 추가하세요.
 
+// 한 줄에 한 코드씩 훑어보는 표라서 prettier 줄바꿈을 끕니다. 새 코드도 한 줄로 추가하세요.
+// prettier-ignore
 export const ERROR_CODES = {
   COMMON400_1: { status: 400, name: "INVALID_INPUT_VALUE", message: "요청 값이 올바르지 않습니다." },
   COMMON400_2: { status: 400, name: "INVALID_TYPE_VALUE", message: "요청 파라미터의 타입이 올바르지 않습니다." },
