@@ -1,0 +1,19 @@
+# 줄바꿈(EOL) 통일.
+#
+# 이 설정이 없으면 Windows의 core.autocrlf=true 가 체크아웃할 때 CRLF로 바꿔놓는데,
+# prettier 는 endOfLine 기본값이 "lf" 라서 `npm run format:check` 가 건드리지도 않은
+# 파일에서 계속 실패합니다. (macOS/Linux 팀원은 통과하고 Windows 팀원만 빨간불)
+#
+# text=auto  : 텍스트 파일은 레포에 항상 LF 로 저장 (바이너리는 git 이 알아서 제외)
+# eol=lf     : 체크아웃할 때도 OS 상관없이 LF 로 (autocrlf 설정을 덮어씀)
+* text=auto eol=lf
+
+# 바이너리는 변환 금지.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary

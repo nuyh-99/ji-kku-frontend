@@ -10,13 +10,13 @@
 
 ### 브랜치 이름: `종류/내용`
 
-| 종류 | 용도 | 예시 |
-|---|---|---|
-| `feature` | 새 기능 | `feature/map-fill` |
-| `fix` | 버그 수정 | `fix/login-error` |
-| `refactor` | 리팩터링 | `refactor/photo-store` |
-| `docs` | 문서 | `docs/readme` |
-| `chore` | 설정·잡일 | `chore/eslint-config` |
+| 종류       | 용도      | 예시                   |
+| ---------- | --------- | ---------------------- |
+| `feature`  | 새 기능   | `feature/map-fill`     |
+| `fix`      | 버그 수정 | `fix/login-error`      |
+| `refactor` | 리팩터링  | `refactor/photo-store` |
+| `docs`     | 문서      | `docs/readme`          |
+| `chore`    | 설정·잡일 | `chore/eslint-config`  |
 
 - 내용은 영어 소문자 + 하이픈(`kebab-case`)으로 적습니다.
 

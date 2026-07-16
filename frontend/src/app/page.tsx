@@ -38,8 +38,8 @@ export default function RootHub() {
     <main className="mx-auto w-full max-w-2xl px-5 py-12">
       <h1 className="text-2xl font-bold tracking-tight">Ji-kku · 초기 세팅</h1>
       <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        관광데이터 공모전 프론트엔드입니다. 아래에서 각 화면으로 이동해 담당 페이지를 작업하세요.
-        이 허브 화면은 임시이며, 실제 서비스에 맞게 자유롭게 교체하면 됩니다.
+        관광데이터 공모전 프론트엔드입니다. 아래에서 각 화면으로 이동해 담당 페이지를 작업하세요. 이
+        허브 화면은 임시이며, 실제 서비스에 맞게 자유롭게 교체하면 됩니다.
       </p>
 
       <div className="mt-8 space-y-6">
