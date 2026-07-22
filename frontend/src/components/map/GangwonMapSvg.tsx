@@ -24,9 +24,12 @@ interface GangwonMapSvgProps {
 }
 
 const DEFAULT_VIEW_BOX = "0 0 100 100";
-const EMPTY_FILL = "var(--gw-empty, #e5e7eb)";
-const BORDER_STROKE = "#94a3b8";
-const SELECTED_STROKE = "#2563eb"; // 선택 강조 색 — 일단 눈에 띄는 값.
+const EMPTY_FILL = "#ffffff"; // 미채움 지역: 흰색 (디자인)
+const BORDER_STROKE = "#9c9c9c"; // 지역 경계선 (디자인)
+const BORDER_WIDTH = 0.7;
+const SELECTED_STROKE = "#111827"; // 선택 강조: 굵은 다크 테두리 (디자인)
+const SELECTED_WIDTH = 2.4;
+const LABEL_SIZE = 7.5; // 지역명 라벨 크기 (디자인 ≈7.48)
 
 export default function GangwonMapSvg({
   regions,
@@ -43,6 +46,20 @@ export default function GangwonMapSvg({
   // 이미지를 뷰박스 전체에 깔고 폴리곤으로 클립하기 위해 좌표를 파싱한다.
   const [vbX, vbY, vbW, vbH] = viewBox.split(/\s+/).map(Number);
 
+  // 선택 지역을 마지막에 그려 맨 앞(z-order)으로 올린다.
+  // SVG는 z-index가 없고 문서 순서가 곧 paint 순서다 — 선택 강조 stroke가 이웃에 가리지 않게 한다.
+  const ordered =
+    selectedCode == null
+      ? regions
+      : [
+          ...regions.filter((r) => r.code !== selectedCode),
+          ...regions.filter((r) => r.code === selectedCode),
+        ];
+
+  // 선택 콜백이 있을 때만 지역을 인터랙티브(button)로 노출한다.
+  // (지도 위 탭-투-셀렉트를 쓰지 않는 화면에서 유령 포커스 버튼을 만들지 않기 위해.)
+  const interactive = typeof onRegionClick === "function";
+
   const handleKeyDown = (event: KeyboardEvent<SVGGElement>, code: string) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -55,7 +72,9 @@ export default function GangwonMapSvg({
       viewBox={viewBox}
       role="img"
       aria-label={ariaLabel}
-      className={`h-auto w-full ${className}`}
+      // 전체 실루엣에 부드러운 그림자 1개 — 지역별 필터(느림) 대신 성능 위해 단일 처리.
+      // 지역 간 경계감은 아래 stroke(#9c9c9c)가 담당한다.
+      className={`h-auto w-full drop-shadow-[0px_3px_2px_rgba(0,0,0,0.28)] ${className}`}
     >
       <defs>
         {photoRegions.map((r) => (
@@ -65,21 +84,21 @@ export default function GangwonMapSvg({
         ))}
       </defs>
 
-      {regions.map((r) => {
+      {ordered.map((r) => {
         const fill: RegionFill = regionStates?.[r.code] ?? { type: "empty" };
         const selected = r.code === selectedCode;
         return (
           <g
             key={r.code}
-            role="button"
-            tabIndex={0}
+            role={interactive ? "button" : undefined}
+            tabIndex={interactive ? 0 : undefined}
             aria-label={r.name}
-            aria-pressed={selected}
-            onClick={() => onRegionClick?.(r.code)}
-            onKeyDown={(event) => handleKeyDown(event, r.code)}
+            aria-pressed={interactive ? selected : undefined}
+            onClick={interactive ? () => onRegionClick?.(r.code) : undefined}
+            onKeyDown={interactive ? (event) => handleKeyDown(event, r.code) : undefined}
             // group + outline-none: 브라우저 기본 사각형(bounding box) 포커스 링을 없애고,
             // 아래 포커스 path로 폴리곤 외곽선을 따라 표시한다.
-            className="group cursor-pointer outline-none"
+            className={interactive ? "group cursor-pointer outline-none" : "group outline-none"}
           >
             {/* 1) 채움 레이어 */}
             {fill.type === "photo" ? (
@@ -101,7 +120,7 @@ export default function GangwonMapSvg({
               d={r.d}
               fill="none"
               stroke={selected ? SELECTED_STROKE : BORDER_STROKE}
-              strokeWidth={selected ? 3 : 1}
+              strokeWidth={selected ? SELECTED_WIDTH : BORDER_WIDTH}
               strokeLinejoin="round"
             />
 
@@ -113,6 +132,21 @@ export default function GangwonMapSvg({
               strokeLinejoin="round"
               className="stroke-transparent group-focus-visible:stroke-sky-400"
             />
+
+            {/* 4) 지역명 라벨 — 채움 위에 표시. 클릭 방해하지 않도록 pointer-events 제거. */}
+            {r.labelX != null && r.labelY != null && (
+              <text
+                x={r.labelX}
+                y={r.labelY}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={LABEL_SIZE}
+                fill="#111111"
+                className="pointer-events-none select-none"
+              >
+                {r.name}
+              </text>
+            )}
           </g>
         );
       })}

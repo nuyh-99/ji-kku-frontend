@@ -7,8 +7,9 @@ export type SigunguCode = string;
 export type VisitStatus = "unvisited" | "visited";
 
 /**
- * 지역 경계 지오메트리.
- * TODO: 강원도 읍·면·동 경계 데이터 형식 확정 후 타입 확정(GeoJSON/TopoJSON/좌표배열 미정).
+ * 지역 경계 지오메트리(원본 좌표 보관용 placeholder).
+ * 렌더 형식은 사전계산 SVG path(@/types/map 의 RegionShape)로 확정됨 — 실제 렌더는 그쪽을 사용한다.
+ * 원본 좌표를 따로 보관할 일이 없으면 제거 후보.
  * @see src/data/regions/README.md
  */
 export type RegionGeometry = unknown;
