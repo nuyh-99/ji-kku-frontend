@@ -10,10 +10,14 @@
 export interface RegionShape {
   /** 지역 식별자. 추후 features/map의 SigunguCode와 정렬 예정. */
   code: string;
-  /** 지역명. a11y 라벨 등에 사용. */
+  /** 지역명. a11y 라벨 및 지도 위 텍스트 라벨에 사용. */
   name: string;
   /** SVG path 데이터. */
   d: string;
+  /** 지도 위 지역명 라벨 X 좌표(합성 좌표계). 없으면 라벨을 그리지 않는다. */
+  labelX?: number;
+  /** 지도 위 지역명 라벨 Y 좌표(합성 좌표계). */
+  labelY?: number;
 }
 
 /**
