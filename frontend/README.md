@@ -73,6 +73,7 @@ frontend/
     components/              # 여러 feature가 함께 쓰는 공용 트리
       common/                # Button, Card, PagePlaceholder
       layout/                # Header, BottomNav
+      map/                   # GangwonMapSvg — map·home 두 feature가 공유해서 여기 있음
     lib/                     # 공용 최하층 (누구나 import 가능)
       api/                   # apiFetch 클라이언트, 도메인별 API 함수, 에러코드·응답 타입
       query/                 # QueryClient 기본값, QueryProvider
