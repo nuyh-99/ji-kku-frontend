@@ -42,7 +42,10 @@ interface DecorateState {
   /** 지역 채움 설정 */
   setFill: (code: string, fill: RegionFill) => void;
 
-  /** 스티커 배치. 배치 즉시 편집 상태로 만든다. */
+  /**
+   * 스티커 배치. 배치와 동시에 시트를 내리고(tool 해제) 방금 놓은 스티커를 편집 상태로 만든다.
+   * 시트가 하단을 덮고 있으면 배치된 스티커가 안 보여서, 놓자마자 지도를 내준다.
+   */
   addSticker: (
     sigunguCd: SigunguCode,
     sticker: Omit<PlacedSticker, "id" | "size"> & { size?: number },
@@ -82,6 +85,7 @@ export const useDecorateStore = create<DecorateState>()((set) => ({
       const current = state.stickersBySigungu[sigunguCd] ?? [];
       return {
         stickerSeq: seq,
+        tool: null,
         selectedStickerId: placed.id,
         stickersBySigungu: { ...state.stickersBySigungu, [sigunguCd]: [...current, placed] },
       };

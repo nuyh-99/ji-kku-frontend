@@ -28,9 +28,12 @@ export default function PhotoUploadSheet() {
     reader.readAsDataURL(file);
   };
 
+  // 채우고 나면 시트를 내린다 — 지역 선택만 풀면 안내("꾸밀 지역을 선택하세요")로 돌아가고,
+  // 도구는 그대로라 다른 지역을 이어서 채울 수 있다.
   const handleUpload = () => {
     if (!selected || !shown) return;
     setFill(selected, { type: "photo", src: shown });
+    selectRegion(null); // 시트가 언마운트되므로 preview 는 다음 열 때 알아서 초기화된다.
   };
 
   return (

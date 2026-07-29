@@ -80,6 +80,11 @@ export default function MapView() {
   const pickingRegion = tool === "color" || tool === "photo";
   const inStickerMode = tool === "sticker" && inEupmyeondong;
 
+  // 스티커는 배치하는 순간 시트가 내려가고 도구도 풀린다(decorateStore.addSticker).
+  // 그래도 방금 놓은 스티커는 계속 만질 수 있어야 하므로, 선택된 스티커가 있으면 조작을 열어둔다.
+  // 지도 빈 곳을 누르면 선택이 풀리면서 편집도 끝난다.
+  const stickersEditable = inEupmyeondong && (inStickerMode || selectedStickerId !== null);
+
   const regionSheetOpen = pickingRegion && selectedRegion !== null;
   const sheetOpen = regionSheetOpen || inStickerMode;
 
@@ -126,7 +131,7 @@ export default function MapView() {
                 <StickerLayer
                   stickers={stickers}
                   selectedId={selectedStickerId}
-                  interactive={inStickerMode}
+                  interactive={stickersEditable}
                   svgRef={svgRef}
                   onSelect={selectSticker}
                   onMove={(id, x, y) => activeSigungu && moveSticker(activeSigungu, id, x, y)}
