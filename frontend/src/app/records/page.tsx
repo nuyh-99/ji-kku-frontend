@@ -18,7 +18,7 @@ const AUTH_ERROR_CODES = new Set([
   "AUTH401_5", // TOKEN_NOT_FOUND
 ]);
 
-export default function RecordsSigunguPage() {
+export default function RecordsPage() {
   const router = useRouter();
   const [visibleSigunguList, setVisibleSigunguList] = useState<
     typeof masterSigunguList | null
