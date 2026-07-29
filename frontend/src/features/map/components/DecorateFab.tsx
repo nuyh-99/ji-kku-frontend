@@ -1,15 +1,19 @@
 "use client";
 
-// FAB(+) → 펼치면 "색 추가 / 사진 추가" 메뉴. 열림/도구활성 시 ×.
+// FAB(+) → 펼치면 꾸미기 메뉴. 열림/도구활성 시 ×.
+// 메뉴는 지도 단계에 따라 다르다(디자인 464:1978 vs 470:3043):
+//   1단계(시군구): 색 · 사진
+//   2단계(읍면동): 기록 작성 · 스티커 · 색 · 사진
 // 브랜드 색 #6ca59c. 아이콘은 public/icons/map/*.png.
-import { useSelectSigungu } from "../hooks/useMapStore";
+import { useRouter } from "next/navigation";
+import { useActiveSigungu, useSelectRegion, useSelectedRegion } from "../hooks/useMapStore";
 import {
+  useCloseFab,
   useCloseTool,
   useDecorateTool,
   useFabOpen,
   useOpenTool,
   useToggleFab,
-  useCloseFab,
 } from "../hooks/useDecorateStore";
 import { PlusIcon } from "./icons";
 
@@ -17,12 +21,11 @@ const BRAND = "#6ca59c";
 
 interface MenuItemProps {
   icon: string;
-  alt: string;
   label: string;
   onClick: () => void;
 }
 
-function MenuItem({ icon, alt, label, onClick }: MenuItemProps) {
+function MenuItem({ icon, label, onClick }: MenuItemProps) {
   return (
     <button type="button" onClick={onClick} className="flex items-center gap-2.5">
       <span className="text-sm" style={{ color: BRAND }}>
@@ -30,33 +33,48 @@ function MenuItem({ icon, alt, label, onClick }: MenuItemProps) {
       </span>
       <span className="grid size-10 place-items-center rounded-full bg-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25),0px_0px_6px_0px_rgba(0,0,0,0.25)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={icon} alt={alt} className="size-6 object-contain" />
+        <img src={icon} alt="" className="size-6 object-contain" />
       </span>
     </button>
   );
 }
 
 export default function DecorateFab() {
+  const router = useRouter();
+  const activeSigungu = useActiveSigungu();
+  const selectedRegion = useSelectedRegion();
+  const selectRegion = useSelectRegion();
   const fabOpen = useFabOpen();
   const tool = useDecorateTool();
   const toggleFab = useToggleFab();
   const closeFab = useCloseFab();
   const openTool = useOpenTool();
   const closeTool = useCloseTool();
-  const selectSigungu = useSelectSigungu();
 
+  const inEupmyeondong = activeSigungu !== null;
   const isClose = fabOpen || tool !== null;
 
   const handleFab = () => {
     if (fabOpen) {
       closeFab();
     } else if (tool !== null) {
-      // 도구 모드 취소 → 기본 모드로
+      // 도구 모드 취소 → 기본(감상) 모드로
       closeTool();
-      selectSigungu(null);
+      selectRegion(null);
     } else {
       toggleFab();
     }
+  };
+
+  // 기록은 B 담당(/records) 화면이라 지도는 라우팅만 하고 폼을 갖지 않는다.
+  // 어느 지역에서 눌렀는지는 쿼리로 넘긴다.
+  const goWriteRecord = () => {
+    closeFab();
+    const params = new URLSearchParams();
+    if (activeSigungu) params.set("sigunguCd", activeSigungu);
+    if (selectedRegion) params.set("eupmyeondongCd", selectedRegion);
+    const query = params.toString();
+    router.push(query ? `/records?${query}` : "/records");
   };
 
   return (
@@ -73,15 +91,27 @@ export default function DecorateFab() {
       <div className="absolute right-5 bottom-[30px] z-20 flex flex-col items-end gap-3">
         {fabOpen && (
           <>
+            {inEupmyeondong && (
+              <>
+                <MenuItem
+                  icon="/icons/map/edit.png"
+                  label="기록 작성하기"
+                  onClick={goWriteRecord}
+                />
+                <MenuItem
+                  icon="/icons/map/sticker.png"
+                  label="스티커 추가하기"
+                  onClick={() => openTool("sticker")}
+                />
+              </>
+            )}
             <MenuItem
               icon="/icons/map/color-dropper.png"
-              alt="색"
               label="지도에 색 추가하기"
               onClick={() => openTool("color")}
             />
             <MenuItem
               icon="/icons/map/add-image.png"
-              alt="사진"
               label="지도에 사진 추가하기"
               onClick={() => openTool("photo")}
             />

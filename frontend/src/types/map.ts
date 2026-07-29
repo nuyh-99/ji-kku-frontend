@@ -28,3 +28,45 @@ export interface RegionShape {
  */
 export type RegionFill =
   { type: "empty" } | { type: "color"; value: string } | { type: "photo"; src: string };
+
+/**
+ * 지도 위에 놓인 스티커 한 개.
+ *
+ * 색·사진과 달리 스티커는 **지역 단위가 아니라 좌표 단위**다(디자인 715:3849 — 스티커가
+ * 폴리곤 경계를 넘어 걸쳐 있다). 좌표/크기는 지도 SVG viewBox 단위라서 확대·이동해도
+ * 지역과 같은 자리에 붙어 움직인다.
+ */
+export interface PlacedSticker {
+  /** 배치 인스턴스 id. 같은 스티커를 여러 번 놓을 수 있어 카탈로그 id와 분리한다. */
+  id: string;
+  /** 스티커 카탈로그 id. */
+  stickerId: string;
+  /** 이미지 경로. */
+  src: string;
+  /** 표시명(a11y 라벨). */
+  name: string;
+  /** 중심 X (viewBox 단위). */
+  x: number;
+  /** 중심 Y (viewBox 단위). */
+  y: number;
+  /** 한 변 길이 (viewBox 단위). 정사각형으로 다룬다. */
+  size: number;
+}
+
+/**
+ * 지역별 포스트 목록의 카드 한 장 (디자인 566:2096).
+ * `data/mock-region-posts.ts` 가 함께 쓰는 타입이라 여기(types/)에 둔다.
+ */
+export interface RegionPost {
+  id: string;
+  /** 소속 읍·면·동 코드. */
+  eupmyeondongCd: string;
+  /** 카드에 표시할 읍·면·동 이름. */
+  eupmyeondongName: string;
+  /** 대표 사진 URL. */
+  imageUrl: string;
+  /** 본문 미리보기(카드에서 2줄로 잘림). */
+  content: string;
+  /** 표시용 날짜 문자열(디자인: "26.07.02"). */
+  displayDate: string;
+}
