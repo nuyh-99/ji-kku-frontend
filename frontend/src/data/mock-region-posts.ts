@@ -7,7 +7,7 @@ export const mockRegionPosts: Record<string, RegionPost[]> = {
   "51830": [
     {
       id: "post-1",
-      eupmyeondongCd: "51830_04",
+      eupmyeondongCd: "5183033000",
       eupmyeondongName: "현북면",
       imageUrl: "/mock/posts/post-1.jpg",
       content:
@@ -16,7 +16,7 @@ export const mockRegionPosts: Record<string, RegionPost[]> = {
     },
     {
       id: "post-2",
-      eupmyeondongCd: "51830_04",
+      eupmyeondongCd: "5183033000",
       eupmyeondongName: "현북면",
       imageUrl: "/mock/posts/post-2.jpg",
       content:
@@ -25,7 +25,7 @@ export const mockRegionPosts: Record<string, RegionPost[]> = {
     },
     {
       id: "post-3",
-      eupmyeondongCd: "51830_05",
+      eupmyeondongCd: "5183034000",
       eupmyeondongName: "현남면",
       imageUrl: "/mock/posts/post-3.jpg",
       content:
@@ -34,7 +34,7 @@ export const mockRegionPosts: Record<string, RegionPost[]> = {
     },
     {
       id: "post-4",
-      eupmyeondongCd: "51830_02",
+      eupmyeondongCd: "5183031000",
       eupmyeondongName: "서면",
       imageUrl: "/mock/posts/post-4.jpg",
       content: "서면 쪽 벚꽃길을 걸었다. 4월 초라 딱 만개해서 사진 찍기 좋았다.",
@@ -42,7 +42,7 @@ export const mockRegionPosts: Record<string, RegionPost[]> = {
     },
     {
       id: "post-5",
-      eupmyeondongCd: "51830_02",
+      eupmyeondongCd: "5183031000",
       eupmyeondongName: "서면",
       imageUrl: "/mock/posts/post-5.jpg",
       content: "점심으로 물회비빔밥이랑 라면을 시켰다. 양양 와서 먹은 것 중에 제일 맛있었다.",
@@ -50,7 +50,7 @@ export const mockRegionPosts: Record<string, RegionPost[]> = {
     },
     {
       id: "post-6",
-      eupmyeondongCd: "51830_01",
+      eupmyeondongCd: "5183025000",
       eupmyeondongName: "양양읍",
       imageUrl: "/mock/posts/post-6.jpg",
       content: "양양 전통시장에서 방금 구운 어묵을 사 먹었다. 바람 불던 날에 딱이었다.",
