@@ -1,8 +1,13 @@
 import { apiFetch } from "./client";
+import type { TodaySpotItem } from "@/types/tourism";
+
+interface TodaySpotsResult {
+  content: TodaySpotItem[];
+}
 
 /** 오늘의 관광지 추천. TODO: 응답 타입 확정 필요 */
 export function getTodaySpots() {
-  return apiFetch<unknown>("/spots/today");
+  return apiFetch<TodaySpotsResult>("/spots/today");
 }
 
 /** 관광지 세부 조회. TODO: 응답 타입 확정 필요 */
