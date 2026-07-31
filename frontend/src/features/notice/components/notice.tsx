@@ -50,7 +50,7 @@ export function Notice() {
                     <button
                         key={notice.id}
                         onClick={() => onNoticeClick(notice.id)}
-                        className="w-full bg-white rounded-[9px] px-[19px] py-[27px] flex flex-col items-start gap-1 text-[16px] text-left transition-opacity duration-200"
+                        className="w-full bg-white rounded-[9px] px-[19px] py-[27px] flex flex-col items-start gap-1 text-[16px] text-left transition-opacity duration-200 shadow-sm"
                     >
                         <span className="text-black font-[Pretendard,sans-serif] h-[19px] text-[16px] font-400 not-italic leading-normal">
                             {notice.title}
