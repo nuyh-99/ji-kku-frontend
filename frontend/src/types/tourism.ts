@@ -24,3 +24,22 @@ export interface TouristSpot {
   /** 방문 여부 (지도 방문 상태 표시에 사용) */
   visited: boolean;
 }
+
+export interface TodaySpotItem {
+  spot_id: number;
+  content_id: number;
+  first_image: string;
+  title: string;
+  overview: string;
+}
+
+export interface SpotDetailItem {
+  spotId: number;
+  contentId: number;
+  firstImage: string;
+  title: string;
+  addr1: string;
+  mapX: number; // 경도
+  mapY: number; // 위도
+  description: string;
+}

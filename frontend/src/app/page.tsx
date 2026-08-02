@@ -8,14 +8,14 @@ const groups = [
     owner: "A 박태현 · 지도 핵심 기능",
     routes: [
       { href: "/map", label: "/map · 지도" },
-      { href: "/spots/spot-1", label: "/spots/[id] · 관광지 상세(지도→상세 이동)" },
+      { href: "/spots/spot-1", label: "/spots/[spotId] · 관광지 상세(지도→상세 이동)" },
     ],
   },
   {
     owner: "B 강수연 · 관광지 · 기록 · 업적",
     routes: [
       { href: "/event-regions", label: "/event-regions · 추천/이벤트 지역" },
-      { href: "/spots/spot-1", label: "/spots/[id] · 관광지 상세" },
+      { href: "/spots/1", label: "/spots/[spotId] · 관광지 상세" },
       { href: "/records", label: "/records · 여행 기록" },
       { href: "/achievements", label: "/achievements · 업적" },
     ],
