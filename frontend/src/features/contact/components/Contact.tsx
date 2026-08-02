@@ -42,7 +42,7 @@ export function Contact() {
                     Contact
                 </h1>
 
-                <ul className="flex flex-col gap-[14px]">
+                <ul className="flex flex-col gap-[14px]  max-w-[264px] mx-auto">
                     {CONTACTS.map((person) => (
                         <li key={person.email} className="flex h-[21px] gap-[29px]">
               <span className="h-[21px] w-13 shrink-0 text-white text-[18px] font-normal">
