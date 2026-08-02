@@ -1,0 +1,205 @@
+"use client";
+
+import { use, useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import { ChevronLeft, Menu } from "lucide-react";
+import { getSpotDetail } from "@/lib/api/spot";
+import { mapSpotDetailToDetailData } from "@/features/spots/utils/mapSpotDetail";
+
+// TODO: 실제로는 API에서 이미지 배열(images: string[])을 받아와야 함.
+// 지금은 firstImage 하나만 있으니 임시로 배열처럼 다룸.
+function useSpotImages(imageUrl: string) {
+  return imageUrl ? [imageUrl] : [];
+}
+
+declare global {
+  interface Window {
+    naver?: any;
+  }
+}
+
+export default function SpotDetailPage({
+  params,
+}: {
+  params: Promise<{ spotId: string }>;
+}) {
+  const { spotId } = use(params);
+  const router = useRouter();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["spotDetail", spotId],
+    queryFn: () => getSpotDetail(spotId),
+  });
+
+  if (isLoading) return <div className="px-4 py-4">로딩 중...</div>;
+  if (isError || !data) return <div className="px-4 py-4">정보를 불러오지 못했습니다.</div>;
+
+  const spot = mapSpotDetailToDetailData(data);
+
+  return <SpotDetailContent spot={spot} onBack={() => router.back()} />;
+}
+
+function SpotDetailContent({
+  spot,
+  onBack,
+}: {
+  spot: ReturnType<typeof mapSpotDetailToDetailData>;
+  onBack: () => void;
+}) {
+  const images = useSpotImages(spot.imageUrl);
+
+  // --- 이미지 스크롤 캐러셀 ---
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    setCurrentIndex(index);
+  };
+
+  // --- 네이버 지도 ---
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // 네이버 지도 SDK가 로드되어 있어야 동작함 (layout.tsx 등에 스크립트 태그 추가 필요)
+    if (typeof window === "undefined" || !window.naver || !mapRef.current) return;
+
+    const center = new window.naver.maps.LatLng(spot.lat, spot.lng);
+    const map = new window.naver.maps.Map(mapRef.current, {
+      center,
+      zoom: 16,
+    });
+    new window.naver.maps.Marker({ position: center, map });
+  }, [spot.lat, spot.lng]);
+
+  const handleCheckLocation = () => {
+    const { lat, lng, title } = spot;
+    const naverMapUrl = `https://map.naver.com/p/search/${encodeURIComponent(
+      title
+    )}?c=${lng},${lat},16,0,0,0,dh`;
+    window.open(naverMapUrl, "_blank");
+  };
+
+  return (
+    <div className="relative w-full max-w-[393px] mx-auto pb-8">
+      {/* 상단 헤더 */}
+      <header className="flex items-center justify-between px-4 py-3">
+        <button aria-label="뒤로가기" onClick={onBack}>
+          <ChevronLeft size={24} />
+        </button>
+        <button aria-label="메뉴">
+          <Menu size={24} />
+        </button>
+      </header>
+
+      {/* 이미지 캐러셀 (가로 스크롤로 넘김) */}
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+        style={{ width: 393, height: 253 }}
+      >
+        {images.length > 0 ? (
+          images.map((url, i) => (
+            <div
+              key={i}
+              className="relative shrink-0 snap-center"
+              style={{ width: 393, height: 253 }}
+            >
+              <Image src={url} alt={`${spot.title} 이미지 ${i + 1}`} fill className="object-cover" />
+            </div>
+          ))
+        ) : (
+          <div
+            className="flex shrink-0 items-center justify-center bg-gray-100 text-sm text-gray-400"
+            style={{ width: 393, height: 253 }}
+          >
+            이미지 없음
+          </div>
+        )}
+
+        {/* 페이지 카운터 */}
+        {images.length > 0 && (
+          <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white">
+            {currentIndex + 1} | {images.length}
+          </span>
+        )}
+      </div>
+
+      <div className="px-[17px]">
+        {/* 장소 이름 */}
+        <h1
+          className="mt-[26px]"
+          style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
+        >
+          {spot.title}
+        </h1>
+
+        {/* 상세 주소 */}
+        <p
+          className="mt-1"
+          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
+        >
+          {spot.address}
+        </p>
+
+        {/* 상세 설명 */}
+        <p
+          className="mt-6 whitespace-pre-line"
+          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
+        >
+          {spot.description}
+        </p>
+
+        {/* 이용 정보 */}
+        <dl
+          className="mt-4 space-y-1"
+          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, color: "#000000" }}
+        >
+          <div className="flex gap-1">
+            <dt className="text-gray-500">관람시간 :</dt>
+            <dd className="text-gray-500">상시개방</dd>
+          </div>
+          <div className="flex gap-1">
+            <dt className="text-gray-500">휴무일 :</dt>
+            <dd className="text-gray-500">연중무휴</dd>
+          </div>
+          <div className="flex gap-1">
+            <dt className="text-gray-500">이용료 :</dt>
+            <dd className="text-gray-500">무료입장</dd>
+          </div>
+        </dl>
+
+        {/* 네이버 지도 */}
+        <div
+          ref={mapRef}
+          className="mt-6 flex items-center justify-center bg-[#EEEEEE] text-sm text-gray-400"
+          style={{ width: 360, height: 222 }}
+        >
+          {typeof window !== "undefined" && !window.naver && "지도 SDK 로드 필요"}
+        </div>
+
+        {/* 위치 확인하기 버튼 → 네이버 지도 웹으로 새 탭 이동 */}
+        <button
+          onClick={handleCheckLocation}
+          className="mt-4 flex w-full items-center justify-center"
+          style={{
+            height: 51,
+            borderRadius: 9,
+            border: "1px solid #6CA59C",
+            color: "#6CA59C",
+            fontFamily: "Pretendard",
+            fontWeight: 700,
+            fontSize: 14,
+          }}
+        >
+          지도 확인하기
+        </button>
+      </div>
+    </div>
+  );
+}

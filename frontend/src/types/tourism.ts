@@ -25,11 +25,21 @@ export interface TouristSpot {
   visited: boolean;
 }
 
-// types/tourism.ts
 export interface TodaySpotItem {
   spot_id: number;
   content_id: number;
   first_image: string;
   title: string;
   overview: string;
+}
+
+export interface SpotDetailItem {
+  spotId: number;
+  contentId: number;
+  firstImage: string;
+  title: string;
+  addr1: string;
+  mapX: number; // 경도
+  mapY: number; // 위도
+  description: string;
 }
