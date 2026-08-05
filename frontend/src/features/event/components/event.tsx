@@ -19,8 +19,8 @@ const events: EventItem[] = [
 export function Event() {
     const router = useRouter();
 
-    const goBack = () => router.back();
-    const onMenu = () => console.log('메뉴 클릭');
+    const goBack = () => router.push('/mypage');
+    const onMenu = () => router.push('/mypage');
     const onEventClick = (id: string) => router.push(`/events/${id}`);
 
     return (

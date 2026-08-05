@@ -17,8 +17,8 @@ const notices: NoticeItem[] = [
 export function Notice() {
     const router = useRouter();
 
-    const goBack = () => router.back();
-    const onMenu = () => console.log('메뉴 클릭');
+    const goBack = () => router.push('/mypage');
+    const onMenu = () => router.push('/mypage');
     const onNoticeClick = (id: string) => router.push(`/notices/${id}`);
 
     return (

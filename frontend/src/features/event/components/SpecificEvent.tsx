@@ -118,8 +118,8 @@ interface SpecificEventProps {
 export function SpecificEvent({ id }: SpecificEventProps) {
     const router = useRouter();
 
-    const goBack = () => router.back();
-    const onMenu = () => console.log('메뉴 클릭');
+    const goBack = () => router.push('/events');
+    const onMenu = () => router.push('/mypage');
     const onBackToList = () => router.push('/events');
 
     const event = eventDetails.find((item) => item.id === id);

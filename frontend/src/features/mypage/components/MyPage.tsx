@@ -16,13 +16,11 @@ export function MyPage() {
     const onEditInfo = () => console.log('정보 수정 클릭');
     const onFaq = () => console.log('FAQ 클릭');
     const onSettings = () => console.log('환경 설정 클릭');
-    const onNotice = () => console.log('공지사항 클릭');
-    const onEvent = () => console.log('이벤트 게시판 클릭');
+    const onNotice = () => router.push('/notices');
+    const onEvent = () => router.push('/events');
     const onMission = () => console.log('진행중인 미션 클릭');
-    const onContact = () => console.log('contact 클릭');
-    const onLogout = () => {
-        console.log('로그아웃 클릭');
-    };
+    const onContact = () => router.push('/contact');
+    const onLogout = () => router.push('/login')
 
     const menuItems: MenuItem[] = [
         { icon: '/assets/notice.png', label: '공지사항', onClick: onNotice },

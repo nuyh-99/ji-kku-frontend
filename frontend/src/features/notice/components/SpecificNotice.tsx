@@ -77,8 +77,8 @@ interface SpecificNoticeProps {
 export function SpecificNotice({ id }: SpecificNoticeProps) {
     const router = useRouter();
 
-    const goBack = () => router.back();
-    const onMenu = () => console.log('메뉴 클릭');
+    const goBack = () => router.push('/notices');
+    const onMenu = () => router.push('/mypage');
     const onBackToList = () => router.push('/notices');
 
     const notice = noticeDetails.find((item) => item.id === id);
