@@ -54,6 +54,50 @@ export interface PlacedSticker {
 }
 
 /**
+ * 지도 위에 놓인 사진 카드 한 장 (디자인 566:2034 "등록 완료").
+ *
+ * 기록을 "지도에 표시하기"로 등록하면 생기는 폴라로이드 카드다. 스티커와 같은 좌표계·
+ * 조작(이동/크기조절/삭제)을 쓰지만 정사각형이 아니라 **세로로 긴 카드**라서 따로 둔다.
+ * 디자인 실측 90.67×106 → 높이는 폭에서 유도한다(CARD_ASPECT).
+ */
+export interface PlacedPhotoCard {
+  /** 배치 인스턴스 id. */
+  id: string;
+  /** 원본 기록 id. 서버 연동 시 상세로 이동하는 데 쓴다. */
+  recordId: string;
+  /** 카드에 넣을 사진. */
+  src: string;
+  /** 사진 아래 캡션(기록 제목). */
+  title: string;
+  /** 중심 X (viewBox 단위). */
+  x: number;
+  /** 중심 Y (viewBox 단위). */
+  y: number;
+  /** 카드 폭 (viewBox 단위). 높이는 폭 × CARD_ASPECT. */
+  width: number;
+}
+
+/** 사진 카드 높이 ÷ 폭. 디자인 106 / 90.67. */
+export const PHOTO_CARD_ASPECT = 106 / 90.67;
+
+/**
+ * 사진 카드 내부 비율(모두 **카드 폭** 기준). 디자인 실측값을 폭으로 나눈 값이라
+ * 카드를 키우거나 줄여도 여백·글자 크기가 같은 비율로 따라간다.
+ */
+export const PHOTO_CARD_RATIO = {
+  /** 사진 바깥 여백 5.75 / 90.67 */
+  padding: 5.75 / 90.67,
+  /** 사진 폭 78.7 / 90.67 */
+  imageWidth: 78.7 / 90.67,
+  /** 사진 높이 77.74 / 90.67 */
+  imageHeight: 77.74 / 90.67,
+  /** 캡션 글자 크기 8.94 / 90.67 */
+  captionSize: 8.94 / 90.67,
+  /** 캡션 baseline 위치 (카드 위에서) 88.76 / 90.67 */
+  captionTop: 88.76 / 90.67,
+} as const;
+
+/**
  * 지역별 포스트 목록의 카드 한 장 (디자인 566:2096).
  * `data/mock-region-posts.ts` 가 함께 쓰는 타입이라 여기(types/)에 둔다.
  */

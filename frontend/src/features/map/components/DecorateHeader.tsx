@@ -4,9 +4,9 @@
 // 뒤로가기는 지도 단계에 따라 갈린다 — 2단계(읍면동)면 시군구 지도로 올라가고,
 // 1단계면 이전 페이지로 나간다.
 import { useRouter } from "next/navigation";
+import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { useActiveSigungu, useLeaveSigungu } from "../hooks/useMapStore";
 import { useCloseTool } from "../hooks/useDecorateStore";
-import { ChevronLeftIcon, MenuIcon } from "./icons";
 
 export default function DecorateHeader() {
   const router = useRouter();

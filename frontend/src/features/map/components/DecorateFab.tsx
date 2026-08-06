@@ -5,8 +5,7 @@
 //   1단계(시군구): 색 · 사진
 //   2단계(읍면동): 기록 작성 · 스티커 · 색 · 사진
 // 브랜드 색 #6ca59c. 아이콘은 public/icons/map/*.png.
-import { useRouter } from "next/navigation";
-import { useActiveSigungu, useSelectRegion, useSelectedRegion } from "../hooks/useMapStore";
+import { useActiveSigungu, useSelectRegion } from "../hooks/useMapStore";
 import {
   useCloseFab,
   useCloseTool,
@@ -40,9 +39,7 @@ function MenuItem({ icon, label, onClick }: MenuItemProps) {
 }
 
 export default function DecorateFab() {
-  const router = useRouter();
   const activeSigungu = useActiveSigungu();
-  const selectedRegion = useSelectedRegion();
   const selectRegion = useSelectRegion();
   const fabOpen = useFabOpen();
   const tool = useDecorateTool();
@@ -66,17 +63,6 @@ export default function DecorateFab() {
     }
   };
 
-  // 기록은 B 담당(/records) 화면이라 지도는 라우팅만 하고 폼을 갖지 않는다.
-  // 어느 지역에서 눌렀는지는 쿼리로 넘긴다.
-  const goWriteRecord = () => {
-    closeFab();
-    const params = new URLSearchParams();
-    if (activeSigungu) params.set("sigunguCd", activeSigungu);
-    if (selectedRegion) params.set("eupmyeondongCd", selectedRegion);
-    const query = params.toString();
-    router.push(query ? `/records?${query}` : "/records");
-  };
-
   return (
     <>
       {fabOpen && (
@@ -93,10 +79,14 @@ export default function DecorateFab() {
           <>
             {inEupmyeondong && (
               <>
+                {/*
+                  기록 자체는 B 담당(/records) 화면이다. 지도는 "어느 읍·면·동 기록인지"만
+                  고르게 하고(record 도구) 그 화면으로 넘긴다 — 폼은 갖지 않는다.
+                */}
                 <MenuItem
                   icon="/icons/map/edit.png"
                   label="기록 작성하기"
-                  onClick={goWriteRecord}
+                  onClick={() => openTool("record")}
                 />
                 <MenuItem
                   icon="/icons/map/sticker.png"

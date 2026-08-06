@@ -10,6 +10,7 @@
 import { useRef } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 import type { PlacedSticker } from "@/types/map";
+import { toSvgPoint } from "../svgPoint";
 
 const BRAND = "#6ca59c";
 
@@ -26,13 +27,6 @@ interface StickerLayerProps {
   onResize: (id: string, size: number) => void;
   onRemove: (id: string) => void;
   onDragStateChange: (dragging: boolean) => void;
-}
-
-/** 화면 좌표 → viewBox 좌표. 지도가 확대/이동돼 있어도 CTM이 알아서 반영한다. */
-function toSvgPoint(svg: SVGSVGElement, clientX: number, clientY: number) {
-  const ctm = svg.getScreenCTM();
-  if (!ctm) return null;
-  return new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
 }
 
 export default function StickerLayer({

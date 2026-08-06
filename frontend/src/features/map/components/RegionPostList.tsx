@@ -6,9 +6,9 @@
 // ⚠️ 기록 자체는 B 담당(/records) 도메인이다. 여기는 "지도에서 지역별로 훑어보는" 뷰라
 //    map 이 소유하되, 목데이터를 쓴다. 서버 연동 시 mapApi 의 포스트 조회로 교체한다.
 import { useRouter } from "next/navigation";
+import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getRegionPosts } from "@/data/mock-region-posts";
 import { GANGWON_REGIONS } from "@/data/regions/gangwon";
-import { ChevronLeftIcon, MenuIcon } from "./icons";
 
 const BRAND = "#6ca59c";
 /** 디자인의 칩·라벨은 브랜드 색 70% 불투명도를 쓴다. */
