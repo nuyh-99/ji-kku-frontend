@@ -1,7 +1,7 @@
 // src/features/spots/components/SpotCard.tsx
 import Image from "next/image";
 import Link from "next/link";
-import type { SpotCardData } from "../utils/mapTodaySpot";
+import type { SpotCardData } from "../types/mapTodaySpot";
 
 export default function SpotCard({ spot }: { spot: SpotCardData }) {
   return (
