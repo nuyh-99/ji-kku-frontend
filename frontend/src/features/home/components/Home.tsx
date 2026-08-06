@@ -8,13 +8,13 @@ import type { SpotCardData } from "@/types/mapTodaySpot";
 export default function Home() {
     const router = useRouter();
 
-    // 👉 실제로는 API에서 받아옴
+    //실제로는 API
     const visitedCount = 6;
     const totalCount = 18;
     const percent = Math.round((visitedCount / totalCount) * 100);
 
-    // 👉 오늘의 관광지 추천 데이터도 실제로는 API 응답을
-    //    mapTodaySpot으로 변환해서 넣게 될 거예요 (SpotCardData 타입)
+    //오늘의 관광지 추천 데이터도 실제로는 API 응답
+    // mapTodaySpot으로 변환해서 (SpotCardData 타입)
     const todaySpots: SpotCardData[] = [
         {
             id: "1",
