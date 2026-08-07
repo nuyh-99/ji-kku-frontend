@@ -34,6 +34,12 @@ export default function Home() {
             overview: "동강 사이에 한반도 모양을 감상할 수 있다.",
             imageUrl: "/assets/spot-byeongbangchi.jpg",
         },
+        {
+            id: "4",
+            title: "영금정 전망대",
+            overview: "해상 정자에서 펼쳐진 바다를 바라볼 수 있는 일출 명소",
+            imageUrl: "/assets/spot-yeonggeumjeong.jpg",
+        },
     ];
 
     const onDecorateMap = () => router.push("/mypage/map");
@@ -42,31 +48,37 @@ export default function Home() {
     const onMyRecord = () => router.push("/mypage/record");
 
     return (
-        <div className="w-full min-h-screen bg-[#F5F7F6] flex flex-col gap-4 p-4">
-            {/* 상단 메뉴 아이콘 */}
-            <div className="flex justify-end">
-                <button aria-label="메뉴 열기">
-                    <Image src="/assets/menu.png" alt="" width={24} height={24} />
-                </button>
-            </div>
+        <div className="relative w-full min-h-screen overflow-hidden">
+            <div
+                className="absolute inset-0  bg-cover bg-center  scale-110"
+                style={{ backgroundImage: "url('/assets/landing-bg-blur.png')" }}
+            />
+
+            <div className="relative flex flex-col gap-4 px-4 py-11">
+                {/* 상단 메뉴 아이콘 */}
+                <div className="flex justify-end">
+                    <button aria-label="메뉴 열기">
+                        <Image src="/assets/Menu.png" alt="" width={28} height={28} />
+                    </button>
+                </div>
 
             {/* MY MAP 카드 */}
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-                <h2 className="mb-3 text-lg font-bold text-teal-600">MY MAP</h2>
+            <div className="rounded-[20px] h-100 bg-white/60 shadow-[0_0_4px_0_rgba(0,0,0,0.50)] overflow-hidden ">
+                <h2 className="relative z-10 m-[14px] text-[12.538px] font-bold text-[#6CA59C]">MY MAP</h2>
 
                 <div className="relative h-64 w-full">
                     <Image
-                        src="/assets/gangwon-map.png"
+                        src="/assets/mymap.png" //지도부분은 일단 이미지로 하드코딩 (나중에 받아와야함)
                         alt="강원도 지도"
                         fill
-                        className="object-contain"
+                        className="object-contain " //원본비율 유지
                     />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 p-3">
                     <div className="flex items-center gap-3">
                         <div
-                            className="flex h-14 w-14 items-center justify-center rounded-full text-sm font-bold text-teal-600"
+                            className="flex h-14 w-14 items-center justify-center rounded-full text-sm font-bold text-[#6CA59C]"
                             style={{
                                 background: `conic-gradient(#0d9488 ${percent * 3.6}deg, #e5e7eb 0deg)`,
                             }}
@@ -85,7 +97,7 @@ export default function Home() {
 
                     <button
                         onClick={onDecorateMap}
-                        className="flex items-center gap-1 rounded-full bg-teal-600 px-4 py-2 text-sm font-medium text-white"
+                        className="flex items-center gap-1 rounded-full bg-[#6CA59C] px-4 py-2 text-sm font-medium text-white"
                     >
                         내 지도 꾸미러 가기
                         <span>›</span>
@@ -97,21 +109,21 @@ export default function Home() {
             <div className="flex gap-2">
                 <button
                     onClick={onEventArea}
-                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-teal-600 py-3 text-sm font-medium text-white"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#6CA59C] py-3 text-sm font-medium text-white"
                 >
                     이벤트 지역
                     <span>›</span>
                 </button>
                 <button
                     onClick={onMyAchievement}
-                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-teal-600 py-3 text-sm font-medium text-white"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#6CA59C] py-3 text-sm font-medium text-white"
                 >
                     내 업적
                     <span>›</span>
                 </button>
                 <button
                     onClick={onMyRecord}
-                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-teal-600 py-3 text-sm font-medium text-white"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#6CA59C] py-3 text-sm font-medium text-white"
                 >
                     내 기록
                     <span>›</span>
@@ -127,6 +139,7 @@ export default function Home() {
                     ))}
                 </div>
             </section>
+            </div>
         </div>
     );
 }
