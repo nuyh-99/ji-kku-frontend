@@ -21,25 +21,25 @@ export default function Home() {
             id: "1",
             title: "영월 삼옥리 호밀밭",
             overview: "붉은 메밀꽃으로 사람들의 발길을 잡는 경치 명소",
-            imageUrl: "/assets/spot-samok.jpg",
+            imageUrl: "/assets/spot-samok.png",
         },
         {
             id: "2",
             title: "춘천 청평사 구성폭포",
             overview: "청평사로 올라가는 길목에 구성폭포가 위치해 있다.",
-            imageUrl: "/assets/spot-guseong.jpg",
+            imageUrl: "/assets/spot-guseong.png",
         },
         {
             id: "3",
-            title: "정선 병방치 스카이워크",
+            title: "정선 스카이워크",
             overview: "동강 사이에 한반도 모양을 감상할 수 있다.",
-            imageUrl: "/assets/spot-byeongbangchi.jpg",
+            imageUrl: "/assets/spot-byeongbangchi.png",
         },
         {
             id: "4",
             title: "영금정 전망대",
             overview: "해상 정자에서 펼쳐진 바다를 바라볼 수 있는 일출 명소",
-            imageUrl: "/assets/spot-yeonggeumjeong.jpg",
+            imageUrl: "/assets/spot-arirang.png",
         },
     ];
 
@@ -104,25 +104,25 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* 퀵메뉴 버튼 3개 */}
+                {/* 버튼 3개 */}
                 <div className="flex gap-[14px]">
                     <button
                         onClick={onEventArea}
-                        className="flex flex-1 items-center justify-center gap-[9px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white"
+                        className="flex flex-1 h-[42px] items-center justify-center gap-[9px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
                     >
                         이벤트 지역
                         <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
                     </button>
                     <button
                         onClick={onMyAchievement}
-                        className="flex flex-1 items-center justify-center gap-[9px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white"
+                        className="flex flex-1 h-[42px]  items-center justify-center gap-[35px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
                     >
                         내 업적
                         <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
                     </button>
                     <button
                         onClick={onMyRecord}
-                        className="flex flex-1 items-center justify-center gap-[9px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white"
+                        className="flex flex-1 h-[42px]  items-center justify-center gap-[34px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
                     >
                         내 기록
                         <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
@@ -131,8 +131,10 @@ export default function Home() {
 
                 {/* 오늘의 관광지 추천 — SpotCard 컴포넌트 재사용 */}
                 <section>
-                    <h3 className="mb-3 text-base font-bold">오늘의 관광지 추천</h3>
-                    <div className="flex gap-3 overflow-x-auto pb-2">
+                    <h3 className="mb-2 text-white text-base font-bold [text-shadow:0_0_4px_rgba(0,0,0,0.50)]">
+                        오늘의 관광지 추천
+                    </h3>
+                    <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {todaySpots.map((spot) => (
                             <SpotCard key={spot.id} spot={spot} />
                         ))}
