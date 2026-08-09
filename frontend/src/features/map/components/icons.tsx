@@ -1,4 +1,5 @@
-// 지도 화면 범용 아이콘 (인라인 SVG, currentColor).
+// 지도 화면 전용 아이콘 (인라인 SVG, currentColor).
+// 뒤로(‹)·메뉴(≡)처럼 다른 화면도 쓰는 것은 @/components/common/icons 에 있다.
 // 브랜디드 아이콘(색 스포이드/이미지추가)은 public/icons/map/*.png 를 <img>로 사용한다.
 import type { SVGProps } from "react";
 
@@ -19,35 +20,6 @@ export function SearchIcon(props: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
       <circle cx={11} cy={11} r={7} stroke="currentColor" strokeWidth={2} />
       <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
-    </svg>
-  );
-}
-
-/** 뒤로(‹). */
-export function ChevronLeftIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
-      <path
-        d="M15 5l-7 7 7 7"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/** 햄버거 메뉴(≡). */
-export function MenuIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
-      <path
-        d="M4 7h16M4 12h16M4 17h16"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
     </svg>
   );
 }
