@@ -4,7 +4,7 @@ import { use, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ChevronLeft, Menu } from "lucide-react";
+import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getSpotDetail } from "@/lib/api/spot";
 import { mapSpotDetailToDetailData } from "@/features/spots/utils/mapSpotDetail";
 
@@ -14,9 +14,20 @@ function useSpotImages(imageUrl: string) {
   return imageUrl ? [imageUrl] : [];
 }
 
+// 네이버 지도 SDK는 타입 패키지를 쓰지 않으므로, 이 화면이 실제로 호출하는 API만 좁게 선언한다.
+// LatLng/Map 은 SDK가 돌려주는 불투명 핸들이라 우리 쪽에서 속성을 읽지 않고 다시 SDK로만 넘긴다.
+type NaverLatLng = object;
+type NaverMap = object;
+
+interface NaverMapsApi {
+  LatLng: new (lat: number, lng: number) => NaverLatLng;
+  Map: new (element: HTMLElement, options: { center: NaverLatLng; zoom: number }) => NaverMap;
+  Marker: new (options: { position: NaverLatLng; map: NaverMap }) => unknown;
+}
+
 declare global {
   interface Window {
-    naver?: any;
+    naver?: { maps: NaverMapsApi };
   }
 }
 
@@ -89,10 +100,10 @@ function SpotDetailContent({
       {/* 상단 헤더 */}
       <header className="flex items-center justify-between px-4 py-3">
         <button aria-label="뒤로가기" onClick={onBack}>
-          <ChevronLeft size={24} />
+          <ChevronLeftIcon className="size-6" />
         </button>
         <button aria-label="메뉴">
-          <Menu size={24} />
+          <MenuIcon className="size-6" />
         </button>
       </header>
 

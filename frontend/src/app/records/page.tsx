@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Menu } from "lucide-react";
+import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { ApiError } from "@/lib/api/types";
 import { masterSigunguList } from "@/data/master-sigungu";
 import { getSigunguTravelPostStatus } from "@/lib/api/travelPost";
@@ -61,10 +61,10 @@ export default function RecordsPage() {
     <div className="px-2 py-4">
       <header className="flex items-center justify-between mb-6">
         <button aria-label="뒤로가기">
-          <ChevronLeft size={24} />
+          <ChevronLeftIcon className="size-6" />
         </button>
         <button aria-label="메뉴">
-          <Menu size={24} />
+          <MenuIcon className="size-6" />
         </button>
       </header>
 
