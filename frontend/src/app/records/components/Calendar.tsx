@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/common/icons";
 
 interface CalendarProps {
   selectedDate: Date | null;
@@ -96,14 +96,14 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
             onClick={goToPrevMonth}
             className="p-1 rounded hover:bg-gray-100"
           >
-            <ChevronLeft size={16} color="#CACACA" />
+            <ChevronLeftIcon className="size-4 text-[#CACACA]" />
           </button>
           <button
             aria-label="다음 달"
             onClick={goToNextMonth}
             className="p-1 rounded hover:bg-gray-100"
           >
-            <ChevronRight size={16} color="#CACACA" />
+            <ChevronRightIcon className="size-4 text-[#CACACA]" />
           </button>
         </div>
       </div>

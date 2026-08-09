@@ -4,7 +4,7 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ChevronLeft, Menu } from "lucide-react";
+import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getEupmyeondongTravelPosts } from "@/lib/api/travelPost";
 import { masterSigunguList } from "@/data/master-sigungu";
 import Calendar from "../components/Calendar";
@@ -51,7 +51,7 @@ export default function SigunguRecordsPage({
       {/* 상단 헤더 */}
       <header className="flex items-center justify-between mb-4">
         <button aria-label="뒤로가기" onClick={() => router.back()}>
-          <ChevronLeft size={24} />
+          <ChevronLeftIcon className="size-6" />
         </button>
 
         <div className="flex items-center gap-1.5 mb-4">
@@ -76,7 +76,7 @@ export default function SigunguRecordsPage({
         </div>
 
         <button aria-label="메뉴">
-          <Menu size={24} />
+          <MenuIcon className="size-6" />
         </button>
       </header>
 
