@@ -12,7 +12,7 @@ interface MenuItem {
 export function MyPage() {
     const router = useRouter();
 
-    const goBack = () => router.back();
+    const goBack = () => router.push('/home');
     const onEditInfo = () => console.log('정보 수정 클릭');
     const onFaq = () => console.log('FAQ 클릭');
     const onSettings = () => console.log('환경 설정 클릭');
