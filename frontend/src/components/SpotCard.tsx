@@ -32,8 +32,8 @@ export default function SpotCard({ spot }: { spot: SpotCardData }) {
       <div
         className="absolute left-0"
         style={{
-          width: 106.77,
-          height: 57.0,
+          width: 124,
+          height: 57,
           top: 92.03,
           background: "#6CA59C",
           borderBottomRightRadius: 8.27,
@@ -44,13 +44,12 @@ export default function SpotCard({ spot }: { spot: SpotCardData }) {
         <p
           className="absolute text-white"
           style={{
-            width: 77,
-            height: 12,
+            width: 124,
             top: 7.58,
             left: 6.89,
             fontFamily: "Pretendard",
             fontWeight: 700,
-            fontSize: 10.33,
+            fontSize: 12,
             lineHeight: "100%",
           }}
         >
@@ -61,14 +60,13 @@ export default function SpotCard({ spot }: { spot: SpotCardData }) {
         <p
           className="absolute text-white"
           style={{
-            width: 83,
-            height: 21,
-            top: 26.86,
+            width: 101,
+            top: 24.86,
             left: 6.89,
             fontFamily: "Pretendard",
             fontWeight: 400,
-            fontSize: 8.27,
-            lineHeight: "10.33px",
+            fontSize: 10,
+            lineHeight: "12px",
           }}
         >
           {spot.overview}
