@@ -13,6 +13,7 @@ export default function Home() {
     const visitedCount = 6;
     const totalCount = 18;
     const percent = Math.round((visitedCount / totalCount) * 100);
+    const onOpenMenu = () => router.push("/mypage");
 
     //오늘의 관광지 추천 데이터도 실제로는 API 응답
     // mapTodaySpot으로 변환해서 (SpotCardData 타입)
@@ -31,14 +32,14 @@ export default function Home() {
         },
         {
             id: "3",
-            title: "정선 스카이워크",
+            title: "정선 병방치 스카이워크",
             overview: "동강 사이에 한반도 모양을 감상할 수 있다.",
             imageUrl: "/assets/spot-byeongbangchi.png",
         },
         {
             id: "4",
             title: "영금정 전망대",
-            overview: "해상 정자에서 펼쳐진 바다를 바라볼 수 있는 일출 명소",
+            overview: "해상 정자에서 바다를 바라볼 수 있는 일출 명소",
             imageUrl: "/assets/spot-arirang.png",
         },
     ];
@@ -65,7 +66,7 @@ export default function Home() {
             <div className="relative flex flex-col gap-[14px] px-4 py-11">
                 {/* 상단 메뉴 아이콘 */}
                 <div className="flex justify-end">
-                    <button aria-label="메뉴 열기">
+                    <button aria-label="메뉴 열기" onClick={onOpenMenu}>
                         <Image src="/assets/Menu.png" alt="" width={28} height={28} />
                     </button>
                 </div>
@@ -134,7 +135,7 @@ export default function Home() {
                     <h3 className="mb-2 text-white text-base font-bold [text-shadow:0_0_4px_rgba(0,0,0,0.50)]">
                         오늘의 관광지 추천
                     </h3>
-                    <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <div className="flex gap-[11px] overflow-x-auto -mx-4 px-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {todaySpots.map((spot) => (
                             <SpotCard key={spot.id} spot={spot} />
                         ))}
