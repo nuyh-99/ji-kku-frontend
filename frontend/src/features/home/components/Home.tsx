@@ -44,10 +44,10 @@ export default function Home() {
         },
     ];
 
-    const onDecorateMap = () => router.push("/mypage/map");
-    const onEventArea = () => router.push("/event");
-    const onMyAchievement = () => router.push("/mypage/achievement");
-    const onMyRecord = () => router.push("/mypage/record");
+    const onOpenMap = () => router.push("/map");
+    const onEventArea = () => router.push("/event-regions");
+    const onMyAchievement = () => router.push("/achievements");
+    const onMyRecord = () => router.push("/records");
 
     return (
         <div className="relative w-full min-h-screen overflow-hidden font-pretendard">
@@ -96,7 +96,7 @@ export default function Home() {
                         </div>
 
                         <button
-                            onClick={onDecorateMap}
+                            onClick={onOpenMap}
                             className="flex w-[142px] h-[37.209px] items-center gap-2 rounded-full bg-[#6CA59C] pl-[13.67px] py-[6.38px] text-[12.15px] font-medium text-white"
                         >
                             내 지도 꾸미러 가기
