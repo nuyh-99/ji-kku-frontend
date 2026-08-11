@@ -27,7 +27,90 @@ export interface RegionShape {
  * - photo: 폴리곤 안에 사진을 clipPath로 클립해 채움
  */
 export type RegionFill =
-  | { type: "empty" }
-  | { type: "event" } // 이벤트 지역: 흰 배경 + 초록 테두리 + glow (GangwonMapSvg에서 렌더링 결정)
-  | { type: "color"; value: string }
-  | { type: "photo"; src: string };
+  { type: "empty" } | { type: "color"; value: string } | { type: "photo"; src: string };
+
+/**
+ * 지도 위에 놓인 스티커 한 개.
+ *
+ * 색·사진과 달리 스티커는 **지역 단위가 아니라 좌표 단위**다(디자인 715:3849 — 스티커가
+ * 폴리곤 경계를 넘어 걸쳐 있다). 좌표/크기는 지도 SVG viewBox 단위라서 확대·이동해도
+ * 지역과 같은 자리에 붙어 움직인다.
+ */
+export interface PlacedSticker {
+  /** 배치 인스턴스 id. 같은 스티커를 여러 번 놓을 수 있어 카탈로그 id와 분리한다. */
+  id: string;
+  /** 스티커 카탈로그 id. */
+  stickerId: string;
+  /** 이미지 경로. */
+  src: string;
+  /** 표시명(a11y 라벨). */
+  name: string;
+  /** 중심 X (viewBox 단위). */
+  x: number;
+  /** 중심 Y (viewBox 단위). */
+  y: number;
+  /** 한 변 길이 (viewBox 단위). 정사각형으로 다룬다. */
+  size: number;
+}
+
+/**
+ * 지도 위에 놓인 사진 카드 한 장 (디자인 566:2034 "등록 완료").
+ *
+ * 기록을 "지도에 표시하기"로 등록하면 생기는 폴라로이드 카드다. 스티커와 같은 좌표계·
+ * 조작(이동/크기조절/삭제)을 쓰지만 정사각형이 아니라 **세로로 긴 카드**라서 따로 둔다.
+ * 디자인 실측 90.67×106 → 높이는 폭에서 유도한다(CARD_ASPECT).
+ */
+export interface PlacedPhotoCard {
+  /** 배치 인스턴스 id. */
+  id: string;
+  /** 원본 기록 id. 서버 연동 시 상세로 이동하는 데 쓴다. */
+  recordId: string;
+  /** 카드에 넣을 사진. */
+  src: string;
+  /** 사진 아래 캡션(기록 제목). */
+  title: string;
+  /** 중심 X (viewBox 단위). */
+  x: number;
+  /** 중심 Y (viewBox 단위). */
+  y: number;
+  /** 카드 폭 (viewBox 단위). 높이는 폭 × CARD_ASPECT. */
+  width: number;
+}
+
+/** 사진 카드 높이 ÷ 폭. 디자인 106 / 90.67. */
+export const PHOTO_CARD_ASPECT = 106 / 90.67;
+
+/**
+ * 사진 카드 내부 비율(모두 **카드 폭** 기준). 디자인 실측값을 폭으로 나눈 값이라
+ * 카드를 키우거나 줄여도 여백·글자 크기가 같은 비율로 따라간다.
+ */
+export const PHOTO_CARD_RATIO = {
+  /** 사진 바깥 여백 5.75 / 90.67 */
+  padding: 5.75 / 90.67,
+  /** 사진 폭 78.7 / 90.67 */
+  imageWidth: 78.7 / 90.67,
+  /** 사진 높이 77.74 / 90.67 */
+  imageHeight: 77.74 / 90.67,
+  /** 캡션 글자 크기 8.94 / 90.67 */
+  captionSize: 8.94 / 90.67,
+  /** 캡션 baseline 위치 (카드 위에서) 88.76 / 90.67 */
+  captionTop: 88.76 / 90.67,
+} as const;
+
+/**
+ * 지역별 포스트 목록의 카드 한 장 (디자인 566:2096).
+ * `data/mock-region-posts.ts` 가 함께 쓰는 타입이라 여기(types/)에 둔다.
+ */
+export interface RegionPost {
+  id: string;
+  /** 소속 읍·면·동 코드. */
+  eupmyeondongCd: string;
+  /** 카드에 표시할 읍·면·동 이름. */
+  eupmyeondongName: string;
+  /** 대표 사진 URL. */
+  imageUrl: string;
+  /** 본문 미리보기(카드에서 2줄로 잘림). */
+  content: string;
+  /** 표시용 날짜 문자열(디자인: "26.07.02"). */
+  displayDate: string;
+}

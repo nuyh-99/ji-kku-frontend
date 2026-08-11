@@ -4,12 +4,12 @@
 // 파일 선택 → 미리보기 → 업로드 시 선택 지역을 사진으로 채운다(폴리곤 clip).
 // ⚠️ 지금은 로컬 dataURL로만 채운다. 서버 업로드(mapApi)는 백엔드 확정 후 연결.
 import { useRef, useState } from "react";
-import { useSelectSigungu, useSelectedSigungu } from "../hooks/useMapStore";
+import { useSelectRegion, useSelectedRegion } from "../hooks/useMapStore";
 import { useDecorateFills, useSetFill } from "../hooks/useDecorateStore";
 
 export default function PhotoUploadSheet() {
-  const selected = useSelectedSigungu();
-  const selectSigungu = useSelectSigungu();
+  const selected = useSelectedRegion();
+  const selectRegion = useSelectRegion();
   const setFill = useSetFill();
   const fills = useDecorateFills();
 
@@ -28,16 +28,19 @@ export default function PhotoUploadSheet() {
     reader.readAsDataURL(file);
   };
 
+  // 채우고 나면 시트를 내린다 — 지역 선택만 풀면 안내("꾸밀 지역을 선택하세요")로 돌아가고,
+  // 도구는 그대로라 다른 지역을 이어서 채울 수 있다.
   const handleUpload = () => {
     if (!selected || !shown) return;
     setFill(selected, { type: "photo", src: shown });
+    selectRegion(null); // 시트가 언마운트되므로 preview 는 다음 열 때 알아서 초기화된다.
   };
 
   return (
     <div className="absolute inset-x-0 bottom-0 z-30 flex flex-col rounded-t-[14px] bg-white pb-6 shadow-[0px_-4px_10px_0px_rgba(0,0,0,0.25)]">
       <button
         type="button"
-        onClick={() => selectSigungu(null)}
+        onClick={() => selectRegion(null)}
         aria-label="닫기"
         className="flex w-full items-center justify-center py-3"
       >

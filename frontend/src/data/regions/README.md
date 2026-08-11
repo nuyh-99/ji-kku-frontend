@@ -1,24 +1,57 @@
-# 강원도 시·군 경계 데이터
+# 강원 지도 경계 데이터
 
-이 폴더는 지도(map) 도메인이 사용할 **강원 시·군 경계 데이터**가 들어가는 자리입니다.
+지도(map) 도메인이 사용하는 **강원특별자치도 경계 데이터**가 들어가는 자리입니다.
 
-## 상태: 형식 확정 — 사전계산 SVG path
+## 형식: 사전계산 SVG path
 
-경계 포맷은 **사전계산된 SVG path 문자열**로 확정했습니다.
+경계는 **미리 계산해둔 SVG path 문자열**로 저장합니다.
 
-- 렌더러(`@/components/map/GangwonMapSvg`)가 소비하는 `@/types/map` 의 `RegionShape { code; name; d }` 형태로 저장합니다.
-- 좌표 변환/투영 파이프라인이 런타임에 필요 없어 렌더가 단순합니다.
-- (검토했던 GeoJSON / TopoJSON 은 표준·경량이지만 SVG path 변환 단계가 추가로 필요해 이번 범위에서는 제외.)
+- 렌더러(`@/components/map/GangwonMapSvg`)가 소비하는 `@/types/map` 의
+  `RegionShape { code; name; d; labelX?; labelY? }` 형태입니다.
+- 좌표 변환/투영이 런타임에 필요 없어 렌더가 단순합니다.
 
-## 현재 데이터
+## 파일
 
-- `gangwon.ts` — 강원 18개 시·군의 `RegionShape[]`(`GANGWON_REGIONS`) + `GANGWON_VIEW_BOX`.
-  - `code`(행정표준코드)·`name` 은 실제 값.
-  - `d` 는 아직 **배치 확인용 placeholder(격자 사각형)**. 지도/선택/z-order 개발·데모용.
+| 경로                    | 내용                                            | 출처                     |
+| ----------------------- | ----------------------------------------------- | ------------------------ |
+| `gangwon.ts`            | 1단계 — 18개 시·군 (`GANGWON_REGIONS`)          | Figma 디자인에서 추출    |
+| `eupmyeondong/*.ts`     | 2단계 — 시·군별 읍·면·동 (18개 파일, 188개 동)  | **생성 파일**(아래 참고) |
+| `eupmyeondong/index.ts` | 시군구코드 → 지도 색인 + `getEupmyeondongMap()` | **생성 파일**            |
+
+- 1단계 `code` = 행정표준코드 시군구 5자리, 2단계 `code` = 행정동코드 10자리(`adm_cd2`).
+- 2단계 viewBox 는 **폭이 682 로 모두 같고 높이만 지역 비율을 따릅니다**. 렌더러가 `w-full`
+  로 폭에 맞춰 그리므로, 폭을 맞춰두면 지도끼리 좌표 스케일과 라벨 크기를 비교할 수 있고
+  가로로 긴 홍천·세로로 긴 인제가 여백 속에 작게 그려지지 않습니다
+  (세로 상한은 폭의 1.3배 — 넘으면 화면 밖으로 나갑니다).
+- 라벨 위치는 폴리곤 내접원 중심이고, 글자가 안 들어가는 작은 동은 라벨을 생략합니다
+  (렌더러가 `labelX` 없으면 건너뜁니다).
+
+## 읍·면·동 데이터 다시 만들기
+
+```bash
+npm run gen:eupmyeondong           # 원본이 없으면 .cache/ 로 자동 다운로드(33MB)
+npm run gen:eupmyeondong -- --input <geojson> --tolerance 0.8
+```
+
+- 스크립트: `scripts/generate-eupmyeondong.mjs` (의존성 없음)
+- 파이프라인: 강원 필터 → 시군구별 그룹 → 메르카토르 투영 → 캔버스 fit →
+  Douglas-Peucker 단순화 → 작은 섬 제거 → SVG path → 라벨 위치
+- `--tolerance` 를 올리면 파일이 작아지는 대신 외곽선이 각져집니다. 기본값 0.8 은
+  폰 화면에서 0.5px 수준이라 눈에 띄지 않습니다.
+- **생성된 파일은 직접 고치지 마세요.** 스크립트를 고치고 다시 돌립니다.
+
+### 출처 표시 (필수)
+
+원본은 통계청 SGIS 행정동 경계(공공누리 제1유형)이며, 가공본은 CC BY 4.0 입니다.
+생성 파일 상단 주석에 출처가 들어가 있으니 지우지 마세요.
+
+> 본 데이터는 통계청 통계지리정보서비스(SGIS, https://sgis.kostat.go.kr)에서 공공누리
+> 제1유형으로 개방한 행정동 경계를 가공한 것이며(가공: vuski/admdongkor,
+> https://github.com/vuski/admdongkor), CC BY 4.0으로 배포됩니다.
 
 ## 남은 일
 
-- [x] 포맷/좌표계 확정 → **SVG path (SVG 좌표계)**
-- [x] 지역 식별자 키를 `SigunguCode`(`src/features/map/types.ts`)와 정합 → `code` 5자리 코드 사용
-- [ ] `gangwon.ts` 의 placeholder `d` 를 **실제 시·군 경계 path** 로 교체(원본 GeoJSON → 투영/단순화 → path 스크립트)
-- [ ] 필요 시 `src/features/map/types.ts` 의 `RegionGeometry` placeholder 정리(렌더 형식은 `RegionShape` 로 대체됨)
+- [ ] 백엔드 계약 확정 시 `features/map/api/mapApi.ts` 의 읍·면·동 코드 체계가
+      `adm_cd2`(행정동코드 10자리)와 맞는지 확인
+- [ ] 행정동 개편이 생기면 `--input` 에 최신 버전을 물려 재생성
+      (스크립트가 시군구 18개와 대조해 어긋나면 실패시킵니다)
