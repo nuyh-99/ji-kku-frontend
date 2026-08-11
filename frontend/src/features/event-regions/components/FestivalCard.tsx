@@ -1,24 +1,20 @@
+import Link from "next/link";
 import Image from "next/image";
 import type { FestivalCardData } from "../utils/mapFestival";
 
 export default function FestivalCard({ festival }: { festival: FestivalCardData }) {
   return (
-    <div className="relative shrink-0" style={{ width: 146.75, height: 149.03 }}>
+    <Link
+      href={`/event-regions/${festival.id}`}
+      className="relative block shrink-0"
+      style={{ width: 146.75, height: 149.03 }}
+    >
       {/* 이미지 프레임 */}
       <div
         className="absolute top-0 left-0 overflow-hidden bg-white"
-        style={{
-          width: 146.75,
-          height: 140.55,
-          borderRadius: 6.2,
-        }}
+        style={{ width: 146.75, height: 140.55, borderRadius: 6.2 }}
       >
-        <Image
-          src={festival.imageUrl}
-          alt={festival.title}
-          fill
-          className="object-cover"
-        />
+        <Image src={festival.imageUrl} alt={festival.title} fill className="object-cover" />
       </div>
 
       {/* 텍스트 박스 (이미지 하단과 겹침) */}
@@ -33,7 +29,6 @@ export default function FestivalCard({ festival }: { festival: FestivalCardData 
           boxShadow: "0.69px 2.76px 2.76px 0px #00000040",
         }}
       >
-        {/* 축제 이름 */}
         <p
           className="absolute text-white truncate"
           style={{
@@ -49,7 +44,6 @@ export default function FestivalCard({ festival }: { festival: FestivalCardData 
           {festival.title}
         </p>
 
-        {/* 간단 설명 */}
         <p
           className="absolute text-white"
           style={{
@@ -70,6 +64,6 @@ export default function FestivalCard({ festival }: { festival: FestivalCardData 
           {festival.overview}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
