@@ -1,11 +1,15 @@
 export interface MissionSpotItem {
-  missionSpotId: number;
-  isCompleted: boolean;
+  missionSpotId?: number;
+  isCompleted?: boolean;
   contentId: number;
   title: string;
-  firstImage: string | null;
-  mapX: number; // 경도
-  mapY: number; // 위도
+  firstImage?: string | null; // 💡 string | null | undefined 모두 허용
+  overview?: string;
+  addr1?: string;
+  sigunguCd?: number;
+  sigunguNm?: string;
+  mapX: string | number;
+  mapY: string | number;
 }
 
 export interface MissionSpotsResult {
@@ -43,10 +47,25 @@ export interface CountyMapConfig {
   regions: RegionAreaLayout[];
 }
 
+// @/types/mission.ts
+
+// 1. 방문 인증 요청 시 보낼 Body 타입
 export interface VerifyMissionVisitBody {
-  // TODO: 명세 확정 필요
+  latitude?: number;
+  longitude?: number;
+  [key: string]: unknown;
 }
 
+// 2. 인증 성공 시 백엔드가 주는 result 데이터 타입
+export interface VerifyMissionVisitData {
+  missionSpotId: number;
+  isCompleted: boolean;
+}
+
+// 3. 백엔드 전체 API 응답 구조 타입
 export interface VerifyMissionVisitResult {
-  // TODO: 명세 확정 필요
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: VerifyMissionVisitData;
 }
