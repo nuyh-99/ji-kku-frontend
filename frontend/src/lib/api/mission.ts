@@ -80,6 +80,25 @@ export async function getMissionSpots(sigunguCd: number) {
 }
 
 export function verifyMissionVisit(missionSpotId: number, body: VerifyMissionVisitBody) {
+  if (USE_MOCK) {
+    // mock 데이터에서 해당 missionSpotId를 찾아 isCompleted를 true로 변경
+    for (const group of Object.values(MOCK_MISSIONS_BY_SIGUNGU)) {
+      const target = group.content.find((s) => s.missionSpotId === missionSpotId);
+      if (target) {
+        target.isCompleted = true;
+        group.completedCount = group.content.filter((s) => s.isCompleted).length;
+        break;
+      }
+    }
+
+    return Promise.resolve<VerifyMissionVisitResult>({
+      isSuccess: true,
+      code: "OK",
+      message: "요청이 성공했습니다.",
+      result: { missionSpotId, isCompleted: true },
+    });
+  }
+
   return apiFetch<VerifyMissionVisitResult>(`/missions/verify/${missionSpotId}`, {
     method: "POST",
     body,
