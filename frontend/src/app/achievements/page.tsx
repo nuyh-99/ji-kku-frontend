@@ -1,18 +1,130 @@
-// B 강수연 · 업적
-import PagePlaceholder from "@/components/common/PagePlaceholder";
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, Menu } from "lucide-react";
+
+import { getBadges } from "@/lib/api/mission";
+import { regionBadges } from "@/data/region-badges";
+import type { BadgeItem } from "@/types/mission";
 
 export default function AchievementsPage() {
+  const router = useRouter();
+
+  const [unlockedNos, setUnlockedNos] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    async function fetchBadges() {
+      try {
+        const response = await getBadges();
+
+        // getBadges()는 GetBadgesResult를 반환하므로
+        // response.content에 배지 목록이 들어있음
+        const badgeList: BadgeItem[] = response.content;
+
+        const regionBadgeNos = badgeList
+          .filter((badge) => badge.badgeType === "REGION")
+          .map((badge) => badge.badgeNo);
+
+        setUnlockedNos(new Set(regionBadgeNos));
+      } catch (error) {
+        console.error("배지 목록을 불러오지 못했습니다.", error);
+      }
+    }
+
+    fetchBadges();
+  }, []);
+
   return (
-    <PagePlaceholder
-      title="업적"
-      owner="B 강수연 · 관광지/기록/업적"
-      description="방문·기록 활동으로 달성하는 업적(배지)과 진행도를 보여주는 화면입니다."
-      todos={[
-        "달성 / 미달성 업적 목록",
-        "진행도 표시",
-        "달성 조건 안내",
-        "mock: src/data/mock-achievements.ts 참고",
-      ]}
-    />
+    <div className="relative min-h-screen bg-white px-[17px] pt-10 pb-4">
+      {/* 헤더 */}
+      <header className="flex items-center justify-between mb-4">
+        <button
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          type="button"
+        >
+          <ChevronLeft size={24} />
+        </button>
+
+        <button aria-label="메뉴" type="button">
+          <Menu size={24} />
+        </button>
+      </header>
+
+      {/* 축하 배너 */}
+      <div className="relative w-full h-[81px] rounded-[9px] bg-[#C3DAD7] overflow-hidden">
+        <p className="absolute top-[21px] left-[26px] text-[16px] font-normal leading-none text-[#5F5F5F]">
+          축하해요
+        </p>
+
+        <p className="absolute top-[41px] left-[26px] text-[16px] font-normal leading-none text-[#0B221E]">
+          새로운 배지가 생겼어요
+        </p>
+
+        <Image
+          src="/event-region/confetti.png"
+          alt=""
+          width={70}
+          height={70}
+          className="absolute top-[6px] left-[288px] -rotate-90"
+        />
+      </div>
+
+      {/* 내 배지 타이틀 */}
+      <div className="flex items-center gap-[6px] mt-[34px] mb-4">
+        <h2 className="text-[16px] font-bold leading-none text-[#0B221E]">
+          내 배지
+        </h2>
+
+        <Image
+          src="/questionmark.png"
+          alt="배지 안내"
+          width={15}
+          height={15}
+        />
+      </div>
+
+      {/* 배지 그리드 */}
+      <div className="grid grid-cols-3 gap-4">
+        {regionBadges.map((badge) => {
+          const isUnlocked = unlockedNos.has(badge.badgeNo);
+
+          return (
+            <div
+              key={badge.id}
+              className="flex flex-col items-center"
+            >
+              <div className="relative h-[80px] w-[80px]">
+                <Image
+                  src={`/badge/${badge.id}.png`}
+                  alt={badge.name}
+                  fill
+                  className={`object-contain ${
+                    !isUnlocked ? "grayscale blur-[8px]" : ""
+                  }`}
+                />
+
+                {!isUnlocked && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Image
+                      src="/yetquestionmark.png"
+                      alt="미획득 배지"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <span className="mt-2 text-[15px] font-normal leading-none text-black">
+                {badge.name}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
