@@ -5,7 +5,7 @@ import type { FestivalCardData } from "../utils/mapFestival";
 export default function FestivalCard({ festival }: { festival: FestivalCardData }) {
   return (
     <Link
-      href={`/event-regions/${festival.id}`}
+      href={`/event-regions/festival/${festival.id}`}
       className="relative block shrink-0"
       style={{ width: 146.75, height: 149.03 }}
     >
