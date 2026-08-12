@@ -28,7 +28,7 @@ export default function Home() {
             id: "2",
             title: "춘천 청평사 구성폭포",
             overview: "청평사로 올라가는 길목에 구성폭포가 위치해 있다.",
-            imageUrl: "/assets/spot-guseong.png",
+            imageUrl: "/assets/Noimage.png",
         },
         {
             id: "3",
