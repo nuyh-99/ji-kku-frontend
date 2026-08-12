@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
-import { getMissionSpots } from "@/lib/api/mission";
+import { getMissionSpots, type MissionSpotItem } from "@/lib/api/mission";
 import GangwonMapSvg from "@/components/map/GangwonMapSvg";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
-import type { MissionSpotItem } from "@/types/mission";
 
 // ==========================================
 // 🎛️ 지도 및 핀 보정 상수 설정
@@ -21,49 +20,44 @@ const ZOOM = 1.4; // 지도가 상하로 짤리지 않도록 적절한 배율 �
 
 const PAN_PADDING_X = 50; // 좌우 드래그 가능 여백
 
-// 📍 지도가 상단 여백(mb-30) 및 ZOOM(1.4) 영향으로 아래로 내려간 현상을 반영한 핀 오프셋
-const PIN_OFFSET_X = -260; // 핀 너비(40px)의 절반 및 지도 레이아웃 중심 보정
-const PIN_OFFSET_Y = -410; // 핀 높이(40px) 및 상단 여백 밀림 수직 보정
+// 📍 핀 보정 오프셋
+const PIN_OFFSET_X = -250; // 핀 너비(40px)의 절반만큼 좌로 이동하여 중앙 맞춤
+const PIN_OFFSET_Y = -410; // 핀 높이(40px)만큼 위로 올려서 뾰족한 끝이 지점에 닿게 함
 
 /**
- * 🛠️ 사용자 화면 레이아웃(지도 위치 밀림)을 고려한 핀 좌표 계산 함수
+ * 🛠️ 백엔드 연동용: mapX(경도), mapY(위도) -> SVG viewBox 좌표 변환 함수
  */
 function calculatePinCoordinates(spot: MissionSpotItem, viewBox?: string) {
   let x = 0;
   let y = 0;
 
-  // 백엔드 응답 데이터(mapX, mapY) 수치화
-  const lng = Number(spot.mapX); // 경도 (128.xxxx)
-  const lat = Number(spot.mapY); // 위도 (37.xxxx ~ 38.xxxx)
+  // 💡 string이든 number든 안전하게 숫자로 수치화
+  const lng = Number(spot.mapX);
+  const lat = Number(spot.mapY);
 
   if (!isNaN(lng) && !isNaN(lat) && lng > 0 && lat > 0 && viewBox) {
     const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(" ").map(Number);
 
-    // 강원도 및 시군구 영역 기준 Bounding Box
-    const MIN_LNG = 127.0; // 강원 서쪽 끝
-    const MAX_LNG = 129.6; // 강원 동쪽 끝
-    const MIN_LAT = 37.0;  // 강원 남쪽 끝
-    const MAX_LAT = 38.6;  // 강원 북쪽 끝
+    const MIN_LNG = 127.0;
+    const MAX_LNG = 129.6;
+    const MIN_LAT = 37.0;
+    const MAX_LAT = 38.6;
 
-    // 1. 위경도 -> SVG viewBox 내 기본 비율 좌표 계산 (0 ~ 1)
     const ratioX = (lng - MIN_LNG) / (MAX_LNG - MIN_LNG);
     const ratioY = (MAX_LAT - lat) / (MAX_LAT - MIN_LAT);
 
-    // 2. SVG 내 1차 좌표 계산
-    const rawX = vbX + ratioX * vbWidth;
-    const rawY = vbY + ratioY * vbHeight;
-
-    // 3. 지도가 내려간 보정값(PIN_OFFSET) 적용
-    x = rawX + PIN_OFFSET_X;
-    y = rawY + PIN_OFFSET_Y;
+    x = vbX + ratioX * vbWidth;
+    y = vbY + ratioY * vbHeight;
   } else {
-    // 예외 처리 (좌표가 누락된 경우)
     const item = spot as any;
-    x = Number(item.x ?? 0) + PIN_OFFSET_X;
-    y = Number(item.y ?? 0) + PIN_OFFSET_Y;
+    x = Number(item.x ?? 0);
+    y = Number(item.y ?? 0);
   }
 
-  return { x, y };
+  return {
+    x: x + PIN_OFFSET_X,
+    y: y + PIN_OFFSET_Y,
+  };
 }
 
 export default function EventRegionPage({
@@ -75,32 +69,33 @@ export default function EventRegionPage({
   const router = useRouter();
   const sigunguCdNum = Number(sigunguCd);
 
-  const { data, isLoading, isError } = useQuery({
+  // 📌 1. MissionSpotItem[] (배열) 타입으로 useQuery 타입 명시
+  const { data: spotList = [], isLoading, isError } = useQuery<MissionSpotItem[]>({
     queryKey: ["missionSpots", sigunguCdNum],
     queryFn: () => getMissionSpots(sigunguCdNum),
   });
 
   if (isLoading) return <div className="px-4 py-4 text-white">로딩 중...</div>;
-  if (isError || !data) return <div className="px-4 py-4 text-white">정보를 불러오지 못했습니다.</div>;
+  if (isError || !spotList) return <div className="px-4 py-4 text-white">정보를 불러오지 못했습니다.</div>;
 
-  return <EventRegionContent sigunguCd={sigunguCdNum} missions={data} onBack={() => router.back()} />;
+  // 📌 2. spot 대신 배열인 spots=spotList 로 전달
+  return <EventRegionContent sigunguCd={sigunguCdNum} spots={spotList} onBack={() => router.back()} />;
 }
 
 function EventRegionContent({
   sigunguCd,
-  missions,
+  spots,
   onBack,
 }: {
   sigunguCd: number;
-  missions: { completedCount: number; content: MissionSpotItem[] };
+  spots: MissionSpotItem[]; // 📌 3. 단일 객체 -> 배열 타입으로 변경
   onBack: () => void;
 }) {
-  // missionSpotId 기준으로 클릭 상태 관리
-  const [selectedMissionSpotId, setSelectedMissionSpotId] = useState<number | null>(null);
+  // contentId 기준으로 클릭 상태 관리
+  const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
   const [popupScreenPos, setPopupScreenPos] = useState<{ x: number; y: number } | null>(null);
 
   const map = getEupmyeondongMap(String(sigunguCd));
-  const visitedCount = Math.min(5, missions.completedCount);
 
   // 컨테이너 너비 측정
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,10 +120,8 @@ function EventRegionContent({
   }, [mapWidth]);
 
   const mapMaxOffsetX = (mapWidth * (ZOOM - 1)) / 2 + PAN_PADDING_X;
-
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-  // 좌우 X축 제약만 적용 (Y축 0 고정)
   const getPanClampedOffset = (rawX: number) => {
     return {
       x: clamp(rawX, -mapMaxOffsetX, mapMaxOffsetX + LEFT_ALIGN_OFFSET_X * 2),
@@ -188,20 +181,19 @@ function EventRegionContent({
     }
   };
 
-  // 📍 스팟 마커 클릭 시 스크린 위치 측정 핸들러
-  const handleSpotClick = (spot: MissionSpotItem, e: React.MouseEvent) => {
+  // 📍 스팟 마커 클릭 시 팝업 스크린 좌표 계산 (클릭된 특정 spot의 contentId 저장)
+  const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
-    setSelectedMissionSpotId(spot.missionSpotId);
+    setSelectedContentId(contentId);
     setPopupScreenPos({
       x: Math.min(rect.left - 50, window.innerWidth - 150),
-      y: rect.top - 120 < 20 ? rect.bottom + 50 : rect.top - 150,
+      y: rect.top - 120 < 20 ? rect.bottom + 10 : rect.top - 180,
     });
   };
 
-  const selectedSpot = selectedMissionSpotId
-    ? missions.content.find((s) => s.missionSpotId === selectedMissionSpotId) ?? null
-    : null;
+  // 선택된 spot 객체 찾기
+  const selectedSpot = spots.find((s) => s.contentId === selectedContentId);
 
   return (
     <div className="relative min-h-screen w-full max-w-[393px] mx-auto overflow-hidden pb-8 select-none">
@@ -237,7 +229,7 @@ function EventRegionContent({
           </button>
         </header>
 
-        <EventRegionGauge visitedCount={map ? visitedCount : 0} />
+        <EventRegionGauge visitedCount={spots.filter(s => s.isCompleted).length} />
 
         <p className="text-center text-[13px] text-white/90 mb-30 font-medium">
           이벤트 지역 5곳을 방문하고 지역 배지를 수집해보세요! ⓘ
@@ -283,8 +275,6 @@ function EventRegionContent({
                 [&_path]:[transform-box:fill-box]
                 [&_path]:[transform-origin:center]
                 [&_path]:[transform:scale(0.979)]
-
-                /* 테두리 두께 적용 */
                 [&_path]:stroke-[url(#border-fade-gradient)] 
                 [&_path]:[stroke-width:2px] 
                 [&_path]:[stroke-linejoin:round] 
@@ -301,14 +291,14 @@ function EventRegionContent({
                 ariaLabel="이벤트 지역 지도"
                 className="w-full h-full max-h-full object-contain"
                 overlay={
-                  /* 📍 백엔드 데이터 연동 마커 그룹 */
                   <g className="mission-spot-markers pointer-events-auto">
-                    {missions.content.map((spot) => (
+                    {/* 📌 4. 배열(spots)을 map으로 반복하여 마커 여러 개 그리기 */}
+                    {spots.map((item) => (
                       <MissionSpotMarker
-                        key={spot.missionSpotId}
-                        spot={spot}
+                        key={item.contentId}
+                        spot={item}
                         viewBox={map.viewBox}
-                        onClick={(e) => handleSpotClick(spot, e)}
+                        onClick={(e) => handleSpotClick(e, item.contentId)}
                       />
                     ))}
                   </g>
@@ -323,13 +313,14 @@ function EventRegionContent({
         </div>
       )}
 
-      {/* 4. 팝업 */}
+      {/* 4. 하얀색 팝업 박스 (선택된 spot이 있을 때만 렌더링) */}
       {selectedSpot && popupScreenPos && (
         <EventSpotPopup
+          sigunguCd={sigunguCd}
           spot={selectedSpot}
           screenPos={popupScreenPos}
           onClose={() => {
-            setSelectedMissionSpotId(null);
+            setSelectedContentId(null);
             setPopupScreenPos(null);
           }}
         />
@@ -357,7 +348,6 @@ function MissionSpotMarker({
       className="cursor-pointer transition-transform duration-200 hover:scale-110"
       style={{ pointerEvents: "all" }}
     >
-      {/* 1. 타원 그림자 */}
       <ellipse
         cx="0"
         cy="0"
@@ -365,8 +355,6 @@ function MissionSpotMarker({
         ry={5}
         fill="#9C9C9C85"
       />
-
-      {/* 2. Where Icon - 핀의 뾰족한 밑부분 끝이 (spotX, spotY) 지점에 닿도록 세팅 */}
       <image
         href="/event-region/where.png"
         x="-20"
@@ -418,18 +406,26 @@ function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
 }
 
 function EventSpotPopup({
+  sigunguCd,
   spot,
   screenPos,
   onClose,
 }: {
+  sigunguCd: number;
   spot: MissionSpotItem;
   screenPos: { x: number; y: number };
   onClose: () => void;
 }) {
   const router = useRouter();
 
-  // 백엔드 명세상 overview가 없으므로 디폴트 문구 출력 처리
-  const spotOverview = (spot as any).overview || "상세 페이지에서 확인하세요.";
+  // 💡 1. http:// 로 들어오는 외부분 URL을 https:// 로 강제 변환
+  // 💡 2. 빈 문자열("")이나 null/undefined일 경우 fallback 처리
+  const rawImage = spot.firstImage?.trim();
+  const imageUrl = rawImage
+    ? rawImage.startsWith("http://")
+      ? rawImage.replace("http://", "https://")
+      : rawImage
+    : "/event-region/osaek.png";
 
   return (
     <>
@@ -446,45 +442,60 @@ function EventSpotPopup({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute overflow-hidden rounded-[9px] bg-[#E5E5E5]" style={{ top: 3, left: 3, width: 130, height: 97 }}>
-          <Image 
-            src={spot.firstImage ?? "/event-region/default-spot.png"} 
-            alt={spot.title} 
-            fill 
-            className="object-cover" 
+        <div
+          className="absolute overflow-hidden rounded-[9px] bg-[#E5E5E5]"
+          style={{ top: 3, left: 3, width: 130, height: 97 }}
+        >
+          {/* 💡 Next.js Image 대신 기본 <img> 태그 사용 (next.config 설정 제약 우회) */}
+          <img
+            src={imageUrl}
+            alt={spot.title || "스팟 이미지"}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // 이미지 로드 실패 시(404, 깨진 링크 등) 기본 포복 이미지로 대처
+              e.currentTarget.src = "/event-region/osaek.png";
+            }}
           />
           <button
             type="button"
             aria-label="닫기"
             onClick={onClose}
-            className="absolute flex items-center justify-center rounded-full bg-black/40"
-            style={{ top: -1.75, right: -1.75, width: 12.39, height: 12.39, transform: "rotate(-45deg)" }}
+            className="absolute flex items-center justify-center rounded-full bg-black/40 z-10"
+            style={{ top: 2, right: 2, width: 16, height: 16 }}
           >
-            <svg width={8.26} height={8.26} viewBox="0 0 9 9" fill="none">
-              <path d="M4.5 0V9M0 4.5H9" stroke="#FFFFFF" strokeWidth="1.2" />
+            <svg width={10} height={10} viewBox="0 0 9 9" fill="none">
+              <path d="M1 1L8 8M8 1L1 8" stroke="#FFFFFF" strokeWidth="1.5" />
             </svg>
           </button>
         </div>
 
-        <p className="absolute truncate text-[12px] font-semibold text-black" style={{ top: 108, left: 10, width: 116, height: 14, fontFamily: "Pretendard" }}>
+        <p
+          className="absolute truncate text-[12px] font-semibold text-black"
+          style={{ top: 108, left: 10, width: 116, height: 14, fontFamily: "Pretendard" }}
+        >
           {spot.title}
         </p>
 
-        <p className="absolute truncate text-[8px] text-[#9C9C9C]" style={{ top: 124, left: 10, width: 116, height: 10, fontFamily: "Pretendard" }}>
-          {spotOverview}
+        <p
+          className="absolute truncate text-[8px] text-[#9C9C9C]"
+          style={{ top: 124, left: 10, width: 116, height: 10, fontFamily: "Pretendard" }}
+        >
+          {spot.overview || "상세 페이지에서 확인하세요."}
         </p>
 
-        {/* 💡 자세히보기 클릭시 관광지 식별자인 contentId로 상세 페이지 라우팅 */}
         <button
           type="button"
-          onClick={() => router.push(`/event-region/spot/${spot.contentId}`)}
-          className="absolute flex items-center rounded-[3.8px]"
+          onClick={(e) => {
+            e.stopPropagation();
+            // 📌 sigunguCd와 contentId를 전달하여 이동
+            const currentSigungu = spot.sigunguCd || sigunguCd;
+            router.push(`/event-regions/${sigunguCd}/${spot.contentId}`);
+          }}
+          className="absolute flex items-center justify-center rounded-[3.8px] cursor-pointer z-10"
           style={{ top: 142.54, left: 10, width: 116, height: 20.92, background: "#FCEFEF" }}
         >
-          <span className="absolute text-[8.56px]" style={{ top: 4.75, left: 38.03, width: 40, height: 10, color: "#FF3030", fontFamily: "Pretendard" }}>
-            자세히보기
-          </span>
-          <svg className="absolute" style={{ top: 4.46, left: 104, width: 10.46, height: 10.46 }} viewBox="0 0 11 11" fill="none">
+          <span className="text-[8.56px] text-[#FF3030]">자세히보기</span>
+          <svg className="ml-1" style={{ width: 10.46, height: 10.46 }} viewBox="0 0 11 11" fill="none">
             <path d="M4 2L7.5 5.5L4 9" stroke="#FF3030" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
