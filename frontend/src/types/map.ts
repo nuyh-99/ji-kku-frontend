@@ -111,6 +111,10 @@ export interface RegionPost {
   imageUrl: string;
   /** 본문 미리보기(카드에서 2줄로 잘림). */
   content: string;
-  /** 표시용 날짜 문자열(디자인: "26.07.02"). */
-  displayDate: string;
+  /**
+   * 방문 날짜 (ISO "2026-07-02").
+   * 카드에는 "26.07.02" 로 줄여 찍지만, 달력 필터가 날짜끼리 비교해야 해서
+   * 표시 문자열이 아니라 ISO 로 들고 있는다.
+   */
+  logDate: string;
 }
