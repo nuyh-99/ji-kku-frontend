@@ -54,14 +54,14 @@ export default function SigunguRecordsPage({
           <ChevronLeftIcon className="size-6" />
         </button>
 
-        <div className="flex items-center gap-1.5 mb-4">
+        <div className="mt-[18px] flex items-center gap-2 mb-4">
           <h1
             className="
             font-pretendard
             font-bold
             text-[16px]
             leading-[100%]
-            tracking-[0em]
+            tracking-[em]
             "
             style={{ color: "#6CA59C" }}
             >
@@ -97,7 +97,11 @@ export default function SigunguRecordsPage({
             p-2
           "
         >
-          <Calendar selectedDate={selectedDate} onSelectDate={handleSelectDate} />
+          <Calendar
+  selectedDate={selectedDate}
+  onSelectDate={handleSelectDate}
+  visitedDates={posts.map((post) => post.logDate)}
+/>
         </div>
       )}
 
