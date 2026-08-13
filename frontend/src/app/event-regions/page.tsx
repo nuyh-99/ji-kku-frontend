@@ -233,7 +233,7 @@ export default function EventRegionsPage() {
         <button aria-label="뒤로가기" onClick={() => router.back()}>
           <ChevronLeft size={24} />
         </button>
-        <button aria-label="메뉴">
+        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
           <Menu size={24} />
         </button>
       </header>

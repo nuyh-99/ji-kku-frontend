@@ -61,7 +61,7 @@ function SpotDetailContent({
 }) {
   const queryClient = useQueryClient();
   const images = useSpotImages(spot.firstImage);
-
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -125,7 +125,7 @@ function SpotDetailContent({
         <button aria-label="뒤로가기" onClick={onBack}>
           <ChevronLeftIcon className="size-6" />
         </button>
-        <button aria-label="메뉴">
+        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
           <MenuIcon className="size-6" />
         </button>
       </header>
@@ -320,14 +320,14 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
         <button
           type="button"
           onClick={onConfirm}
-          className="absolute flex items-center justify-center text-white"
+          className="absolute flex items-center justify-center"
           style={{
+            color: "#6CA59C",
             width: 187,
             height: 45,
             top: 194,
             left: 17,
             borderRadius: 9,
-            background: "#6CA59C",
             gap: 10,
             fontFamily: "Pretendard",
             fontWeight: 700,

@@ -182,19 +182,27 @@ function EventRegionContent({
   };
 
   // 📍 스팟 마커 클릭 시 팝업 스크린 좌표 계산 (클릭된 특정 spot의 contentId 저장)
-  const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
-    e.stopPropagation();
-    const rect = e.currentTarget.getBoundingClientRect();
-    setSelectedContentId(contentId);
-    setPopupScreenPos({
-      x: Math.min(rect.left - 50, window.innerWidth - 150),
-      y: rect.top - 120 < 20 ? rect.bottom + 10 : rect.top - 180,
-    });
-  };
+const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
+  e.stopPropagation();
+  const rect = e.currentTarget.getBoundingClientRect();
+  setSelectedContentId(contentId);
 
+  const POPUP_HEIGHT = 171;
+  // 마커(where.png + ellipse) 세로 길이의 절반만큼 팝업이 마커 쪽으로 겹치게 함
+  const overlapOffset = rect.height / 2;
+
+  const showBelow = rect.top + overlapOffset - POPUP_HEIGHT < 20;
+
+  setPopupScreenPos({
+    x: Math.min(rect.left - 50, window.innerWidth - 150),
+    y: showBelow
+      ? rect.bottom - overlapOffset // 아래에 띄우되 마커 위쪽 절반과 겹침
+      : rect.top + overlapOffset - POPUP_HEIGHT, // 위에 띄우되 마커 아래쪽 절반과 겹침
+  });
+};
   // 선택된 spot 객체 찾기
   const selectedSpot = spots.find((s) => s.contentId === selectedContentId);
-
+  const router = useRouter();
   return (
     <div className="relative min-h-screen w-full max-w-[393px] mx-auto overflow-hidden pb-8 select-none">
       {/* 1. 배경 이미지 & 블러 */}
@@ -224,7 +232,7 @@ function EventRegionContent({
           <button aria-label="뒤로가기" onClick={onBack}>
             <ChevronLeftIcon className="size-6" />
           </button>
-          <button aria-label="메뉴">
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
             <MenuIcon className="size-6" />
           </button>
         </header>
@@ -243,7 +251,7 @@ function EventRegionContent({
           className="relative z-10 w-full overflow-hidden select-none flex items-center justify-center"
           style={{
             height: MAP_HEIGHT,
-            touchAction: "pan-x",
+            touchAction: "none",
             cursor: isDragging ? "grabbing" : "grab",
           }}
           onPointerDown={handlePointerDown}
@@ -418,14 +426,17 @@ function EventSpotPopup({
 }) {
   const router = useRouter();
 
-  // 💡 1. http:// 로 들어오는 외부분 URL을 https:// 로 강제 변환
-  // 💡 2. 빈 문자열("")이나 null/undefined일 경우 fallback 처리
-  const rawImage = spot.firstImage?.trim();
-  const imageUrl = rawImage
-    ? rawImage.startsWith("http://")
-      ? rawImage.replace("http://", "https://")
-      : rawImage
-    : "/event-region/osaek.png";
+  // 💡 백엔드에서 string으로 내려주는 firstImage를 검사해서
+  // 없으면(undefined/null/빈 문자열) noimage.jpg를 사용
+  let imageUrl: string;
+
+  if (!spot.firstImage || spot.firstImage.trim() === "") {
+    imageUrl = "/festivals/noimage.jpg";
+  } else if (spot.firstImage.startsWith("http://")) {
+    imageUrl = spot.firstImage.replace("http://", "https://");
+  } else {
+    imageUrl = spot.firstImage;
+  }
 
   return (
     <>
@@ -452,8 +463,8 @@ function EventSpotPopup({
             alt={spot.title || "스팟 이미지"}
             className="w-full h-full object-cover"
             onError={(e) => {
-              // 이미지 로드 실패 시(404, 깨진 링크 등) 기본 포복 이미지로 대처
-              e.currentTarget.src = "/event-region/osaek.png";
+              // 이미지 로드 실패 시(404, 깨진 링크 등) 기본 이미지로 대체
+              e.currentTarget.src = "/festivals/noimage.jpg";
             }}
           />
           <button
@@ -487,7 +498,6 @@ function EventSpotPopup({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            // 📌 sigunguCd와 contentId를 전달하여 이동
             const currentSigungu = spot.sigunguCd || sigunguCd;
             router.push(`/event-regions/${sigunguCd}/${spot.contentId}`);
           }}
