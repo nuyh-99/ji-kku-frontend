@@ -69,3 +69,22 @@ export interface VerifyMissionVisitResult {
   message: string;
   result: VerifyMissionVisitData;
 }
+// 4. 배지 조회 API 응답 타입
+export type BadgeType = "REGION" | "ETC" | "FESTIVAL";
+
+export interface BadgeItem {
+  badgeId: number;
+  badgeType: BadgeType;
+  badgeNo: string;
+}
+
+export interface GetBadgesResult {
+  content: BadgeItem[];
+}
+
+export interface GetBadgesResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: GetBadgesResult;
+}

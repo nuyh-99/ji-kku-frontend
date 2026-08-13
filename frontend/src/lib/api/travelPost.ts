@@ -2,7 +2,7 @@ import { apiFetch } from "./client";
 import type { SigunguTravelPostStatusResult } from "@/types/sigungu";
 import { mockRecordedSigunguResponse } from "@/data/mock-recorded-sigungu";
 import { mockRecords } from "@/data/mock-records";
-
+import type { TravelPostDetailResponse } from "@/types/record";
 
 const USE_MOCK = true;
 
@@ -57,9 +57,10 @@ function buildMockEupmyeondongResponse(
 
 /** 여행기록 세부 조회. TODO: 응답 타입 확정 필요 */
 export function getTravelPostDetail(travelPostId: string) {
-  return apiFetch<unknown>(`/travel-posts/detail/${encodeURIComponent(travelPostId)}`);
+  return apiFetch<TravelPostDetailResponse>(
+    `/travel-posts/detail/${encodeURIComponent(travelPostId)}`
+  );
 }
-
 /** 여행기록 작성. TODO: 요청/응답 타입 확정 필요 */
 export function createTravelPost(body: unknown) {
   return apiFetch<unknown>("/travel-posts/detail", {

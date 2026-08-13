@@ -11,10 +11,10 @@
 //    (백엔드 계약 미확정) 지금은 화면 흐름만 완성해 둔다.
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import DatePickerPopover from "@/components/common/DatePickerPopover";
 import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import { putMapDisplayHandoff } from "@/lib/mapDisplayHandoff";
-import DatePickerPopover from "./DatePickerPopover";
 import MapDisplayDialog from "./MapDisplayDialog";
 
 const BRAND = "#6ca59c";
@@ -64,7 +64,8 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
   const handleSaveOnly = () => {
     setConfirmOpen(false);
     // 목록에만 남긴다 — 기록 목록은 지도의 지역별 목록 화면이 보여준다.
-    router.push(`/map/${sigunguCd}/posts`);
+    // 방금 쓴 기록이 다른 지역 것들 사이에 묻히지 않게 그 읍·면·동 목록으로 보낸다(디자인 583:4425).
+    router.push(`/map/${sigunguCd}/posts?emd=${encodeURIComponent(eupmyeondongCd)}`);
   };
 
   const handleDisplayOnMap = () => {

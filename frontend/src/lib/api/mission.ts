@@ -2,7 +2,9 @@ import { apiFetch } from "./client";
 import type { VerifyMissionVisitBody, VerifyMissionVisitResult } from "@/types/mission";
 import { MOCK_MISSIONS_BY_SIGUNGU } from "@/data/mock-mission";
 import { MOCK_MISSION_DETAIL_BY_CONTENT_ID, MOCK_DETAIL_FALLBACK_BY_SIGUNGU } from "@/data/mock-missionDetail";
-
+import type { GetBadgesResult } from "@/types/mission";
+import { mockBadgesResult } from "@/data/mock-achievements";
+import { GetBadgesResponse } from "@/types/mission";
 // 📌 백엔드 및 클라이언트 공통 미션 스팟 단일 객체 타입 정의
 export interface MissionSpotItem {
   missionSpotId?: number;
@@ -105,6 +107,14 @@ export function verifyMissionVisit(missionSpotId: number, body: VerifyMissionVis
   });
 }
 
-export function getBadges() {
-  return apiFetch<unknown>("/badges");
+export async function getBadges(): Promise<GetBadgesResult> {
+  if (USE_MOCK) {
+    // mockBadgesResult가 { isSuccess, result: { content: [...] } } 라면 mockBadgesResult.result 를 반환
+    // 만약 mockBadgesResult 자체가 { content: [...] } 이라면 그대로 반환
+    const mockData = (mockBadgesResult as any).result || mockBadgesResult;
+    return Promise.resolve(mockData as GetBadgesResult);
+  }
+
+  const response = await apiFetch<GetBadgesResponse>("/badges");
+  return response.result;
 }
