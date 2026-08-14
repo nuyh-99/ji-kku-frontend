@@ -9,7 +9,7 @@ import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { ApiError } from "@/lib/api/types";
 import { masterSigunguList } from "@/data/master-sigungu";
 import { getSigunguTravelPostStatus } from "@/lib/api/travelPost";
-
+import { ChevronLeft, Menu } from "lucide-react";
 /** 재로그인이 필요한 인증 에러 코드 */
 const AUTH_ERROR_CODES = new Set([
   "AUTH401_1", 
@@ -58,17 +58,29 @@ export default function RecordsPage() {
   }, [router]);
 
   return (
-    <div className="px-2 py-4">
-      <header className="flex items-center justify-between mb-6">
-        <button aria-label="뒤로가기">
-          <ChevronLeftIcon className="size-6" />
+    <div className="relative px-[17px] pt-10 pb-4">
+      <header className="flex items-center justify-between mb-4">
+        <button aria-label="뒤로가기" onClick={() => router.back()}>
+          <ChevronLeft size={24} />
         </button>
-        <button aria-label="메뉴">
-          <MenuIcon className="size-6" />
+        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
+          <Menu size={24} />
         </button>
       </header>
 
-      <h1 className="text-base text-[#6CA59C] font-semibold mb-4">내 기록 모아보기</h1>
+       <h1
+        className="font-bold px-[5px] mb-[12px]"
+        style={{
+          fontFamily: "Pretendard",
+          fontWeight: 700,
+          fontSize: 16,
+          lineHeight: "100%",
+          letterSpacing: "0%",
+          color: "#6CA59C",
+        }}
+      >
+        내 기록 모아보기
+      </h1>
 
       {errorMessage ? (
         <p className="text-sm text-red-400 text-center mt-10">{errorMessage}</p>
@@ -84,9 +96,32 @@ export default function RecordsPage() {
             <Link
               key={sigungu.sigunguCd}
               href={`/records/${encodeURIComponent(sigungu.sigunguCd)}`}
-              className="flex items-center justify-center h-[39px] rounded-[14px] bg-[#6CA59C]/70 text-sm text-white pt-[10px] pr-[9px] pb-[10px] pl-[15px]"
+              className="flex items-center justify-between w-[113px] h-[39px] rounded-[14px] bg-[#6CA59C]/70 text-sm text-white pt-[10px] pr-[9px] pb-[10px] pl-[15px]"
             >
+               <span
+    style={{
+      fontFamily: "Pretendard",
+      fontWeight: 400,
+      fontSize: 16,
+      fontStyle: "normal",
+      lineHeight: "100%",
+      letterSpacing: "0%",
+      color: "#FFFFFF",
+      whiteSpace: "nowrap",
+    }}
+  >
+              
               {sigungu.sigunguNm}
+              </span>
+               <svg width={4} height={8} viewBox="0 0 4 8" fill="none">
+    <path
+      d="M1 1L3 4L1 7"
+      stroke="#FFFFFF"
+      strokeWidth="1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
             </Link>
           ))}
         </div>
