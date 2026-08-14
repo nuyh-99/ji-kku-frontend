@@ -3,10 +3,7 @@
 import Image from "next/image";
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ChevronLeftIcon,
-  MenuIcon,
-} from "@/components/common/icons";
+import { ChevronLeft, Menu } from "lucide-react";
 import { MOCK_RECORD_DETAIL } from "@/data/mock-recordDetail";
 
 export default function TravelPostDetailPage({
@@ -25,21 +22,21 @@ export default function TravelPostDetailPage({
       <div className="fixed left-0 top-0 z-30 h-[90px] w-full bg-white">
         {/* 뒤로가기 / 메뉴 */}
         <header className="absolute left-0 top-0 flex w-full items-center justify-between px-2 py-4">
-          <button
-            type="button"
-            aria-label="뒤로가기"
-            onClick={() => router.back()}
-          >
-            <ChevronLeftIcon className="size-6" />
-          </button>
+  <button
+    type="button"
+    aria-label="뒤로가기"
+    onClick={() => router.back()}
+  >
+    <ChevronLeft className="size-6" />
+  </button>
 
-          <button
-            type="button"
-            aria-label="메뉴"
-          >
-            <MenuIcon className="size-6" />
-          </button>
-        </header>
+  <button
+    type="button"
+    aria-label="메뉴"
+  >
+    <Menu className="size-6" />
+  </button>
+</header>
 
         {/* 읍면동 이름 */}
         <div
@@ -75,7 +72,7 @@ export default function TravelPostDetailPage({
       </div>
 
       {/* 기록 내용 */}
-      <main className="px-[22px] pt-[70px]">
+      <main className="pt-[70px]">
         <div className="flex flex-col gap-[15px]">
           {record.contents.map((content, index) => {
             if (content.type === "image" && content.src) {
@@ -101,6 +98,7 @@ export default function TravelPostDetailPage({
                   key={`${content.type}-${index}`}
                   className="
                     w-[349px]
+                    mx-auto
                     whitespace-pre-line
                     text-center
                     text-[14px]
