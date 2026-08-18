@@ -113,18 +113,12 @@ export function Login() {
                         </div>
                     </div>
                 </div>
-                <div className="mt-auto px-[46px] pb-[46px] flex flex-col items-center gap-3">
+                <div className="mt-auto px-[46px] pb-[50px] flex flex-col items-center gap-3">
                     <button
                         onClick={handleKakaoLogin}
                         className="w-[300px] h-[45px] max-w-[calc(100vw-48px)] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
                     >
                         <img src="/assets/kakao_login_medium_wide.png" alt="카카오 로그인" className="w-full h-full block" />
-                    </button>
-                    <button
-                        onClick={handleGuestLogin}
-                        className="w-[300px] h-[45px] max-w-[calc(100vw-48px)] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
-                    >
-                        <img src="/assets/loginguest.png" alt="게스트 로그인" className="w-full h-full block" />
                     </button>
                 </div>
             </div>
