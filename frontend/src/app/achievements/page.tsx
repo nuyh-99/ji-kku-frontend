@@ -48,8 +48,8 @@ export default function AchievementsPage() {
   </button>
 
   <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
-    <Menu size={28} className="shrink-0" />
-  </button>
+  <Image src="/assets/Menu.png" alt="메뉴" width={28} height={28} className="shrink-0" />
+</button>
 </header>
 
       {/* 축하 배너 */}
