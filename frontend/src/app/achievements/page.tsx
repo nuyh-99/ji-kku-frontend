@@ -44,8 +44,8 @@ export default function AchievementsPage() {
   style={{ width: 359, height: 28, gap: 303 }}
 >
   <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-    <ChevronLeft size={28} className="shrink-0" />
-  </button>
+  <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
+</button>
 
   <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
   <Image src="/assets/Menu.png" alt="메뉴" width={28} height={28} className="shrink-0" />
