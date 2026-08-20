@@ -4,7 +4,6 @@ import { use, useMemo, useRef, useState, useLayoutEffect, useEffect } from "reac
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getMissionSpots, type MissionSpotItem } from "@/lib/api/mission";
 import GangwonMapSvg from "@/components/map/GangwonMapSvg";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
@@ -12,7 +11,7 @@ import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 // ==========================================
 // 🎛️ 지도 및 핀 보정 상수 설정
 // ==========================================
-const LEFT_ALIGN_OFFSET_X = 20; 
+const LEFT_ALIGN_OFFSET_X = 20;
 
 const DEFAULT_MAP_WIDTH = 393; // 초기 너비
 const MAP_HEIGHT = 500; // 지도 컨테이너 높이
@@ -134,7 +133,7 @@ function EventRegionContent({
   const draggingRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
   const startOffsetRef = useRef({ x: 0, y: 0 });
-  
+
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -182,24 +181,24 @@ function EventRegionContent({
   };
 
   // 📍 스팟 마커 클릭 시 팝업 스크린 좌표 계산 (클릭된 특정 spot의 contentId 저장)
-const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
-  e.stopPropagation();
-  const rect = e.currentTarget.getBoundingClientRect();
-  setSelectedContentId(contentId);
+  const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setSelectedContentId(contentId);
 
-  const POPUP_HEIGHT = 171;
-  // 마커(where.png + ellipse) 세로 길이의 절반만큼 팝업이 마커 쪽으로 겹치게 함
-  const overlapOffset = rect.height / 2;
+    const POPUP_HEIGHT = 171;
+    // 마커(where.png + ellipse) 세로 길이의 절반만큼 팝업이 마커 쪽으로 겹치게 함
+    const overlapOffset = rect.height / 2;
 
-  const showBelow = rect.top + overlapOffset - POPUP_HEIGHT < 20;
+    const showBelow = rect.top + overlapOffset - POPUP_HEIGHT < 20;
 
-  setPopupScreenPos({
-    x: Math.min(rect.left - 50, window.innerWidth - 150),
-    y: showBelow
-      ? rect.bottom - overlapOffset // 아래에 띄우되 마커 위쪽 절반과 겹침
-      : rect.top + overlapOffset - POPUP_HEIGHT, // 위에 띄우되 마커 아래쪽 절반과 겹침
-  });
-};
+    setPopupScreenPos({
+      x: Math.min(rect.left - 50, window.innerWidth - 150),
+      y: showBelow
+        ? rect.bottom - overlapOffset // 아래에 띄우되 마커 위쪽 절반과 겹침
+        : rect.top + overlapOffset - POPUP_HEIGHT, // 위에 띄우되 마커 아래쪽 절반과 겹침
+    });
+  };
   // 선택된 spot 객체 찾기
   const selectedSpot = spots.find((s) => s.contentId === selectedContentId);
   const router = useRouter();
@@ -227,24 +226,52 @@ const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
       </div>
 
       {/* 2. 상단 헤더 & 게이지 */}
-      <div className="relative z-10">
-        <header className="flex items-center justify-between px-4 py-3 text-[#000000]">
-          <button aria-label="뒤로가기" onClick={onBack}>
-            <ChevronLeftIcon className="size-6" />
+      <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
+        <header className="flex items-center justify-between mb-[5px]">
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+            <Image
+              src="/assets/chevron-left.svg"
+              alt="뒤로가기"
+              width={28}
+              height={28}
+              className="shrink-0"
+            />
           </button>
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
-            <MenuIcon className="size-6" />
+
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+            <div
+              className="shrink-0"
+              style={{
+                width: 28,
+                height: 28,
+                background: "url('/assets/Menu.png') 50% / contain no-repeat",
+              }}
+            />
           </button>
         </header>
 
-        <EventRegionGauge visitedCount={spots.filter(s => s.isCompleted).length} />
+        <EventRegionGauge visitedCount={spots.filter((s) => s.isCompleted).length} />
 
-        <p className="text-center text-[13px] text-white/90 mb-30 font-medium">
-          이벤트 지역 5곳을 방문하고 지역 배지를 수집해보세요! ⓘ
+        <p
+  className="absolute text-[14px] text-white/70"
+  style={{
+    top: 130, // 이 값이 현재 너무 아래에 있다면, 게이지 바(top: 20) 위쪽으로 오도록 더 작은 값(예: -12 등)으로 올려주셔야 합니다!
+    left: 40,
+    color: "#FFF",
+    textAlign: "center",
+    fontFamily: "Pretendard",
+    fontSize: "14px",
+    fontStyle: "normal",
+    fontWeight: 400,
+    lineHeight: "normal",
+  }}
+>
+          이벤트 지역 5곳을 방문하고 지역 배지를 수집해보세요!
         </p>
       </div>
 
       {/* 3. SVG 지도 영역 */}
+      <div className="mt-15">
       {map ? (
         <div
           ref={containerRef}
@@ -283,9 +310,9 @@ const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
                 [&_path]:[transform-box:fill-box]
                 [&_path]:[transform-origin:center]
                 [&_path]:[transform:scale(0.979)]
-                [&_path]:stroke-[url(#border-fade-gradient)] 
-                [&_path]:[stroke-width:2px] 
-                [&_path]:[stroke-linejoin:round] 
+                [&_path]:stroke-[url(#border-fade-gradient)]
+                [&_path]:[stroke-width:2px]
+                [&_path]:[stroke-linejoin:round]
                 [&_path]:[stroke-linecap:round]
                 [&_path]:[paint-order:stroke_fill]"
               style={{
@@ -320,6 +347,7 @@ const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
           준비중입니다
         </div>
       )}
+      </div>
 
       {/* 4. 하얀색 팝업 박스 (선택된 spot이 있을 때만 렌더링) */}
       {selectedSpot && popupScreenPos && (
@@ -377,23 +405,37 @@ function MissionSpotMarker({
 
 function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
   const clamped = Math.min(5, Math.max(0, visitedCount));
-  const fillWidth = (clamped / 5) * 333;
-  const numberLefts = [37, 113, 191, 269, 347];
+
+  // 💡 시작점으로부터 70px씩 누적되도록 설정 (마지막은 317)
+  const widths = [0, 15,85, 155, 225, 295];
+  const fillWidth = widths[clamped];
+
+  const numberLefts = [30, 100, 170, 240, 315];
 
   return (
     <div className="relative h-[100px] w-full">
-      {[1, 2, 3, 4, 5].map((n, i) => (
+      {/* 숫자 1~5 */}
+      {numberLefts.map((leftPos, i) => (
         <span
-          key={n}
-          className="absolute text-[12px] font-bold leading-none text-[#294E49]"
-          style={{ top: 42, left: numberLefts[i], fontFamily: "Pretendard" }}
+          key={i + 1}
+          className="absolute text-[12px] text-[#294E49]"
+          style={{
+            top: 0,
+            left: leftPos,
+            fontFamily: "Pretendard",
+            fontStyle: "normal",
+            fontWeight: 400,
+            lineHeight: "normal",
+          }}
         >
-          {n}
+          {i + 1}
         </span>
       ))}
+
+      {/* 배경 게이지 바 */}
       <div
         className="absolute rounded-[126px]"
-        style={{ top: 60, left: 30, width: 333, height: 26, background: "#6CA59C" }}
+        style={{ top: 20, left: 18, width: 315, height: 26, background: "#6CA59C" }}
       >
         {clamped > 0 && (
           <div
@@ -401,7 +443,7 @@ function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
             style={{
               top: 0,
               left: 0,
-              width: fillWidth,
+              width: fillWidth, // 💡 게이지 바 시작점으로부터 70px 간격씩 채워짐
               height: 26,
               background: "#FFFFFF",
               boxShadow: "0px 0px 10px 2px #FFFFFF",

@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Menu } from "lucide-react";
+import Image from "next/image";
 
 import GangwonMapSvg from "@/components/map/GangwonMapSvg";
 import EventRegionGlowOverlay from "@/features/event-regions/components/EventRegionGlowOverlay";
@@ -228,15 +228,29 @@ export default function EventRegionsPage() {
   };
 
   return (
-    <div className="relative px-[17px] pt-10 pb-4">
-      <header className="flex items-center justify-between mb-4">
-        <button aria-label="뒤로가기" onClick={() => router.back()}>
-          <ChevronLeft size={24} />
-        </button>
-        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
-          <Menu size={24} />
-        </button>
-      </header>
+    <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
+  <header className="flex items-center justify-between mb-4">
+    <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+      <Image
+        src="/assets/chevron-left.svg"
+        alt="뒤로가기"
+        width={28}
+        height={28}
+        className="shrink-0"
+      />
+    </button>
+
+    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+      <div
+        className="shrink-0"
+        style={{
+          width: 28,
+          height: 28,
+          background: "url('/assets/Menu.png') 50% / contain no-repeat",
+        }}
+      />
+    </button>
+  </header>
 
       <p
         className="mt-[19px] text-[#9C9C9C]"
