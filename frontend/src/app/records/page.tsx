@@ -1,21 +1,21 @@
-// B 강수연 · 여행 기록
+// 강수연 · 여행 기록
 // src/app/records/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
+import Image from "next/image";
 import { ApiError } from "@/lib/api/types";
 import { masterSigunguList } from "@/data/master-sigungu";
 import { getSigunguTravelPostStatus } from "@/lib/api/travelPost";
-import { ChevronLeft, Menu } from "lucide-react";
+
 /** 재로그인이 필요한 인증 에러 코드 */
 const AUTH_ERROR_CODES = new Set([
-  "AUTH401_1", 
-  "AUTH401_2", 
-  "AUTH401_3", 
-  "AUTH401_5", 
+  "AUTH401_1",
+  "AUTH401_2",
+  "AUTH401_3",
+  "AUTH401_5",
 ]);
 
 export default function RecordsPage() {
@@ -58,74 +58,96 @@ export default function RecordsPage() {
   }, [router]);
 
   return (
-    <div className="relative px-[17px] pt-10 pb-4">
-      <header className="flex items-center justify-between mb-4">
-        <button aria-label="뒤로가기" onClick={() => router.back()}>
-          <ChevronLeft size={24} />
-        </button>
-        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
-          <Menu size={24} />
-        </button>
-      </header>
+    <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
+      <div className="px-[17px]">
+        {/* 상단 헤더 */}
+        <header
+          className="flex items-start justify-center mb-4"
+          style={{ width: 359, height: 28, gap: 303 }}
+        >
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+            <Image
+              src="/assets/chevron-left.svg"
+              alt="뒤로가기"
+              width={28}
+              height={28}
+              className="shrink-0"
+            />
+          </button>
 
-       <h1
-        className="font-bold px-[5px] mb-[12px]"
-        style={{
-          fontFamily: "Pretendard",
-          fontWeight: 700,
-          fontSize: 16,
-          lineHeight: "100%",
-          letterSpacing: "0%",
-          color: "#6CA59C",
-        }}
-      >
-        내 기록 모아보기
-      </h1>
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+            <div
+              className="shrink-0"
+              style={{
+                width: 28,
+                height: 28,
+                background: "url('/assets/Menu.png') 50% / contain no-repeat",
+              }}
+            />
+          </button>
+        </header>
 
-      {errorMessage ? (
-        <p className="text-sm text-red-400 text-center mt-10">{errorMessage}</p>
-      ) : visibleSigunguList === null ? (
-        <p className="text-sm text-gray-400 text-center mt-10">불러오는 중...</p>
-      ) : visibleSigunguList.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center mt-10">
-          아직 등록된 기록이 없어요.
-        </p>
-      ) : (
-        <div className="grid grid-cols-3 gap-[10px]">
-          {visibleSigunguList.map((sigungu) => (
-            <Link
-              key={sigungu.sigunguCd}
-              href={`/records/${encodeURIComponent(sigungu.sigunguCd)}`}
-              className="flex items-center justify-between w-[113px] h-[39px] rounded-[14px] bg-[#6CA59C]/70 text-sm text-white pt-[10px] pr-[9px] pb-[10px] pl-[15px]"
-            >
-               <span
-    style={{
-      fontFamily: "Pretendard",
-      fontWeight: 400,
-      fontSize: 16,
-      fontStyle: "normal",
-      lineHeight: "100%",
-      letterSpacing: "0%",
-      color: "#FFFFFF",
-      whiteSpace: "nowrap",
-    }}
-  >
-              
-              {sigungu.sigunguNm}
-              </span>
-               <svg width={4} height={8} viewBox="0 0 4 8" fill="none">
-    <path
-      d="M1 1L3 4L1 7"
-      stroke="#FFFFFF"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-            </Link>
-          ))}
-        </div>
-      )}
+        {/* 타이틀 */}
+        <h1
+          className="font-bold mb-[12px]"
+          style={{
+            fontFamily: "Pretendard",
+            fontWeight: 700,
+            fontSize: 16,
+            lineHeight: "normal",
+            color: "#6CA59C",
+            paddingLeft: 4,
+
+          }}
+        >
+          내 기록 모아보기
+        </h1>
+
+        {/* 상태별 렌더링 */}
+        {errorMessage ? (
+          <p className="text-sm text-red-400 text-center mt-10">{errorMessage}</p>
+        ) : visibleSigunguList === null ? (
+          <p className="text-sm text-gray-400 text-center mt-10">불러오는 중...</p>
+        ) : visibleSigunguList.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center mt-10">
+            아직 등록된 기록이 없어요.
+          </p>
+        ) : (
+          <div className="grid grid-cols-3 gap-[10px]">
+            {visibleSigunguList.map((sigungu) => (
+              <Link
+                key={sigungu.sigunguCd}
+                href={`/records/${encodeURIComponent(sigungu.sigunguCd)}`}
+                className="flex items-center justify-between w-[113px] h-[39px] rounded-[14px] bg-[#6CA59C]/70 text-sm text-white pt-[10px] pr-[9px] pb-[10px] pl-[15px]"
+              >
+                <span
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontWeight: 400,
+                    fontSize: 16,
+                    fontStyle: "normal",
+                    lineHeight: "100%",
+                    letterSpacing: "0%",
+                    color: "#FFFFFF",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {sigungu.sigunguNm}
+                </span>
+                <svg width={4} height={8} viewBox="0 0 4 8" fill="none">
+                  <path
+                    d="M1 1L3 4L1 7"
+                    stroke="#FFFFFF"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

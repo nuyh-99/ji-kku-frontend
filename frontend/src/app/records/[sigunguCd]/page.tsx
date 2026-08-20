@@ -7,7 +7,6 @@ import Image from "next/image";
 import { getEupmyeondongTravelPosts } from "@/lib/api/travelPost";
 import { masterSigunguList } from "@/data/master-sigungu";
 import Calendar from "../components/Calendar";
-import { Menu, ChevronLeft } from "lucide-react";
 
 export default function SigunguRecordsPage({
   params,
@@ -46,51 +45,69 @@ export default function SigunguRecordsPage({
   };
 
   return (
-    <div className="relative px-2 py-4">
-      {/* 상단 헤더 */}
-      <div className="relative px-[17px] pt-10 pb-4 h-[110px]">
-        <header className="flex items-center justify-between mb-4">
-          <button aria-label="뒤로가기" onClick={() => router.back()}>
-            <ChevronLeft size={24} />
+    <div className="relative pb-8">
+  {/* 상단 헤더 */}
+  <div className="relative px-[17px]" style={{ paddingTop: 44 }}>
+        <header
+          className="flex items-start justify-center"
+          style={{ width: 359, height: 28, gap: 303 }}
+        >
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+            <Image
+              src="/assets/chevron-left.svg"
+              alt="뒤로가기"
+              width={28}
+              height={28}
+              className="shrink-0"
+            />
           </button>
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
-            <Menu size={24} />
+
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+            <div
+              className="shrink-0"
+              style={{
+                width: 28,
+                height: 28,
+                background: "url('/assets/Menu.png') 50% / contain no-repeat",
+              }}
+            />
           </button>
         </header>
 
-        <h1
-          className="
-            absolute
-            top-[78px]
-            left-[165px]
-            w-[42px]
-            h-[19px]
-            whitespace-nowrap
-            font-pretendard
-            font-bold
-            text-[16px]
-            leading-[100%]
-            tracking-[0%]
-          "
-          style={{ color: "#6CA59C" }}
-        >
-          {sigunguNm}
-        </h1>
+        {/* sigunguNm + 캘린더 버튼: 헤더 그룹이랑 위아래로 7px */}
+        <div
+  className="flex items-center justify-center"
+  style={{ marginTop: 7, width: 359 }}
+>
+           <h1
+    className="whitespace-nowrap text-[16px] font-bold not-italic leading-normal text-[#6CA59C] font-pretendard"
+    
+  >
+    {sigunguNm}
+  </h1>
 
-        <button
-          aria-label="날짜 선택"
-          onClick={() => setShowDatePicker((prev) => !prev)}
-          className="absolute top-[76px] left-[213px] w-[23px] h-[23px]"
-        >
-          <Image src="/calendar.png" alt="달력" width={23} height={23} />
-        </button>
+          <button
+    aria-label="날짜 선택"
+    onClick={() => setShowDatePicker((prev) => !prev)}
+    type="button"
+    className="shrink-0 ml-2"
+  >
+    <div
+      style={{
+        width: 23,
+        height: 23,
+        background: "url('/calendar.png') 50% / contain no-repeat",
+      }}
+    />
+  </button>
+</div>
       </div>
 
       {showDatePicker && (
         <div
           className="
             fixed
-            top-[50px]
+            top-[112px]
             left-1/2
             -translate-x-1/2
             z-50
@@ -129,8 +146,11 @@ export default function SigunguRecordsPage({
         </p>
       )}
 
-      {/* 카드 그리드 */}
-      <div className="grid grid-cols-2 gap-x-[10px] gap-y-[14px] justify-items-center">
+      {/* 카드 그리드: 위 sigunguNm/캘린더 행이랑 위아래로 13px */}
+      <div
+        className="grid grid-cols-2 gap-x-[10px] gap-y-[14px] justify-items-center"
+        style={{ marginTop: 13 }}
+      >
         {posts.map((post) => (
           <button
             key={post.travelPostId}
