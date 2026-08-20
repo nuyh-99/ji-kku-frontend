@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Menu } from "lucide-react";
 import { MOCK_RECORD_DETAIL } from "@/data/mock-recordDetail";
 
 export default function TravelPostDetailPage({
@@ -19,31 +18,40 @@ export default function TravelPostDetailPage({
   return (
     <div className="min-h-screen bg-white">
       {/* 상단 고정 영역 */}
-      <div className="fixed left-0 top-0 z-30 h-[90px] w-full bg-white">
-        {/* 뒤로가기 / 메뉴 */}
-        <header className="absolute left-0 top-0 flex w-full items-center justify-between px-2 py-4">
-  <button
-    type="button"
-    aria-label="뒤로가기"
-    onClick={() => router.back()}
-  >
-    <ChevronLeft className="size-6" />
-  </button>
+      <div className="fixed left-0 top-0 z-30 h-[113px] w-full bg-white">
+        {/* 뒤로가기 / 메뉴: 좌우 17px, 위 44px */}
+        <header
+          className="absolute left-0 top-0 flex w-full items-center justify-between px-[17px]"
+          style={{ paddingTop: 44 }}
+        >
+          <button type="button" aria-label="뒤로가기" onClick={() => router.back()}>
+            <Image
+              src="/assets/chevron-left.svg"
+              alt="뒤로가기"
+              width={28}
+              height={28}
+              className="shrink-0"
+            />
+          </button>
 
-  <button
-    type="button"
-    aria-label="메뉴"
-  >
-    <Menu className="size-6" />
-  </button>
-</header>
+          <button type="button" aria-label="메뉴" onClick={() => router.push("/mypage")}>
+            <div
+              className="shrink-0"
+              style={{
+                width: 28,
+                height: 28,
+                background: "url('/assets/Menu.png') 50% / contain no-repeat",
+              }}
+            />
+          </button>
+        </header>
 
-        {/* 읍면동 이름 */}
+        {/* 읍면동 이름: 위 83px, 왼쪽 132px */}
         <div
           className="
             absolute
             left-[132px]
-            top-[55px]
+            top-[83px]
             whitespace-nowrap
             text-[16px]
             font-bold
@@ -54,12 +62,12 @@ export default function TravelPostDetailPage({
           {record.emdNm}
         </div>
 
-        {/* 날짜 */}
+        {/* 날짜: 위 85px, 왼쪽 182px */}
         <div
           className="
             absolute
-            left-[186px]
-            top-[57px]
+            left-[182px]
+            top-[85px]
             whitespace-nowrap
             text-[14px]
             font-bold
