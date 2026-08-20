@@ -4,10 +4,10 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getEupmyeondongTravelPosts } from "@/lib/api/travelPost";
 import { masterSigunguList } from "@/data/master-sigungu";
 import Calendar from "../components/Calendar";
+import { Menu, ChevronLeft } from "lucide-react";
 
 export default function SigunguRecordsPage({
   params,
@@ -24,7 +24,6 @@ export default function SigunguRecordsPage({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const router = useRouter();
 
-  
   // API에는 여전히 "YYYY-MM-DD" 문자열로 전달
   const date = selectedDate ? formatIsoDate(selectedDate) : "";
 
@@ -49,36 +48,43 @@ export default function SigunguRecordsPage({
   return (
     <div className="relative px-2 py-4">
       {/* 상단 헤더 */}
-      <header className="flex items-center justify-between mb-4">
-        <button aria-label="뒤로가기" onClick={() => router.back()}>
-          <ChevronLeftIcon className="size-6" />
-        </button>
+      <div className="relative px-[17px] pt-10 pb-4 h-[110px]">
+        <header className="flex items-center justify-between mb-4">
+          <button aria-label="뒤로가기" onClick={() => router.back()}>
+            <ChevronLeft size={24} />
+          </button>
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
+            <Menu size={24} />
+          </button>
+        </header>
 
-        <div className="flex items-center gap-1.5 mb-4">
-          <h1
-            className="
+        <h1
+          className="
+            absolute
+            top-[78px]
+            left-[165px]
+            w-[42px]
+            h-[19px]
+            whitespace-nowrap
             font-pretendard
             font-bold
             text-[16px]
             leading-[100%]
-            tracking-[0em]
-            "
-            style={{ color: "#6CA59C" }}
-            >
-            {sigunguNm}
-          </h1>
-          <button
-            aria-label="날짜 선택"
-            onClick={() => setShowDatePicker((prev) => !prev)}
-          >
-            <Image src="/calendar.png" alt="달력" width={23} height={23} />
-          </button>
-        </div>
+            tracking-[0%]
+          "
+          style={{ color: "#6CA59C" }}
+        >
+          {sigunguNm}
+        </h1>
 
-        <button aria-label="메뉴">
-          <MenuIcon className="size-6" />
+        <button
+          aria-label="날짜 선택"
+          onClick={() => setShowDatePicker((prev) => !prev)}
+          className="absolute top-[76px] left-[213px] w-[23px] h-[23px]"
+        >
+          <Image src="/calendar.png" alt="달력" width={23} height={23} />
         </button>
-      </header>
+      </div>
 
       {showDatePicker && (
         <div
@@ -97,7 +103,11 @@ export default function SigunguRecordsPage({
             p-2
           "
         >
-          <Calendar selectedDate={selectedDate} onSelectDate={handleSelectDate} />
+          <Calendar
+            selectedDate={selectedDate}
+            onSelectDate={handleSelectDate}
+            visitedDates={posts.map((post) => post.logDate)}
+          />
         </div>
       )}
 
@@ -177,24 +187,24 @@ export default function SigunguRecordsPage({
 
               {/* 날짜 뱃지: width 71 / height 18 / bg #FFFFFF 70% */}
               <span
-                  className="
-                    w-[71px]
-                    h-[18px]
-                    rounded-[20px]
-                    bg-white/70
-                    font-pretendard
-                    font-normal
-                    text-[12px]
-                    leading-[100%]
-                    tracking-[0em]
-                    text-[#6CA59C]/70
-                    flex items-center justify-center
-                    pt-[2px] pr-[12px] pb-[2px] pl-[12px]
-                    truncate
-                  "
-                >
-                  {formatShortDate(post.logDate)}
-                </span>
+                className="
+                  w-[71px]
+                  h-[18px]
+                  rounded-[20px]
+                  bg-white/70
+                  font-pretendard
+                  font-normal
+                  text-[12px]
+                  leading-[100%]
+                  tracking-[0em]
+                  text-[#6CA59C]/70
+                  flex items-center justify-center
+                  pt-[2px] pr-[12px] pb-[2px] pl-[12px]
+                  truncate
+                "
+              >
+                {formatShortDate(post.logDate)}
+              </span>
             </div>
 
             {/* 제목 텍스트 */}

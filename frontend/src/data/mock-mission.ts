@@ -3,7 +3,7 @@ import type { MissionSpotItem, MissionSpotsResult, MissionSpotPixelPosition } fr
 const YANGYANG_MISSION_SPOTS: MissionSpotItem[] = [
   {
     missionSpotId: 123,
-    isCompleted: true,
+    isCompleted: false,
     contentId: 2761729,
     title: "양양 설악 오색약수",
     firstImage: "/event-region/osaek.png",

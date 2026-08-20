@@ -35,7 +35,7 @@ export function MyPage() {
                 <button
                     onClick={goBack}
                     aria-label="뒤로가기"
-                    className="absolute top-10 left-[26px] bg-transparent border-none cursor-pointer p-1 rounded-full inline-flex items-center justify-center transition-colors duration-200 hover:bg-white/15"
+                    className="absolute top-10  bg-transparent border-none cursor-pointer pl-[17px] rounded-full inline-flex items-center justify-center transition-colors duration-200 hover:bg-white/15"
                 >
                     <img src="/assets/back.png" className="w-[26px] h-[26px] block" alt="" />
                 </button>

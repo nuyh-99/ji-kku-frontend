@@ -34,3 +34,27 @@ export interface TravelPostsBySigunguResponse {
   sigunguNm: string;
   posts: TravelPost[];
 }
+/** 여행 기록 상세 블록 */
+export interface TravelLogBlock {
+  travelLogBlockId: number;
+  blockType: "IMAGE" | "TEXT";
+  sortOrder: number;
+  textContent: string | null;
+  imgUrl: string | null;
+}
+/** 여행 기록 상세 조회 result */
+export interface TravelPostDetail {
+  travelPostId: number;
+  emdNm: string;
+  logDate: string;
+  title: string;
+  blocks: TravelLogBlock[];
+}
+
+/** 여행 기록 상세 조회 API response */
+export interface TravelPostDetailResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: TravelPostDetail;
+}

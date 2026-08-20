@@ -2,10 +2,10 @@
 
 import { use, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
-import { getMissionSpotDetail, MissionSpotItem } from "@/lib/api/mission";
+import { getMissionSpotDetail, verifyMissionVisit, MissionSpotItem } from "@/lib/api/mission";
 
 // TODO: 실제로는 API에서 이미지 배열(images: string[])을 받아와야 함.
 function useSpotImages(imageUrl?: string | null) {
@@ -59,9 +59,9 @@ function SpotDetailContent({
   sigunguCd: number;
   onBack: () => void;
 }) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const images = useSpotImages(spot.firstImage);
-
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -100,15 +100,23 @@ function SpotDetailContent({
     window.open(naverMapUrl, "_blank");
   };
 
-  const handleVerifyVisit = () => {
-    // TODO: verifyMissionVisit(spot.missionSpotId, {...}) 실제 연동 후 성공 시 팝업 오픈
-    setShowVerifyPopup(true);
+  const handleVerifyVisit = async () => {
+    if (!spot.missionSpotId) return;
+
+    try {
+      const res = await verifyMissionVisit(spot.missionSpotId, {});
+      if (res.isSuccess) {
+        queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
+        queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", sigunguCd, spot.contentId] });
+        setShowVerifyPopup(true);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleCloseVerifyPopup = () => {
-    // "확인" 클릭 시 이벤트지역-방문 화면으로 이동
     setShowVerifyPopup(false);
-    // TODO: 실제 "이벤트지역-방문" 경로로 교체
   };
 
   return (
@@ -117,7 +125,7 @@ function SpotDetailContent({
         <button aria-label="뒤로가기" onClick={onBack}>
           <ChevronLeftIcon className="size-6" />
         </button>
-        <button aria-label="메뉴">
+        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
           <MenuIcon className="size-6" />
         </button>
       </header>
@@ -161,7 +169,6 @@ function SpotDetailContent({
           >
             {spot.title}
           </h1>
-         
         </div>
 
         <p
@@ -269,7 +276,6 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
             width={100}
             height={100}
             className="object-contain"
-            
           />
         </div>
 
@@ -314,14 +320,14 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
         <button
           type="button"
           onClick={onConfirm}
-          className="absolute flex items-center justify-center text-white"
+          className="absolute flex items-center justify-center"
           style={{
+            color: "#6CA59C",
             width: 187,
             height: 45,
             top: 194,
             left: 17,
             borderRadius: 9,
-            color: "#6CA59C",
             gap: 10,
             fontFamily: "Pretendard",
             fontWeight: 700,

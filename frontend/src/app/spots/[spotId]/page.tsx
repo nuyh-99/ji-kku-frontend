@@ -12,6 +12,7 @@ import { mapSpotDetailToDetailData } from "@/features/spots/utils/mapSpotDetail"
 // 지금은 firstImage 하나만 있으니 임시로 배열처럼 다룸.
 function useSpotImages(imageUrl: string) {
   return imageUrl ? [imageUrl] : [];
+  
 }
 
 // 네이버 지도 SDK는 타입 패키지를 쓰지 않으므로, 이 화면이 실제로 호출하는 API만 좁게 선언한다.
@@ -60,7 +61,7 @@ function SpotDetailContent({
   onBack: () => void;
 }) {
   const images = useSpotImages(spot.imageUrl);
-
+  const router = useRouter();
   // --- 이미지 스크롤 캐러셀 ---
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -102,36 +103,41 @@ function SpotDetailContent({
         <button aria-label="뒤로가기" onClick={onBack}>
           <ChevronLeftIcon className="size-6" />
         </button>
-        <button aria-label="메뉴">
+        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
           <MenuIcon className="size-6" />
         </button>
       </header>
 
       {/* 이미지 캐러셀 (가로 스크롤로 넘김) */}
+<div
+  ref={scrollRef}
+  onScroll={handleScroll}
+  className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+  style={{ width: 393, height: 253 }}
+>
+  {images.length > 0 ? (
+    images.map((url, i) => (
       <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+        key={i}
+        className="relative shrink-0 snap-center"
         style={{ width: 393, height: 253 }}
       >
-        {images.length > 0 ? (
-          images.map((url, i) => (
-            <div
-              key={i}
-              className="relative shrink-0 snap-center"
-              style={{ width: 393, height: 253 }}
-            >
-              <Image src={url} alt={`${spot.title} 이미지 ${i + 1}`} fill className="object-cover" />
-            </div>
-          ))
-        ) : (
-          <div
-            className="flex shrink-0 items-center justify-center bg-gray-100 text-sm text-gray-400"
-            style={{ width: 393, height: 253 }}
-          >
-            이미지 없음
-          </div>
-        )}
+        <Image src={url} alt={`${spot.title} 이미지 ${i + 1}`} fill className="object-cover" />
+      </div>
+    ))
+  ) : (
+    <div
+      className="relative shrink-0 snap-center"
+      style={{ width: 393, height: 253 }}
+    >
+      <Image
+        src="/festivals/noimage.jpg"
+        alt="이미지 없음"
+        fill
+        className="object-cover"
+      />
+    </div>
+  )}
 
         {/* 페이지 카운터 */}
         {images.length > 0 && (
