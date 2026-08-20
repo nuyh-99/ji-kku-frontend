@@ -39,19 +39,18 @@ export default function AchievementsPage() {
   return (
     <div className="relative min-h-screen bg-white px-[17px] pt-10 pb-4">
       {/* 헤더 */}
-      <header className="flex items-center justify-between mb-4">
-        <button
-          aria-label="뒤로가기"
-          onClick={() => router.back()}
-          type="button"
-        >
-          <ChevronLeft size={24} />
-        </button>
+      <header
+  className="flex items-start justify-center mb-4"
+  style={{ width: 359, height: 28, gap: 303 }}
+>
+  <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+    <ChevronLeft size={28} className="shrink-0" />
+  </button>
 
-        <button aria-label="메뉴" type="button">
-          <Menu size={24} />
-        </button>
-      </header>
+  <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+    <Menu size={28} className="shrink-0" />
+  </button>
+</header>
 
       {/* 축하 배너 */}
       <div className="relative w-full h-[81px] rounded-[9px] bg-[#C3DAD7] overflow-hidden">
@@ -78,16 +77,29 @@ export default function AchievementsPage() {
           내 배지
         </h2>
 
-        <Image
-          src="/questionmark.png"
-          alt="배지 안내"
-          width={15}
-          height={15}
-        />
+        <div
+  style={{
+    display: "flex",
+    width: "15px",
+    height: "15px",
+    padding: "2.5px",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: "12.5px",
+    border: "0.625px solid #5F5F5F",
+  }}
+>
+  <Image
+    src="/questionmark.png"
+    alt="배지 안내"
+    width={10}
+    height={10}
+  />
+</div>
       </div>
 
       {/* 배지 그리드 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-x-4 gap-y-[34px]">
         {regionBadges.map((badge) => {
           const isUnlocked = unlockedNos.has(badge.badgeNo);
 
@@ -96,13 +108,13 @@ export default function AchievementsPage() {
               key={badge.id}
               className="flex flex-col items-center"
             >
-              <div className="relative h-[80px] w-[80px]">
+              <div className="relative h-[75px] w-[75px]">
                 <Image
                   src={`/badge/${badge.id}.png`}
                   alt={badge.name}
                   fill
                   className={`object-contain ${
-                    !isUnlocked ? "grayscale blur-[8px]" : ""
+                    !isUnlocked ? "grayscale blur-[4px]" : ""
                   }`}
                 />
 
@@ -111,14 +123,17 @@ export default function AchievementsPage() {
                     <Image
                       src="/yetquestionmark.png"
                       alt="미획득 배지"
-                      width={24}
-                      height={24}
+                      width={48}
+                      height={48}
                     />
                   </div>
                 )}
               </div>
 
-              <span className="mt-2 text-[15px] font-normal leading-none text-black">
+              <span
+  className="mt-2 text-[15px] font-normal text-black"
+  style={{ fontFamily: "Pretendard", lineHeight: "normal" }}
+>
                 {badge.name}
               </span>
             </div>
