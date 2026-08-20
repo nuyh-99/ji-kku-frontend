@@ -77,25 +77,6 @@ export default function AchievementsPage() {
           내 배지
         </h2>
 
-        <div
-  style={{
-    display: "flex",
-    width: "15px",
-    height: "15px",
-    padding: "2.5px",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: "12.5px",
-    border: "0.625px solid #5F5F5F",
-  }}
->
-  <Image
-    src="/questionmark.png"
-    alt="배지 안내"
-    width={10}
-    height={10}
-  />
-</div>
       </div>
 
       {/* 배지 그리드 */}
