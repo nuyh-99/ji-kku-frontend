@@ -66,7 +66,7 @@ export default function Home() {
             <div className="relative flex flex-col gap-[14px] px-4 py-11">
                 {/* 상단 메뉴 아이콘 */}
                 <div className="flex justify-end">
-                    <button aria-label="메뉴 열기" onClick={onOpenMenu}>
+                    <button aria-label="메뉴 열기" className="pr-[1px]" onClick={onOpenMenu}>
                         <Image src="/assets/Menu.png" alt="" width={28} height={28} />
                     </button>
                 </div>
