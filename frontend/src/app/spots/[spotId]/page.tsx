@@ -97,16 +97,28 @@ function SpotDetailContent({
   };
 
   return (
-    <div className="relative w-full max-w-[393px] mx-auto pb-8">
-      {/* 상단 헤더 */}
-      <header className="flex items-center justify-between px-4 py-3">
-        <button aria-label="뒤로가기" onClick={onBack}>
-          <ChevronLeftIcon className="size-6" />
-        </button>
-        <button aria-label="메뉴" onClick={() => router.push("/mypage")}>
-          <MenuIcon className="size-6" />
-        </button>
-      </header>
+    <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
+  <div className="px-[17px]">
+    <header
+      className="flex items-start justify-center mb-4"
+      style={{ width: 359, height: 28, gap: 303 }}
+    >
+      <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+        <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
+      </button>
+
+      <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+        <div
+          className="shrink-0"
+          style={{
+            width: 28,
+            height: 28,
+            background: "url('/assets/Menu.png') 50% / contain no-repeat",
+          }}
+        />
+      </button>
+    </header>
+  </div>
 
       {/* 이미지 캐러셀 (가로 스크롤로 넘김) */}
 <div
