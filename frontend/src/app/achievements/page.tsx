@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Menu } from "lucide-react";
 
 import { getBadges } from "@/lib/api/mission";
 import { regionBadges } from "@/data/region-badges";
@@ -18,9 +17,6 @@ export default function AchievementsPage() {
     async function fetchBadges() {
       try {
         const response = await getBadges();
-
-        // getBadges()는 GetBadgesResult를 반환하므로
-        // response.content에 배지 목록이 들어있음
         const badgeList: BadgeItem[] = response.content;
 
         const regionBadgeNos = badgeList
@@ -37,20 +33,21 @@ export default function AchievementsPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-white px-[17px] pt-10 pb-4">
-      {/* 헤더 */}
+    // 전체 페이지를 감싸는 컨테이너에 relative와 헤더 공간을 고려한 넉넉한 paddingTop 부여
+    <div className="relative min-h-screen bg-white pb-4" style={{ paddingTop: 88, paddingLeft: 17, paddingRight: 17 }}>
+      {/* 절대 좌표로 정확히 고정되는 헤더 */}
       <header
-  className="flex items-start justify-center mb-4"
-  style={{ width: 359, height: 28, gap: 303 }}
->
-  <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-  <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
-</button>
+        className="absolute flex items-center justify-between"
+        style={{ top: 44, left: 17, width: 359, height: 28 }}
+      >
+        <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+          <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
+        </button>
 
-  <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
-  <Image src="/assets/Menu.png" alt="메뉴" width={28} height={28} className="shrink-0" />
-</button>
-</header>
+        <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+          <Image src="/assets/Menu.png" alt="메뉴" width={28} height={28} className="shrink-0" />
+        </button>
+      </header>
 
       {/* 축하 배너 */}
       <div className="relative w-full h-[81px] rounded-[9px] bg-[#C3DAD7] overflow-hidden">
@@ -76,7 +73,6 @@ export default function AchievementsPage() {
         <h2 className="text-[16px] font-bold leading-none text-[#0B221E]">
           내 배지
         </h2>
-
       </div>
 
       {/* 배지 그리드 */}
@@ -112,9 +108,9 @@ export default function AchievementsPage() {
               </div>
 
               <span
-  className="mt-2 text-[15px] font-normal text-black"
-  style={{ fontFamily: "Pretendard", lineHeight: "normal" }}
->
+                className="mt-2 text-[15px] font-normal text-black"
+                style={{ fontFamily: "Pretendard", lineHeight: "normal" }}
+              >
                 {badge.name}
               </span>
             </div>
