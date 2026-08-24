@@ -4,7 +4,6 @@ import { use, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getFestivalDetail } from "@/lib/api/spot";
 import { mapFestivalDetailToDetailData } from "@/features/event-regions/utils/mapFestivalDetail";
 
@@ -47,15 +46,15 @@ export default function FestivalDetailPage({
 
   const festival = mapFestivalDetailToDetailData(data);
 
-  return <FestivalDetailContent festival={festival} onBack={() => router.back()} />;
+  return <FestivalDetailContent festival={festival} router={router} />;
 }
 
 function FestivalDetailContent({
   festival,
-  onBack,
+  router,
 }: {
   festival: ReturnType<typeof mapFestivalDetailToDetailData>;
-  onBack: () => void;
+  router: ReturnType<typeof useRouter>;
 }) {
   const images = useFestivalImages(festival.imageUrl);
 
@@ -92,14 +91,30 @@ function FestivalDetailContent({
 
   return (
     <div className="relative w-full max-w-[393px] mx-auto pb-8">
-      <header className="flex items-center justify-between px-4 py-3">
-        <button aria-label="뒤로가기" onClick={onBack}>
-          <ChevronLeftIcon className="size-6" />
-        </button>
-        <button aria-label="메뉴">
-          <MenuIcon className="size-6" />
-        </button>
-      </header>
+      <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
+        <header className="flex items-center justify-between mb-[9px]">
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+            <Image
+              src="/assets/chevron-left.svg"
+              alt="뒤로가기"
+              width={28}
+              height={28}
+              className="shrink-0"
+            />
+          </button>
+
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+            <div
+              className="shrink-0"
+              style={{
+                width: 28,
+                height: 28,
+                background: "url('/assets/Menu.png') 50% / contain no-repeat",
+              }}
+            />
+          </button>
+        </header>
+      </div>
 
       <div
         ref={scrollRef}
@@ -119,10 +134,15 @@ function FestivalDetailContent({
           ))
         ) : (
           <div
-            className="flex shrink-0 items-center justify-center bg-gray-100 text-sm text-gray-400"
+            className="relative shrink-0 snap-center"
             style={{ width: 393, height: 253 }}
           >
-            이미지 없음
+            <Image
+              src="/festivals/noimage.jpg"
+              alt="이미지 없음"
+              fill
+              className="object-cover"
+            />
           </div>
         )}
 
