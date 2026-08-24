@@ -30,7 +30,6 @@ declare global {
 export default function FestivalDetailPage({
   params,
 }: {
-  // 폴더명은 [festival]이지만 실제 값은 TourAPI contentId(PK) 문자열이다.
   params: Promise<{ festival: string }>;
 }) {
   const { festival: festivalId } = use(params);
@@ -46,18 +45,20 @@ export default function FestivalDetailPage({
 
   const festival = mapFestivalDetailToDetailData(data);
 
-  return <FestivalDetailContent festival={festival} router={router} />;
+  return <FestivalDetailContent festival={festival} onBack={() => router.back()} />;
 }
 
 function FestivalDetailContent({
   festival,
-  router,
+  onBack,
 }: {
   festival: ReturnType<typeof mapFestivalDetailToDetailData>;
-  router: ReturnType<typeof useRouter>;
+  onBack: () => void;
 }) {
   const images = useFestivalImages(festival.imageUrl);
+  const router = useRouter();
 
+  // --- 이미지 스크롤 캐러셀 ---
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -68,6 +69,7 @@ function FestivalDetailContent({
     setCurrentIndex(index);
   };
 
+  // --- 네이버 지도 ---
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -90,17 +92,14 @@ function FestivalDetailContent({
   };
 
   return (
-    <div className="relative w-full max-w-[393px] mx-auto pb-8">
-      <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
-        <header className="flex items-center justify-between mb-[9px]">
-          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
+    <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
+      <div className="px-[17px]">
+        <header
+          className="flex items-start justify-center mb-4"
+          style={{ width: 359, height: 28, gap: 303 }}
+        >
+          <button aria-label="뒤로가기" onClick={onBack} type="button">
+            <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
           </button>
 
           <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
@@ -116,6 +115,7 @@ function FestivalDetailContent({
         </header>
       </div>
 
+      {/* 이미지 캐러셀 (가로 스크롤로 넘김) */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -146,6 +146,7 @@ function FestivalDetailContent({
           </div>
         )}
 
+        {/* 페이지 카운터 */}
         {images.length > 0 && (
           <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white">
             {currentIndex + 1} | {images.length}
@@ -154,6 +155,7 @@ function FestivalDetailContent({
       </div>
 
       <div className="px-[17px]">
+        {/* 축제 이름 */}
         <h1
           className="mt-[26px]"
           style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
@@ -161,6 +163,7 @@ function FestivalDetailContent({
           {festival.title}
         </h1>
 
+        {/* 상세 주소 */}
         <p
           className="mt-1"
           style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
@@ -168,6 +171,7 @@ function FestivalDetailContent({
           {festival.address}
         </p>
 
+        {/* 상세 설명 */}
         <p
           className="mt-6 whitespace-pre-line"
           style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
@@ -175,6 +179,7 @@ function FestivalDetailContent({
           {festival.description}
         </p>
 
+        {/* 이용 정보 (축제 전용 데이터: period, venue 반영) */}
         <dl
           className="mt-4 space-y-1"
           style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, color: "#000000" }}
@@ -189,6 +194,7 @@ function FestivalDetailContent({
           </div>
         </dl>
 
+        {/* 네이버 지도 */}
         <div
           ref={mapRef}
           className="mt-6 flex items-center justify-center bg-[#EEEEEE] text-sm text-gray-400"
@@ -197,6 +203,7 @@ function FestivalDetailContent({
           {typeof window !== "undefined" && !window.naver && "지도 SDK 로드 필요"}
         </div>
 
+        {/* 위치 확인하기 버튼 → 네이버 지도 웹으로 새 탭 이동 */}
         <button
           onClick={handleCheckLocation}
           className="mt-4 flex w-full items-center justify-center"
