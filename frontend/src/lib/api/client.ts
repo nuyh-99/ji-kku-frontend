@@ -7,9 +7,10 @@ interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
-// TODO: 토큰 저장/조회 로직이 확정되면 여기서 실제 토큰을 읽어와 Authorization 헤더에 실어주세요.
 function getAuthHeader(): Record<string, string> {
-  return {};
+  const token = localStorage.getItem('accessToken');
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
 }
 
 /** 공통 fetch 래퍼. 성공 시 result를 T로 반환하고, 실패 시 ApiError를 던집니다. */
