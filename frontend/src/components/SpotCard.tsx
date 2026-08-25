@@ -42,7 +42,7 @@ export default function SpotCard({ spot }: { spot: SpotCardData }) {
       >
         {/* 장소(제목) */}
         <p
-          className="absolute text-white"
+          className="absolute text-white line-clamp-1"
           style={{
             width: 124,
             top: 7.58,
@@ -58,7 +58,7 @@ export default function SpotCard({ spot }: { spot: SpotCardData }) {
 
         {/* 상세 설명 */}
         <p
-          className="absolute text-white"
+          className="absolute text-white line-clamp-2"
           style={{
             width: 101,
             top: 24.86,
