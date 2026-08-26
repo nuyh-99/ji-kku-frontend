@@ -26,11 +26,14 @@ export interface TouristSpot {
 }
 
 export interface TodaySpotItem {
-  spot_id: number;
-  content_id: number;
-  first_image: string;
+  contentId: number;
   title: string;
+  firstImage: string;
   overview: string;
+  sigunguCd: number;
+  sigunguNm: string;
+  mapX: number; // 경도
+  mapY: number; // 위도
 }
 
 export interface SpotDetailItem {

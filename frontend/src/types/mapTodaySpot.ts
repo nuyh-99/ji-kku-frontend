@@ -1,4 +1,3 @@
-// src/features/spots/utils/mapTodaySpot.ts
 import type { TodaySpotItem } from "@/types/tourism";
 
 export interface SpotCardData {
@@ -10,9 +9,9 @@ export interface SpotCardData {
 
 export function mapTodaySpotToCardData(item: TodaySpotItem): SpotCardData {
   return {
-    id: String(item.spot_id),
+    id: String(item.contentId),
     title: item.title,
-    imageUrl: item.first_image,
+    imageUrl: item.firstImage,
     overview: item.overview,
   };
 }
