@@ -43,46 +43,56 @@ export default function EventRegionGlowOverlay({
       className="pointer-events-none absolute inset-0 h-full w-full"
       aria-hidden="true"
     >
-      {/* 1) glow — 먼저 그려서 아래 깔리고, 위에 얇은 teal 라인이 선명하게 보이도록 */}
-      <g>
-        {eventRegions.map((r) => (
-          <path key={`glow-${r.code}`} d={r.d} fill={EVENT_FILL} style={{ filter: EVENT_GLOW }} />
-        ))}
-      </g>
+      // EventRegionGlowOverlay.tsx 반환부 순서 변경
 
-      {/* 2) teal 테두리 */}
-      <g>
-        {eventRegions.map((r) => (
-          <path
-            key={`stroke-${r.code}`}
-            d={r.d}
-            fill="none"
-            stroke={EVENT_STROKE}
-            strokeWidth={EVENT_BORDER_WIDTH}
-            strokeLinejoin="round"
-          />
-        ))}
-      </g>
+{/* 1) glow — 기존과 동일 */}
+<g>
+  {eventRegions.map((r) => (
+    <path key={`glow-${r.code}`} d={r.d} fill={EVENT_FILL} style={{ filter: EVENT_GLOW }} />
+  ))}
+</g>
 
-      {/* 3) 라벨 — glow가 원본 라벨을 덮어버리므로 맨 위에 다시 그려서 보이게 함 */}
-      <g>
-        {eventRegions
-          .filter((r) => r.labelX != null && r.labelY != null)
-          .map((r) => (
-            <text
-              key={`label-${r.code}`}
-              x={r.labelX}
-              y={r.labelY}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={LABEL_SIZE}
-              fill={LABEL_FILL}
-              className="pointer-events-none select-none"
-            >
-              {r.name}
-            </text>
-          ))}
-      </g>
+{/* 2) teal 테두리 — fill보다 먼저 그려서, 인접 경계는 이후 fill에 덮여 사라지게 함.
+   strokeWidth를 기존보다 넉넉히 키워야 fill이 확실히 덮는다. */}
+<g>
+  {eventRegions.map((r) => (
+    <path
+      key={`stroke-${r.code}`}
+      d={r.d}
+      fill="none"
+      stroke={EVENT_STROKE}
+      strokeWidth={EVENT_BORDER_WIDTH * 2}
+      strokeLinejoin="round"
+    />
+  ))}
+</g>
+
+{/* 3) 흰색 fill — stroke 위에 덮어서 내부 공유 경계선을 지움 */}
+<g>
+  {eventRegions.map((r) => (
+    <path key={`fill-${r.code}`} d={r.d} fill={EVENT_FILL} />
+  ))}
+</g>
+
+{/* 4) 라벨 — fill 위에 다시 그려서 보이게 함 */}
+<g>
+  {eventRegions
+    .filter((r) => r.labelX != null && r.labelY != null)
+    .map((r) => (
+      <text
+        key={`label-${r.code}`}
+        x={r.labelX}
+        y={r.labelY}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={LABEL_SIZE}
+        fill={LABEL_FILL}
+        className="pointer-events-none select-none"
+      >
+        {r.name}
+      </text>
+    ))}
+</g>
     </svg>
   );
 }

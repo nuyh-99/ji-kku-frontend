@@ -36,7 +36,7 @@ export interface TravelPostsBySigunguResponse {
 }
 /** 여행 기록 상세 블록 */
 export interface TravelLogBlock {
-  travelLogBlockId: number;
+  travelPostBlockId: number;
   blockType: "IMAGE" | "TEXT";
   sortOrder: number;
   textContent: string | null;

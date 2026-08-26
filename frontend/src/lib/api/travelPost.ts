@@ -3,8 +3,9 @@ import type { SigunguTravelPostStatusResult } from "@/types/sigungu";
 import { mockRecordedSigunguResponse } from "@/data/mock-recorded-sigungu";
 import { mockRecords } from "@/data/mock-records";
 import type { TravelPostDetailResponse } from "@/types/record";
+import type { TravelPostDetail } from "@/types/record";
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 /** 여행기록 유무 조회 (시군구). TODO: 응답 타입 확정 필요 */
 export async function getSigunguTravelPostStatus(): Promise<SigunguTravelPostStatusResult> {
@@ -57,7 +58,7 @@ function buildMockEupmyeondongResponse(
 
 /** 여행기록 세부 조회. TODO: 응답 타입 확정 필요 */
 export function getTravelPostDetail(travelPostId: string) {
-  return apiFetch<TravelPostDetailResponse>(
+  return apiFetch<TravelPostDetail>(
     `/travel-posts/detail/${encodeURIComponent(travelPostId)}`
   );
 }
