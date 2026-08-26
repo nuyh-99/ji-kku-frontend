@@ -8,9 +8,10 @@ interface ApiFetchOptions extends Omit<RequestInit, "body"> {
 }
 
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('accessToken');
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
+  if (typeof window === "undefined") return {}; // 서버 사이드 방어
+  const token = localStorage.getItem("accessToken");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+
 }
 
 /** 공통 fetch 래퍼. 성공 시 result를 T로 반환하고, 실패 시 ApiError를 던집니다. */

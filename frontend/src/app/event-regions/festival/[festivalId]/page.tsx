@@ -30,9 +30,9 @@ declare global {
 export default function FestivalDetailPage({
   params,
 }: {
-  params: Promise<{ festival: string }>;
+  params: Promise<{ festivalId: string }>;
 }) {
-  const { festival: festivalId } = use(params);
+  const { festivalId } = use(params);
   const router = useRouter();
 
   const { data, isLoading, isError } = useQuery({
@@ -123,28 +123,24 @@ function FestivalDetailContent({
         style={{ width: 393, height: 253 }}
       >
         {images.length > 0 ? (
-          images.map((url, i) => (
-            <div
-              key={i}
-              className="relative shrink-0 snap-center"
-              style={{ width: 393, height: 253 }}
-            >
-              <Image src={url} alt={`${festival.title} 이미지 ${i + 1}`} fill className="object-cover" />
-            </div>
-          ))
-        ) : (
-          <div
-            className="relative shrink-0 snap-center"
-            style={{ width: 393, height: 253 }}
-          >
-            <Image
-              src="/festivals/noimage.jpg"
-              alt="이미지 없음"
-              fill
-              className="object-cover"
-            />
-          </div>
-        )}
+  images.map((url, i) => (
+    <div key={i} className="relative shrink-0 snap-center" style={{ width: 393, height: 253 }}>
+      <img
+        src={url}
+        alt={`${festival.title} 이미지 ${i + 1}`}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+    </div>
+  ))
+) : (
+  <div className="relative shrink-0 snap-center" style={{ width: 393, height: 253 }}>
+    <img
+      src="/festivals/noimage.jpg"
+      alt="이미지 없음"
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+  </div>
+)}
 
         {/* 페이지 카운터 */}
         {images.length > 0 && (

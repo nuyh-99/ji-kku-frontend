@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import type { FestivalCardData } from "../utils/mapFestival";
 
@@ -27,11 +26,11 @@ export default function FestivalCard({ festival }: { festival: FestivalCardData 
           boxShadow: "0.69px 2.76px 2.76px 0px #00000040",
         }}
       >
-        <Image
+        {/* 💡 Next.js Image 대신 기본 <img> 태그 사용 (next.config 설정 제약 우회) */}
+        <img
           src={imgSrc}
           alt={festival.title}
-          fill
-          className="object-cover"
+          className="w-full h-full object-cover"
           onError={() => setImgSrc("/festivals/noimage.jpg")}
         />
       </div>
