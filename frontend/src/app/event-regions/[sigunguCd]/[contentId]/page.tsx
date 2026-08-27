@@ -104,8 +104,10 @@ function SpotDetailContent({
     if (!spot.missionSpotId) return;
 
     try {
+      // apiFetch 는 실패 시 throw 하므로, 여기 오면 요청 자체는 성공이다.
+      // 응답의 isCompleted 가 인증 성사 여부라 이걸로 팝업을 띄운다.
       const res = await verifyMissionVisit(spot.missionSpotId, {});
-      if (res.isSuccess) {
+      if (res.isCompleted) {
         queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
         queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", sigunguCd, spot.contentId] });
         setShowVerifyPopup(true);
