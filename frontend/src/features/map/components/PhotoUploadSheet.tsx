@@ -1,39 +1,64 @@
 "use client";
 
 // 사진 추가 바텀시트 — 드롭존(사진 선택) + "업로드 하기".
-// 파일 선택 → 미리보기 → 업로드 시 선택 지역을 사진으로 채운다(폴리곤 clip).
-// ⚠️ 지금은 로컬 dataURL로만 채운다. 서버 업로드(mapApi)는 백엔드 확정 후 연결.
+// 파일 선택 → 미리보기 → 업로드 시 S3에 올리고(POST /images) 받은 URL로 선택 지역을 채운다.
+// 미리보기는 로컬 dataURL 이라 즉시 뜨고, 서버로 보내는 건 업로드된 URL 이다.
 import { useRef, useState } from "react";
-import { useSelectRegion, useSelectedRegion } from "../hooks/useMapStore";
-import { useDecorateFills, useSetFill } from "../hooks/useDecorateStore";
+import { ApiError } from "@/lib/api/types";
+import { uploadImage } from "@/lib/api/image";
+import { useActiveSigungu, useSelectRegion, useSelectedRegion } from "../hooks/useMapStore";
+import { useActiveFills, useFillRegion } from "../hooks/useMapDesign";
 
 export default function PhotoUploadSheet() {
   const selected = useSelectedRegion();
   const selectRegion = useSelectRegion();
-  const setFill = useSetFill();
-  const fills = useDecorateFills();
+  const activeSigungu = useActiveSigungu();
+
+  const { data } = useActiveFills(activeSigungu);
+  const fillRegion = useFillRegion(activeSigungu);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const current = selected ? fills[selected] : undefined;
+  const current = selected ? data.fills[selected] : undefined;
   const currentPhoto = current?.type === "photo" ? current.src : null;
   const shown = preview ?? currentPhoto;
 
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const picked = event.target.files?.[0];
+    if (!picked) return;
+    setError(null);
+    setFile(picked);
     const reader = new FileReader();
     reader.onload = () => setPreview(typeof reader.result === "string" ? reader.result : null);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(picked);
   };
 
   // 채우고 나면 시트를 내린다 — 지역 선택만 풀면 안내("꾸밀 지역을 선택하세요")로 돌아가고,
   // 도구는 그대로라 다른 지역을 이어서 채울 수 있다.
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selected || !shown) return;
-    setFill(selected, { type: "photo", src: shown });
-    selectRegion(null); // 시트가 언마운트되므로 preview 는 다음 열 때 알아서 초기화된다.
+
+    // 새로 고른 파일이 없으면(이미 채워진 사진 그대로) 다시 올릴 것도 없다.
+    if (!file) {
+      selectRegion(null);
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+    try {
+      const { imgUrl } = await uploadImage(file);
+      await fillRegion.mutateAsync({ code: selected, fill: { type: "photo", src: imgUrl } });
+      selectRegion(null); // 시트가 언마운트되므로 preview 는 다음 열 때 알아서 초기화된다.
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "사진을 올리지 못했어요. 다시 시도해 주세요.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -75,14 +100,20 @@ export default function PhotoUploadSheet() {
           className="hidden"
         />
 
+        {error && (
+          <p role="alert" className="text-center text-xs text-red-500">
+            {error}
+          </p>
+        )}
+
         <button
           type="button"
           onClick={handleUpload}
-          disabled={!shown}
+          disabled={!shown || uploading}
           className="h-[51px] w-full rounded-[9px] text-sm font-bold text-white transition-opacity disabled:opacity-50"
           style={{ backgroundColor: "#6ca59c" }}
         >
-          업로드 하기
+          {uploading ? "업로드 중…" : "업로드 하기"}
         </button>
       </div>
     </div>

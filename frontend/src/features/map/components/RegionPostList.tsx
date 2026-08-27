@@ -8,15 +8,15 @@
 // 카드를 누르면 기록 상세로, 지역명 옆 달력을 누르면 날짜로 걸러본다.
 //
 // ⚠️ 기록 자체는 B 담당(/records) 도메인이다. 여기는 "지도에서 지역별로 훑어보는" 뷰라
-//    map 이 소유하되, 목데이터를 쓴다. 서버 연동 시 mapApi 의 포스트 조회로 교체한다.
+//    map 이 소유하되 데이터는 기록 API(lib/api/travelPost)를 useRegionPosts 로 감싸 쓴다.
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DatePickerPopover from "@/components/common/DatePickerPopover";
 import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
-import { getRegionPosts } from "@/data/mock-region-posts";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import { GANGWON_REGIONS } from "@/data/regions/gangwon";
+import { useRegionPosts } from "../hooks/useRegionPosts";
 
 const BRAND = "#6ca59c";
 /** 디자인의 칩·라벨은 브랜드 색 70% 불투명도를 쓴다. */
@@ -47,23 +47,28 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
   // 고른 날짜가 없으면(null) 전체보기다.
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const allPosts = getRegionPosts(sigunguCd);
+  // 날짜 필터는 서버가 받는다 — 고른 날짜가 바뀌면 그 날짜 목록을 다시 받아온다.
+  const isoDate = selectedDate ? toIsoDate(selectedDate) : undefined;
+  const { data: allPosts, isLoading, isError } = useRegionPosts(sigunguCd, isoDate);
 
   // 제목은 보고 있는 범위의 이름이다. 읍·면·동 이름은 기록이 한 건도 없어도 나와야 해서
   // 포스트가 아니라 지도 데이터에서 찾는다.
+  const eupmyeondongName = eupmyeondongCd
+    ? getEupmyeondongMap(sigunguCd)?.regions.find((r) => r.code === eupmyeondongCd)?.name
+    : undefined;
+
   const regionName = eupmyeondongCd
-    ? (getEupmyeondongMap(sigunguCd)?.regions.find((r) => r.code === eupmyeondongCd)?.name ??
-      "이 지역")
+    ? (eupmyeondongName ?? "이 지역")
     : (GANGWON_REGIONS.find((r) => r.code === sigunguCd)?.name ?? "이 지역");
 
-  const posts = useMemo(() => {
-    const iso = selectedDate ? toIsoDate(selectedDate) : null;
-    return allPosts.filter(
-      (post) =>
-        (!eupmyeondongCd || post.eupmyeondongCd === eupmyeondongCd) &&
-        (!iso || post.logDate === iso),
-    );
-  }, [allPosts, eupmyeondongCd, selectedDate]);
+  // 읍·면·동으로 좁히는 건 클라이언트 몫이다 — 응답에 동 코드가 없어 이름으로 맞춘다.
+  const posts = useMemo(
+    () =>
+      eupmyeondongName
+        ? allPosts.filter((post) => post.eupmyeondongName === eupmyeondongName)
+        : allPosts,
+    [allPosts, eupmyeondongName],
+  );
 
   const handleSelectDate = (date: Date) => {
     // 이미 고른 날짜를 다시 누르면 필터를 푼다(= 전체보기). /records 쪽 목록과 같은 규칙.
@@ -106,7 +111,13 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
         </button>
       </div>
 
-      {posts.length === 0 ? (
+      {isLoading ? (
+        <p className="px-6 py-16 text-center text-sm text-zinc-500">기록을 불러오는 중…</p>
+      ) : isError ? (
+        <p role="alert" className="px-6 py-16 text-center text-sm text-zinc-500">
+          기록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+        </p>
+      ) : posts.length === 0 ? (
         <p className="px-6 py-16 text-center text-sm text-zinc-500">
           {selectedDate
             ? `${toChipDate(toIsoDate(selectedDate))}에 ${regionName}에서 남긴 기록이 없어요.`

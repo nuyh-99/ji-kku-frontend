@@ -11,6 +11,8 @@
 //   - 감상 모드(도구 미선택) + 1단계 : 시군구 탭 = 읍면동 지도로 진입
 //   - 도구 모드(색/사진)              : 지역 탭 = 꾸밀 대상 선택
 //   - 스티커 모드                     : 지역을 고르지 않는다(스티커는 좌표 기반)
+//
+// 채움·스티커·사진 카드는 서버(useMapDesign)에서 읽는다. 스토어에는 도구/선택 같은 UI 상태만 있다.
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
@@ -34,25 +36,24 @@ import {
   useSelectedRegion,
 } from "../hooks/useMapStore";
 import {
-  useAddPhotoCard,
-  useAddSticker,
   useCloseTool,
-  useDecorateFills,
   useDecorateTool,
   useFabOpen,
-  useMovePhotoCard,
-  useMoveSticker,
-  usePhotoCards,
-  useRemovePhotoCard,
-  useRemoveSticker,
-  useResizePhotoCard,
-  useResizeSticker,
   useSelectPhotoCard,
   useSelectSticker,
   useSelectedPhotoCardId,
   useSelectedStickerId,
-  useStickers,
 } from "../hooks/useDecorateStore";
+import {
+  useActiveFills,
+  useMapPhotoCards,
+  useMapStickers,
+  usePhotoCardEdits,
+  usePlacePhotoCard,
+  usePlaceSticker,
+  useStickerEdits,
+} from "../hooks/useMapDesign";
+import { DEFAULT_PHOTO_CARD_WIDTH, DEFAULT_STICKER_SIZE } from "../store/decorateStore";
 
 export default function MapView() {
   const router = useRouter();
@@ -68,24 +69,21 @@ export default function MapView() {
 
   const tool = useDecorateTool();
   const fabOpen = useFabOpen();
-  const fills = useDecorateFills();
   const closeTool = useCloseTool();
 
-  const stickers = useStickers(activeSigungu);
-  const selectedStickerId = useSelectedStickerId();
-  const addSticker = useAddSticker();
-  const moveSticker = useMoveSticker();
-  const resizeSticker = useResizeSticker();
-  const removeSticker = useRemoveSticker();
-  const selectSticker = useSelectSticker();
+  const { data: activeFills } = useActiveFills(activeSigungu);
 
-  const photoCards = usePhotoCards(activeSigungu);
+  const { data: stickers } = useMapStickers(activeSigungu);
+  const selectedStickerId = useSelectedStickerId();
+  const selectSticker = useSelectSticker();
+  const placeSticker = usePlaceSticker(activeSigungu);
+  const stickerEdits = useStickerEdits(activeSigungu);
+
+  const { data: photoCards } = useMapPhotoCards(activeSigungu);
   const selectedPhotoCardId = useSelectedPhotoCardId();
-  const addPhotoCard = useAddPhotoCard();
-  const movePhotoCard = useMovePhotoCard();
-  const resizePhotoCard = useResizePhotoCard();
-  const removePhotoCard = useRemovePhotoCard();
   const selectPhotoCard = useSelectPhotoCard();
+  const { mutate: placePhotoCard } = usePlacePhotoCard();
+  const photoCardEdits = usePhotoCardEdits(activeSigungu);
 
   // 기록 작성에서 "지도에 표시하기"로 넘어온 건이 있으면 그 지역으로 들어가 카드를 놓는다.
   // takeMapDisplayHandoff 는 꺼내면서 지우므로 지도를 다시 열어도 또 생기지 않는다.
@@ -100,14 +98,14 @@ export default function MapView() {
     // 카드는 그 읍·면·동 라벨 자리에 놓는다. 라벨이 없는 작은 동은 지도 한가운데.
     const region = map.regions.find((r) => r.code === handoff.eupmyeondongCd);
     const [vbX, vbY, vbW, vbH] = map.viewBox.split(/\s+/).map(Number);
-    addPhotoCard(handoff.sigunguCd, {
-      recordId: handoff.recordId,
-      src: handoff.src,
-      title: handoff.title,
+    placePhotoCard({
+      sigunguCd: handoff.sigunguCd,
+      travelPostId: Number(handoff.recordId),
       x: region?.labelX ?? vbX + vbW / 2,
       y: region?.labelY ?? vbY + vbH / 2,
+      width: DEFAULT_PHOTO_CARD_WIDTH,
     });
-  }, [enterSigungu, addPhotoCard]);
+  }, [enterSigungu, placePhotoCard]);
 
   const eupmyeondong = getEupmyeondongMap(activeSigungu);
   const inEupmyeondong = eupmyeondong !== null;
@@ -122,7 +120,7 @@ export default function MapView() {
   const pickingForRecord = tool === "record" && inEupmyeondong;
   const inStickerMode = tool === "sticker" && inEupmyeondong;
 
-  // 스티커는 배치하는 순간 시트가 내려가고 도구도 풀린다(decorateStore.addSticker).
+  // 스티커는 배치하는 순간 시트가 내려가고 도구도 풀린다(handlePickSticker).
   // 그래도 방금 놓은 스티커는 계속 만질 수 있어야 하므로, 선택된 스티커가 있으면 조작을 열어둔다.
   // 지도 빈 곳을 누르면 선택이 풀리면서 편집도 끝난다.
   const stickersEditable = inEupmyeondong && (inStickerMode || selectedStickerId !== null);
@@ -154,6 +152,16 @@ export default function MapView() {
     }
   };
 
+  // 스티커를 놓으면 시트를 내리고(도구 해제), 서버가 준 id 로 방금 놓은 스티커를 편집 상태로 만든다.
+  const handlePickSticker = (sticker: { stickerId: number; x: number; y: number }) => {
+    if (!activeSigungu) return;
+    closeTool();
+    placeSticker.mutate(
+      { stickerId: sticker.stickerId, x: sticker.x, y: sticker.y, size: DEFAULT_STICKER_SIZE },
+      { onSuccess: (placed) => selectSticker(String(placed.mapStickerId)) },
+    );
+  };
+
   return (
     <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-white">
       <DecorateHeader />
@@ -176,7 +184,7 @@ export default function MapView() {
             labelSize={labelSize}
             transformRef={transformRef}
             svgRef={svgRef}
-            regionStates={fills}
+            regionStates={activeFills.fills}
             selectedCode={selectedRegion}
             onRegionClick={regionInteractive ? handleRegionClick : undefined}
             panningDisabled={stickerDragging}
@@ -191,11 +199,9 @@ export default function MapView() {
                     interactive={photoCardsEditable}
                     svgRef={svgRef}
                     onSelect={selectPhotoCard}
-                    onMove={(id, x, y) => activeSigungu && movePhotoCard(activeSigungu, id, x, y)}
-                    onResize={(id, width) =>
-                      activeSigungu && resizePhotoCard(activeSigungu, id, width)
-                    }
-                    onRemove={(id) => activeSigungu && removePhotoCard(activeSigungu, id)}
+                    onMove={photoCardEdits.move}
+                    onResize={photoCardEdits.resize}
+                    onRemove={photoCardEdits.remove}
                     onDragStateChange={setStickerDragging}
                   />
                   <StickerLayer
@@ -204,9 +210,9 @@ export default function MapView() {
                     interactive={stickersEditable}
                     svgRef={svgRef}
                     onSelect={selectSticker}
-                    onMove={(id, x, y) => activeSigungu && moveSticker(activeSigungu, id, x, y)}
-                    onResize={(id, size) => activeSigungu && resizeSticker(activeSigungu, id, size)}
-                    onRemove={(id) => activeSigungu && removeSticker(activeSigungu, id)}
+                    onMove={stickerEdits.move}
+                    onResize={stickerEdits.resize}
+                    onRemove={stickerEdits.remove}
                     onDragStateChange={setStickerDragging}
                   />
                 </>
@@ -255,7 +261,7 @@ export default function MapView() {
         <StickerSheet
           viewBox={viewBox}
           placedCount={stickers.length}
-          onPick={(sticker) => activeSigungu && addSticker(activeSigungu, sticker)}
+          onPick={handlePickSticker}
           onClose={closeTool}
         />
       )}

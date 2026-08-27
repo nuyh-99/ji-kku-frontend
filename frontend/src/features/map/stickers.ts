@@ -28,3 +28,14 @@ export const STICKERS: StickerAsset[] = [
   // 디자인 3행 4열 — 2행 2열과 같은 파라솔 이미지가 한 번 더 놓여 있다.
   { id: "beach-umbrella-2", name: "파라솔", src: "/stickers/beach-umbrella.png" },
 ];
+
+/**
+ * 서버 스티커 URL에서 표시명을 되찾는다.
+ * `GET /stickers` 는 id와 url만 주고 이름을 주지 않아서, 파일명이 같으면 위 카탈로그의
+ * 한글 이름을 붙여 a11y 라벨로 쓴다. 못 찾으면 "스티커" 로 떨어진다(렌더에는 지장 없음).
+ */
+export function stickerNameByUrl(url: string): string {
+  const file = url.split("/").pop()?.split("?")[0];
+  if (!file) return "스티커";
+  return STICKERS.find((s) => s.src.endsWith(`/${file}`))?.name ?? "스티커";
+}
