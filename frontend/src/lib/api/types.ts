@@ -20,16 +20,37 @@ export const ERROR_CODES = {
   AUTH401_3: { status: 401, name: "EXPIRED_TOKEN", message: "만료된 토큰입니다." },
   AUTH401_4: { status: 401, name: "INVALID_CREDENTIALS", message: "아이디 또는 비밀번호가 올바르지 않습니다." },
   AUTH401_5: { status: 401, name: "TOKEN_NOT_FOUND", message: "헤더에 토큰이 존재하지 않습니다." },
+  AUTH401_6: { status: 401, name: "INVALID_DEV_LOGIN_KEY", message: "개발용 로그인 키가 올바르지 않습니다." },
+  AUTH401_7: { status: 401, name: "REVOKED_TOKEN", message: "더 이상 사용할 수 없는 토큰입니다. 다시 로그인해 주세요." },
   AUTH403_1: { status: 403, name: "ACCESS_DENIED", message: "접근 권한이 없습니다." },
 
   MEMBER404_1: { status: 404, name: "MEMBER_NOT_FOUND", message: "존재하지 않는 사용자입니다." },
   MEMBER409_1: { status: 409, name: "DUPLICATE_EMAIL", message: "이미 사용중인 이메일입니다." },
   MEMBER409_2: { status: 409, name: "DUPLICATE_NICKNAME", message: "이미 사용중인 닉네임입니다." },
 
+  KAKAO400_1: { status: 400, name: "KAKAO_EMAIL_NOT_AGREED", message: "카카오 계정의 이메일 제공에 동의해야 로그인할 수 있습니다." },
+  KAKAO401_1: { status: 401, name: "INVALID_KAKAO_TOKEN", message: "카카오 액세스 토큰이 유효하지 않습니다." },
+  KAKAO401_2: { status: 401, name: "INVALID_KAKAO_CODE", message: "카카오 인가 코드가 유효하지 않습니다." },
+  KAKAO502_1: { status: 502, name: "KAKAO_SERVER_ERROR", message: "카카오 인증 서버 호출에 실패했습니다." },
+
   EXTERNAL400_1: { status: 400, name: "FILE_SIZE_EXCEEDED", message: "파일 업로드 용량을 초과했습니다." },
   EXTERNAL400_2: { status: 400, name: "INVALID_FILE_EXTENSION", message: "허용되지 않는 파일 확장자입니다." },
   EXTERNAL500_1: { status: 500, name: "FILE_UPLOAD_FAILED", message: "S3 파일 업로드에 실패했습니다." },
   EXTERNAL500_2: { status: 500, name: "EXTERNAL_API_ERROR", message: "외부 연동 API 호출에 실패했습니다." },
+
+  SPOT404_1: { status: 404, name: "SPOT_NOT_FOUND", message: "존재하지 않는 관광지입니다." },
+
+  FESTIVAL404_1: { status: 404, name: "FESTIVAL_NOT_FOUND", message: "존재하지 않는 축제입니다." },
+
+  MISSION404_1: { status: 404, name: "MISSION_SPOT_NOT_FOUND", message: "존재하지 않는 미션 관광지입니다." },
+  MISSION404_2: { status: 404, name: "MISSION_TARGET_SPOT_NOT_FOUND", message: "관광지 정보를 찾을 수 없습니다." },
+  MISSION404_3: { status: 404, name: "MISSION_COORDINATE_NOT_FOUND", message: "미션 관광지 좌표를 찾을 수 없습니다." },
+  MISSION404_4: { status: 404, name: "MISSION_SIGUNGU_NOT_FOUND", message: "존재하지 않는 시군구 코드입니다." },
+  MISSION400_1: { status: 400, name: "MISSION_OUT_OF_RANGE", message: "방문 가능한 범위를 벗어났습니다." },
+  MISSION409_1: { status: 409, name: "MISSION_ALREADY_COMPLETED", message: "이미 방문 인증한 미션입니다." },
+
+  BADGE404_1: { status: 404, name: "BADGE_NOT_FOUND", message: "존재하지 않는 배지입니다." },
+  BADGE404_2: { status: 404, name: "MEMBER_BADGE_NOT_FOUND", message: "획득한 배지 정보를 찾을 수 없습니다." },
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;
