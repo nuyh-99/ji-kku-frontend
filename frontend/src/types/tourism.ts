@@ -37,12 +37,13 @@ export interface TodaySpotItem {
 }
 
 export interface SpotDetailItem {
-  spotId: number;
   contentId: number;
-  firstImage: string;
   title: string;
+  firstImage: string;
+  overview: string;
   addr1: string;
+  sigunguCd: number;
+  sigunguNm: string;
   mapX: number; // 경도
   mapY: number; // 위도
-  description: string;
 }
