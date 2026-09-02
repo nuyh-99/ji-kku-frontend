@@ -4,6 +4,7 @@ import { use, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import Script from "next/script";
 import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
 import { getSpotDetail } from "@/lib/api/spot";
 import { mapSpotDetailToDetailData } from "@/features/spots/utils/mapSpotDetail";
@@ -12,7 +13,6 @@ import { mapSpotDetailToDetailData } from "@/features/spots/utils/mapSpotDetail"
 // 지금은 firstImage 하나만 있으니 임시로 배열처럼 다룸.
 function useSpotImages(imageUrl: string) {
   return imageUrl ? [imageUrl] : [];
-  
 }
 
 // 네이버 지도 SDK는 타입 패키지를 쓰지 않으므로, 이 화면이 실제로 호출하는 API만 좁게 선언한다.
@@ -62,6 +62,7 @@ function SpotDetailContent({
 }) {
   const images = useSpotImages(spot.imageUrl);
   const router = useRouter();
+
   // --- 이미지 스크롤 캐러셀 ---
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -73,7 +74,7 @@ function SpotDetailContent({
     setCurrentIndex(index);
   };
 
-  // --- 네이버 지도 ---
+   // --- 네이버 지도 ---
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -96,114 +97,122 @@ function SpotDetailContent({
     window.open(naverMapUrl, "_blank");
   };
 
+  // --- 상세 설명 더보기/접기 ---
+  const descRef = useRef<HTMLParagraphElement>(null);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [isDescClamped, setIsDescClamped] = useState(false);
+
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el) return;
+    setIsDescClamped(el.scrollHeight > el.clientHeight);
+  }, [spot.description]);
+
   return (
-    <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
-  <div className="px-[17px]">
-    <header
-      className="flex items-start justify-center mb-4"
-      style={{ width: 359, height: 28, gap: 303 }}
-    >
-      <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-        <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
-      </button>
+    <>
+     
 
-      <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+      <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
+        <div className="px-[17px]">
+          <header
+            className="flex items-start justify-center mb-4"
+            style={{ width: 359, height: 28, gap: 303 }}
+          >
+            <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+              <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
+            </button>
+
+            <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+              <div
+                className="shrink-0"
+                style={{
+                  width: 28,
+                  height: 28,
+                  background: "url('/assets/Menu.png') 50% / contain no-repeat",
+                }}
+              />
+            </button>
+          </header>
+        </div>
+
+        {/* 이미지 캐러셀 (가로 스크롤로 넘김) */}
         <div
-          className="shrink-0"
-          style={{
-            width: 28,
-            height: 28,
-            background: "url('/assets/Menu.png') 50% / contain no-repeat",
-          }}
-        />
-      </button>
-    </header>
-  </div>
-
-      {/* 이미지 캐러셀 (가로 스크롤로 넘김) */}
-<div
-  ref={scrollRef}
-  onScroll={handleScroll}
-  className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-  style={{ width: 393, height: 253 }}
->
-  {images.length > 0 ? (
-    images.map((url, i) => (
-      <div
-        key={i}
-        className="relative shrink-0 snap-center"
-        style={{ width: 393, height: 253 }}
-      >
-        <Image src={url} alt={`${spot.title} 이미지 ${i + 1}`} fill className="object-cover" />
-      </div>
-    ))
-  ) : (
-    <div
-      className="relative shrink-0 snap-center"
-      style={{ width: 393, height: 253 }}
-    >
-      <Image
-        src="/festivals/noimage.jpg"
-        alt="이미지 없음"
-        fill
-        className="object-cover"
-      />
-    </div>
-  )}
-
-        {/* 페이지 카운터 */}
-        {images.length > 0 && (
-          <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white">
-            {currentIndex + 1} | {images.length}
-          </span>
-        )}
-      </div>
-
-      <div className="px-[17px]">
-        {/* 장소 이름 */}
-        <h1
-          className="mt-[26px]"
-          style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          style={{ width: 393, height: 253 }}
         >
-          {spot.title}
-        </h1>
+          {images.length > 0 ? (
+            images.map((url, i) => (
+              <div
+                key={i}
+                className="relative shrink-0 snap-center"
+                style={{ width: 393, height: 253 }}
+              >
+                <Image src={url} alt={`${spot.title} 이미지 ${i + 1}`} fill className="object-cover" />
+              </div>
+            ))
+          ) : (
+            <div
+              className="relative shrink-0 snap-center"
+              style={{ width: 393, height: 253 }}
+            >
+              <Image
+                src="/festivals/noimage.jpg"
+                alt="이미지 없음"
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
 
-        {/* 상세 주소 */}
-        <p
-          className="mt-1"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
-        >
-          {spot.address}
-        </p>
+          {/* 페이지 카운터 */}
+          {images.length > 0 && (
+            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white">
+              {currentIndex + 1} | {images.length}
+            </span>
+          )}
+        </div>
 
-        {/* 상세 설명 */}
-        <p
-          className="mt-6 whitespace-pre-line"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
-        >
-          {spot.description}
-        </p>
+        <div className="px-[17px]">
+          {/* 장소 이름 */}
+          <h1
+            className="mt-[26px]"
+            style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
+          >
+            {spot.title}
+          </h1>
 
-        {/* 이용 정보 */}
-        <dl
-          className="mt-4 space-y-1"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, color: "#000000" }}
-        >
-          <div className="flex gap-1">
-            <dt className="text-gray-500">관람시간 :</dt>
-            <dd className="text-gray-500">상시개방</dd>
-          </div>
-          <div className="flex gap-1">
-            <dt className="text-gray-500">휴무일 :</dt>
-            <dd className="text-gray-500">연중무휴</dd>
-          </div>
-          <div className="flex gap-1">
-            <dt className="text-gray-500">이용료 :</dt>
-            <dd className="text-gray-500">무료입장</dd>
-          </div>
-        </dl>
+          {/* 상세 주소 */}
+          <p
+            className="mt-1"
+            style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
+          >
+            {spot.address}
+          </p>
 
-        {/* 네이버 지도 */}
+          {/* 상세 설명 (3줄 초과 시 더보기) */}
+          <p
+            ref={descRef}
+            className={`mt-6 whitespace-pre-line ${!isDescExpanded ? "line-clamp-3" : ""}`}
+            style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
+          >
+            {spot.description}
+          </p>
+          {isDescClamped && (
+            <button
+              type="button"
+              onClick={() => setIsDescExpanded((v) => !v)}
+              className="mt-1"
+              style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, color: "#9C9C9C" }}
+            >
+              {isDescExpanded ? "접기" : "더보기"}
+            </button>
+          )}
+
+          
+       
+          {/* 네이버 지도 */}
         <div
           ref={mapRef}
           className="mt-6 flex items-center justify-center bg-[#EEEEEE] text-sm text-gray-400"
@@ -212,23 +221,24 @@ function SpotDetailContent({
           {typeof window !== "undefined" && !window.naver && "지도 SDK 로드 필요"}
         </div>
 
-        {/* 위치 확인하기 버튼 → 네이버 지도 웹으로 새 탭 이동 */}
-        <button
-          onClick={handleCheckLocation}
-          className="mt-4 flex w-full items-center justify-center"
-          style={{
-            height: 51,
-            borderRadius: 9,
-            border: "1px solid #6CA59C",
-            color: "#6CA59C",
-            fontFamily: "Pretendard",
-            fontWeight: 700,
-            fontSize: 14,
-          }}
-        >
-          지도 확인하기
-        </button>
+          {/* 위치 확인하기 버튼 → 네이버 지도 웹으로 새 탭 이동 */}
+          <button
+            onClick={handleCheckLocation}
+            className="mt-4 flex w-full items-center justify-center"
+            style={{
+              height: 51,
+              borderRadius: 9,
+              border: "1px solid #6CA59C",
+              color: "#6CA59C",
+              fontFamily: "Pretendard",
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
+            지도 확인하기
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
