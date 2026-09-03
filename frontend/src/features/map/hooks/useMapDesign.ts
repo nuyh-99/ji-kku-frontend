@@ -8,6 +8,7 @@
 import { useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PlacedPhotoCard, PlacedSticker, RegionFill } from "@/types/map";
+import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import { getAccessToken } from "@/lib/api/client";
 import {
   addEupmyeondongMapSticker,
@@ -43,11 +44,11 @@ import type {
 } from "../types";
 
 /**
- * ⚠️ 확인 필요 — 읍면동 식별자.
- * 서버 `EmdFillRequest.emdId` 는 int64 이고, 응답에도 emdId 만 오고 동 이름·코드가 없다.
- * 프론트 폴리곤 식별자는 행정동코드 10자리(adm_cd2, 예: 5111025000)라, 지금은 둘이 같은 값이라고
- * 보고 숫자 변환만 한다. (시군구가 int32, 읍면동이 int64 인 것도 10자리 코드와 아귀가 맞는다.)
- * emdId 가 DB 시퀀스 id 라면 코드↔id 대응표가 필요하다 — 그때 이 두 함수만 고치면 된다.
+ * ⚠️ 막혀 있음 — 읍면동 식별자 (2026-09-03 실서버 확인).
+ * 서버 `emdId` 는 행정동코드가 **아니라** DB 의 별도 id다. 행정동코드 10자리를 그대로 보내면
+ * 404 "존재하지 않는 읍면동 ID입니다" 가 떨어진다(스웨거 example 도 301 같은 작은 수다).
+ * 코드↔emdId 를 조회할 API 가 아직 없어서 2단계 채우기는 프론트만으로는 붙일 수 없다.
+ * 백엔드가 읍면동 목록 API 를 열어주면 이 두 함수만 대응표 조회로 바꾸면 된다.
  */
 function toEmdId(code: EupmyeondongCode): number {
   return Number(code);
@@ -101,30 +102,75 @@ function toFillsView<T extends FillFields & { fillMapId: number }>(
   return { fills, fillMapIdByCode };
 }
 
+// ─── 좌표계: 화면(viewBox) ↔ 서버(0~1) ─────────────────────────────────────
+//
+// 서버는 스티커·사진 카드 좌표를 **0~1 정규화 값**으로 받는다
+// (MapStickerRequest·MapTravelPostRequest 의 posX/posY: minimum 0, maximum 1).
+// 화면은 지도 SVG 의 viewBox 단위를 쓰므로 여기서 양방향으로 바꾼다 —
+// 그냥 보내면 400 COMMON400_1 "posX는 1 이하여야 합니다" 로 전부 거부당한다.
+//
+// 시군구마다 읍면동 지도의 viewBox 가 달라서, 변환에는 그 지도의 viewBox 가 필요하다.
+
+interface ViewBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** 지도를 못 찾았을 때 쓰는 항등 viewBox. 2단계에 들어가야 스티커가 보이므로 실제로는 닿지 않는다. */
+const UNIT_VIEW_BOX: ViewBox = { x: 0, y: 0, width: 1, height: 1 };
+
+function viewBoxOf(sigunguCd: SigunguCode | null): ViewBox {
+  const map = getEupmyeondongMap(sigunguCd);
+  if (!map) return UNIT_VIEW_BOX;
+  const [x, y, width, height] = map.viewBox.split(/s+/).map(Number);
+  return { x, y, width, height };
+}
+
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+/** viewBox 좌표 → 서버 0~1. 지도 밖으로 끌어다 놓은 것도 서버가 거부하지 않게 잘라 보낸다. */
+function toNormalizedPos(x: number, y: number, vb: ViewBox) {
+  return {
+    posX: clamp01((x - vb.x) / vb.width),
+    posY: clamp01((y - vb.y) / vb.height),
+  };
+}
+
+/** 서버 0~1 → viewBox 좌표. */
+function toViewBoxPos(posX: number, posY: number, vb: ViewBox) {
+  return { x: vb.x + posX * vb.width, y: vb.y + posY * vb.height };
+}
+
 /**
  * 서버 스티커 → 화면 스티커.
  * 서버는 크기를 scale(배율)로, 화면은 한 변 길이(viewBox 단위)로 다루므로 기본 크기를 곱한다.
  */
-function toPlacedSticker(res: MapStickerResponse): PlacedSticker {
+function toPlacedSticker(res: MapStickerResponse, vb: ViewBox): PlacedSticker {
+  const { x, y } = toViewBoxPos(res.posX, res.posY, vb);
   return {
     id: String(res.mapStickerId),
     stickerId: String(res.stickerId ?? ""),
     src: res.stickerUrl ?? "",
     name: stickerNameByUrl(res.stickerUrl ?? ""),
-    x: res.posX,
-    y: res.posY,
+    x,
+    y,
     size: (res.scale || 1) * DEFAULT_STICKER_SIZE,
   };
 }
 
-function toPlacedPhotoCard(res: MapTravelPostResponse): PlacedPhotoCard {
+function toPlacedPhotoCard(res: MapTravelPostResponse, vb: ViewBox): PlacedPhotoCard {
+  const { x, y } = toViewBoxPos(res.posX, res.posY, vb);
   return {
     id: String(res.mapStickerId),
     recordId: String(res.travelPostId),
     src: res.firstImage ?? "",
     title: res.title ?? "",
-    x: res.posX,
-    y: res.posY,
+    x,
+    y,
     width: (res.scale || 1) * DEFAULT_PHOTO_CARD_WIDTH,
   };
 }
@@ -212,7 +258,10 @@ export function useMapStickers(sigunguCd: SigunguCode | null) {
     queryKey: mapKeys.stickers(sigunguCd ?? ""),
     queryFn: () => getEupmyeondongMapStickers(sigunguCd as string),
     enabled: hasToken && sigunguCd !== null,
-    select: (data: ListResult<MapStickerResponse>) => (data.content ?? []).map(toPlacedSticker),
+    select: (data: ListResult<MapStickerResponse>) => {
+      const vb = viewBoxOf(sigunguCd);
+      return (data.content ?? []).map((res) => toPlacedSticker(res, vb));
+    },
   });
   return { ...query, data: query.data ?? EMPTY_STICKERS };
 }
@@ -224,8 +273,10 @@ export function useMapPhotoCards(sigunguCd: SigunguCode | null) {
     queryKey: mapKeys.photoCards(sigunguCd ?? ""),
     queryFn: () => getEupmyeondongMapTravelPosts(sigunguCd as string),
     enabled: hasToken && sigunguCd !== null,
-    select: (data: ListResult<MapTravelPostResponse>) =>
-      (data.content ?? []).map(toPlacedPhotoCard),
+    select: (data: ListResult<MapTravelPostResponse>) => {
+      const vb = viewBoxOf(sigunguCd);
+      return (data.content ?? []).map((res) => toPlacedPhotoCard(res, vb));
+    },
   });
   return { ...query, data: query.data ?? EMPTY_PHOTO_CARDS };
 }
@@ -310,8 +361,7 @@ export function usePlaceSticker(sigunguCd: SigunguCode | null) {
       const topZ = Math.max(0, ...(cached?.content ?? []).map((s) => s.zIndex ?? 0));
       return addEupmyeondongMapSticker(sigunguCd, {
         stickerId: vars.stickerId,
-        posX: vars.x,
-        posY: vars.y,
+        ...toNormalizedPos(vars.x, vars.y, viewBoxOf(sigunguCd)),
         scale: vars.size / DEFAULT_STICKER_SIZE,
         zIndex: topZ + 1,
       });
@@ -344,8 +394,7 @@ export function usePlacePhotoCard() {
       const topZ = Math.max(0, ...(cached?.content ?? []).map((c) => c.zIndex ?? 0));
       return addEupmyeondongMapTravelPost(vars.sigunguCd, {
         travelPostId: vars.travelPostId,
-        posX: vars.x,
-        posY: vars.y,
+        ...toNormalizedPos(vars.x, vars.y, viewBoxOf(vars.sigunguCd)),
         scale: vars.width / DEFAULT_PHOTO_CARD_WIDTH,
         zIndex: topZ + 1,
       });
@@ -399,9 +448,12 @@ export function useStickerEdits(sigunguCd: SigunguCode | null) {
     sigunguCd !== null,
   );
 
+  // 캐시는 서버 DTO 모양이라 이동도 0~1 로 바꿔 넣는다 — 안 그러면 select 가 다시 펼치면서 튄다.
+  const vb = viewBoxOf(sigunguCd);
+
   return {
     move: (id: string, x: number, y: number) =>
-      update(id, (item) => ({ ...item, posX: x, posY: y })),
+      update(id, (item) => ({ ...item, ...toNormalizedPos(x, y, vb) })),
     resize: (id: string, size: number) =>
       update(id, (item) => ({ ...item, scale: clampStickerSize(size) / DEFAULT_STICKER_SIZE })),
     remove,
@@ -415,9 +467,11 @@ export function usePhotoCardEdits(sigunguCd: SigunguCode | null) {
     sigunguCd !== null,
   );
 
+  const vb = viewBoxOf(sigunguCd);
+
   return {
     move: (id: string, x: number, y: number) =>
-      update(id, (item) => ({ ...item, posX: x, posY: y })),
+      update(id, (item) => ({ ...item, ...toNormalizedPos(x, y, vb) })),
     resize: (id: string, width: number) =>
       update(id, (item) => ({
         ...item,
