@@ -124,7 +124,7 @@ const UNIT_VIEW_BOX: ViewBox = { x: 0, y: 0, width: 1, height: 1 };
 function viewBoxOf(sigunguCd: SigunguCode | null): ViewBox {
   const map = getEupmyeondongMap(sigunguCd);
   if (!map) return UNIT_VIEW_BOX;
-  const [x, y, width, height] = map.viewBox.split(/s+/).map(Number);
+  const [x, y, width, height] = map.viewBox.split(/\s+/).map(Number);
   return { x, y, width, height };
 }
 
