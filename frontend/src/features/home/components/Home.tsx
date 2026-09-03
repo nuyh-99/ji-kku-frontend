@@ -3,20 +3,29 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import SpotCard from "@/components/SpotCard";
+import GangwonMapSvg from "@/components/map/GangwonMapSvg";
+import { GANGWON_REGIONS, GANGWON_VIEW_BOX } from "@/data/regions/gangwon";
+import { useSigunguFills } from "@/features/map/hooks/useMapDesign";
 import { useTodaySpots } from "../hooks/useTodaySpots";
 import CircularProgress from "./CircularProgress";
 
 export default function Home() {
     const router = useRouter();
 
-    //실제로는 API
-    const visitedCount = 6;
-    const totalCount = 18;
-    const percent = Math.round((visitedCount / totalCount) * 100);
     const onOpenMenu = () => router.push("/mypage");
 
     // 오늘의 관광지 추천 — 실제 API 연동
     const { data: todaySpots, isLoading, isError } = useTodaySpots();
+
+    // 내가 칠한 시군구 지도 — 읽기 전용 미리보기
+    const { data: sigunguFills } = useSigunguFills();
+
+    // 실제로 채워진(색/사진) 시군구 개수를 방문 카운트로 사용
+    const visitedCount = Object.values(sigunguFills.fills).filter(
+        (fill) => fill.type !== "empty",
+    ).length;
+    const totalCount = 18;
+    const percent = Math.round((visitedCount / totalCount) * 100);
 
     const onOpenMap = () => router.push("/map");
     const onEventArea = () => router.push("/event-regions");
@@ -49,12 +58,18 @@ export default function Home() {
                 <div className="rounded-[20px] h-100 bg-white/60 shadow-[0_0_4px_0_rgba(0,0,0,0.50)] overflow-hidden ">
                     <h2 className="relative z-10 m-[14px] text-[12.538px] font-bold text-[#6CA59C]">MY MAP</h2>
 
-                    <div className="relative h-64 w-full">
-                        <Image
-                            src="/assets/mymap.png" //지도부분은 일단 이미지로 하드코딩 (나중에 받아와야함)
-                            alt="강원도 지도"
-                            fill
-                            className="object-contain " //원본비율 유지
+                    <div
+                        className="relative h-64 w-full px-6 flex items-center justify-center cursor-pointer"
+                        onClick={onOpenMap}
+                        role="button"
+                        aria-label="내 지도 꾸미러 가기"
+                    >
+                        <GangwonMapSvg
+                            regions={GANGWON_REGIONS}
+                            viewBox={GANGWON_VIEW_BOX}
+                            regionStates={sigunguFills.fills}
+                            ariaLabel="내가 방문한 강원도 지도"
+                            // onRegionClick 없음 → 클릭/포커스 불가능한 읽기 전용 지도
                         />
                     </div>
 

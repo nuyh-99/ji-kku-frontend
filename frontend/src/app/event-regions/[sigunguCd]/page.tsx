@@ -7,7 +7,7 @@ import Image from "next/image";
 import { getMissionSpots, type MissionSpotItem } from "@/lib/api/mission";
 import GangwonMapSvg from "@/components/map/GangwonMapSvg";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
-
+import type { MissionSpotsResult } from "@/types/mission";
 // ==========================================
 // 🎛️ 지도 및 핀 보정 상수 설정
 // ==========================================
@@ -69,11 +69,12 @@ export default function EventRegionPage({
   const sigunguCdNum = Number(sigunguCd);
 
   // 📌 1. MissionSpotItem[] (배열) 타입으로 useQuery 타입 명시
-  const { data: spotList = [], isLoading, isError } = useQuery<MissionSpotItem[]>({
-    queryKey: ["missionSpots", sigunguCdNum],
-    queryFn: () => getMissionSpots(sigunguCdNum),
-  });
+  const { data, isLoading, isError } = useQuery<MissionSpotsResult>({
+  queryKey: ["missionSpots", sigunguCdNum],
+  queryFn: () => getMissionSpots(sigunguCdNum),
+});
 
+const spotList = data?.content ?? [];
   if (isLoading) return <div className="px-4 py-4 text-white">로딩 중...</div>;
   if (isError || !spotList) return <div className="px-4 py-4 text-white">정보를 불러오지 못했습니다.</div>;
 
@@ -539,10 +540,10 @@ function EventSpotPopup({
         <button
           type="button"
           onClick={(e) => {
-            e.stopPropagation();
-            const currentSigungu = spot.sigunguCd || sigunguCd;
-            router.push(`/event-regions/${sigunguCd}/${spot.contentId}`);
-          }}
+  e.stopPropagation();
+  const currentSigungu = spot.sigunguCd || sigunguCd;
+  router.push(`/event-regions/${currentSigungu}/${spot.contentId}`);
+}}
           className="absolute flex items-center justify-center rounded-[3.8px] cursor-pointer z-10"
           style={{ top: 142.54, left: 10, width: 116, height: 20.92, background: "#FCEFEF" }}
         >

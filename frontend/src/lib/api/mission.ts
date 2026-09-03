@@ -1,6 +1,7 @@
 import { apiFetch } from "./client";
 import type { VerifyMissionVisitBody } from "@/types/mission";
 import type { GetBadgesResult } from "@/types/mission";
+import type { MissionSpotsResult } from "@/types/mission";
 
 export interface MissionSpotItem {
   missionSpotId?: number;
@@ -23,8 +24,8 @@ export async function getMissionSpotDetail(
   return apiFetch<MissionSpotItem>(`/event-regions/${sigunguCd}/${contentId}`);
 }
 
-export async function getMissionSpots(sigunguCd: number) {
-  return apiFetch<MissionSpotItem[]>(`/missions/${sigunguCd}`);
+export async function getMissionSpots(sigunguCd: number): Promise<MissionSpotsResult> {
+  return apiFetch<MissionSpotsResult>(`/missions/${sigunguCd}`);
 }
 
 export function verifyMissionVisit(missionSpotId: number, body: VerifyMissionVisitBody) {

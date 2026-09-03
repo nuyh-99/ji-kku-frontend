@@ -354,7 +354,10 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
         >
           확인
         </button>
+        
       </div>
+      
     </>
+    
   );
 }
