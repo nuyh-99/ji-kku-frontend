@@ -77,7 +77,8 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
   };
 
   return (
-    <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-white">
+    <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-white pt-11">
+      {/* 상단 44px 는 OS status bar(시계·배터리) 자리로 비워둔다 — 디자인 프레임과 동일. */}
       <header className="relative flex h-14 shrink-0 items-center px-2">
         <button
           type="button"

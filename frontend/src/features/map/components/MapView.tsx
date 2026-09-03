@@ -163,7 +163,8 @@ export default function MapView() {
   };
 
   return (
-    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-white">
+    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-white pt-11">
+      {/* 상단 44px 는 OS status bar(시계·배터리) 자리로 비워둔다 — 디자인 프레임과 동일. */}
       <DecorateHeader />
 
       {/* 지도 영역 — 세로 중앙정렬(가로는 stretch 유지) */}
