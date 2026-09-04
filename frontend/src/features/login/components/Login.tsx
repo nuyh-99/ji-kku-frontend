@@ -73,53 +73,57 @@ export function Login() {
     };
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden ">
-            <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: "url('/assets/landing-bg.jpg')" }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/50" />
+        // 바깥 래퍼: 데스크탑에서 화면 전체를 채우는 회색 배경 + 가운데 정렬
+        <div className="min-h-screen w-full bg-gray-200 flex justify-center">
+            {/* 폰 프레임: 모바일 화면 너비로 고정 */}
+            <div className="relative min-h-screen w-full max-w-[430px] overflow-hidden shadow-xl">
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: "url('/assets/landing-bg.jpg')" }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/50" />
 
-            <div className="relative z-10 flex flex-col min-h-screen">
-                <div className="h-11" />
-                <div className="absolute top-[49%] left-0 right-0 flex justify-center">
-                    <div className="w-full max-w-[393px] pl-[33px]">
-                        <div className="overflow-hidden" style={{ height: SLOT_HEIGHT }}>
-                            <div
-                                className={withTransition ? 'transition-transform ease-in-out' : ''}
-                                style={{
-                                    transform: `translateY(-${index * SLOT_HEIGHT}px)`,
-                                    transitionDuration: withTransition ? `${TRANSITION_MS}ms` : '0ms',
-                                }}
-                            >
-                                {slides.map((slogan, slideIdx) => (
-                                    <div
-                                        key={slideIdx}
-                                        className="flex flex-col items-start justify-center text-left"
-                                        style={{ height: SLOT_HEIGHT }}
-                                    >
-                                        {slogan.lines.map((line, lineIdx) => (
-                                            <p
-                                                key={lineIdx}
-                                                className="text-white text-[26px] font-700 whitespace-nowrap [text-shadow:0px_6px_4px_rgba(0,0,0,0.5)] leading-[1.4]"
-                                                style={{ transform: `translateX(${line.offsetX}px)` }}
-                                            >
-                                                {line.text}
-                                            </p>
-                                        ))}
-                                    </div>
-                                ))}
+                <div className="relative z-10 flex flex-col min-h-screen">
+                    <div className="h-11" />
+                    <div className="absolute top-[49%] left-0 right-0 flex justify-center">
+                        <div className="w-full max-w-[393px] pl-[33px]">
+                            <div className="overflow-hidden" style={{ height: SLOT_HEIGHT }}>
+                                <div
+                                    className={withTransition ? 'transition-transform ease-in-out' : ''}
+                                    style={{
+                                        transform: `translateY(-${index * SLOT_HEIGHT}px)`,
+                                        transitionDuration: withTransition ? `${TRANSITION_MS}ms` : '0ms',
+                                    }}
+                                >
+                                    {slides.map((slogan, slideIdx) => (
+                                        <div
+                                            key={slideIdx}
+                                            className="flex flex-col items-start justify-center text-left"
+                                            style={{ height: SLOT_HEIGHT }}
+                                        >
+                                            {slogan.lines.map((line, lineIdx) => (
+                                                <p
+                                                    key={lineIdx}
+                                                    className="text-white text-[26px] font-700 whitespace-nowrap [text-shadow:0px_6px_4px_rgba(0,0,0,0.5)] leading-[1.4]"
+                                                    style={{ transform: `translateX(${line.offsetX}px)` }}
+                                                >
+                                                    {line.text}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="mt-auto px-[46px] pb-[50px] flex flex-col items-center gap-3">
-                    <button
-                        onClick={handleKakaoLogin}
-                        className="w-[300px] h-[45px] max-w-[calc(100vw-48px)] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
-                    >
-                        <img src="/assets/kakao_login_medium_wide.png" alt="카카오 로그인" className="w-full h-full block" />
-                    </button>
+                    <div className="mt-auto px-[46px] pb-[50px] flex flex-col items-center gap-3">
+                        <button
+                            onClick={handleKakaoLogin}
+                            className="w-[300px] h-[45px] max-w-[calc(100vw-48px)] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+                        >
+                            <img src="/assets/kakao_login_medium_wide.png" alt="카카오 로그인" className="w-full h-full block" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

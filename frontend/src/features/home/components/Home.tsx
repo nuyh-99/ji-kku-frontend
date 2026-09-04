@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import SpotCard from "@/components/SpotCard";
@@ -11,6 +12,41 @@ import CircularProgress from "./CircularProgress";
 
 export default function Home() {
     const router = useRouter();
+
+    // 마우스 드래그로 가로 스크롤 (데스크탑 전용, 터치는 네이티브 스와이프 그대로 사용)
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const dragState = useRef({ isDragging: false, startX: 0, startScrollLeft: 0 });
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        dragState.current = {
+            isDragging: true,
+            startX: e.pageX,
+            startScrollLeft: el.scrollLeft,
+        };
+
+        // 텍스트 선택 / 이미지 네이티브 드래그(고스트 이미지) 시작을 막아야
+        // 아래 mousemove로 우리가 직접 계산하는 스크롤과 충돌하지 않음
+        e.preventDefault();
+
+        const handleMouseMove = (moveEvent: MouseEvent) => {
+            if (!dragState.current.isDragging) return;
+            const deltaX = moveEvent.pageX - dragState.current.startX;
+            el.scrollLeft = dragState.current.startScrollLeft - deltaX;
+        };
+
+        const handleMouseUp = () => {
+            dragState.current.isDragging = false;
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+
+        // 마우스가 컨테이너 밖으로 나가도 계속 추적되도록 window에 등록
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+    };
 
     const onOpenMenu = () => router.push("/mypage");
 
@@ -33,7 +69,8 @@ export default function Home() {
     const onMyRecord = () => router.push("/records");
 
     return (
-        <div className="relative w-full min-h-screen overflow-hidden font-pretendard">
+        // 바깥 래퍼: 데스크탑에서 화면 전체를 채우는 회색 배경 + 가운데 정렬
+        <div className="min-h-screen w-full bg-gray-200 flex justify-center font-pretendard">
             <style jsx global>{`
                 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
                 .font-pretendard {
@@ -41,101 +78,114 @@ export default function Home() {
                 }
             `}</style>
 
-            <div
-                className="absolute inset-0  bg-cover bg-center  scale-110"
-                style={{ backgroundImage: "url('/assets/landing-bg-blur.png')" }}
-            />
+            {/* 폰 프레임: 모바일 화면 너비로 고정 */}
+            <div className="relative w-full max-w-[430px] min-h-screen overflow-hidden shadow-xl">
+                <div
+                    className="absolute inset-0  bg-cover bg-center  scale-110"
+                    style={{ backgroundImage: "url('/assets/landing-bg-blur.png')" }}
+                />
 
-            <div className="relative flex flex-col gap-[14px] px-4 py-11">
-                {/* 상단 메뉴 아이콘 */}
-                <div className="flex justify-end">
-                    <button aria-label="메뉴 열기" className="pr-[1px]" onClick={onOpenMenu}>
-                        <Image src="/assets/Menu.png" alt="" width={28} height={28} />
-                    </button>
-                </div>
-
-                {/* MY MAP 카드 */}
-                <div className="rounded-[20px] h-100 bg-white/60 shadow-[0_0_4px_0_rgba(0,0,0,0.50)] overflow-hidden ">
-                    <h2 className="relative z-10 m-[14px] text-[12.538px] font-bold text-[#6CA59C]">MY MAP</h2>
-
-                    <div
-                        className="relative h-64 w-full px-6 flex items-center justify-center cursor-pointer"
-                        onClick={onOpenMap}
-                        role="button"
-                        aria-label="내 지도 꾸미러 가기"
-                    >
-                        <GangwonMapSvg
-                            regions={GANGWON_REGIONS}
-                            viewBox={GANGWON_VIEW_BOX}
-                            regionStates={sigunguFills.fills}
-                            ariaLabel="내가 방문한 강원도 지도"
-                            // onRegionClick 없음 → 클릭/포커스 불가능한 읽기 전용 지도
-                        />
+                <div className="relative flex flex-col gap-[14px] px-4 py-11">
+                    {/* 상단 메뉴 아이콘 */}
+                    <div className="flex justify-end">
+                        <button aria-label="메뉴 열기" className="pr-[1px]" onClick={onOpenMenu}>
+                            <Image src="/assets/Menu.png" alt="" width={28} height={28} />
+                        </button>
                     </div>
 
-                    <div className="mt-4 w-full h-[82px] flex items-center justify-between rounded-0 bg-white py-[14px] px-[18px]">
-                        <div className="flex items-center gap-[9px]">
-                            <CircularProgress percent={percent} />
-                            <p className="text-xs text-[#6CA59C]/70">
-                                <span className="text-base text-[#6CA59C]">{visitedCount}</span>
-                                /{totalCount}
-                                <br />
-                                <span className="text-[#6CA59C]/70">방문 시군</span>
-                            </p>
+                    {/* MY MAP 카드 */}
+                    <div className="rounded-[20px] h-100 bg-white/60 shadow-[0_0_4px_0_rgba(0,0,0,0.50)] overflow-hidden ">
+                        <h2 className="relative z-10 m-[14px] text-[12.538px] font-bold text-[#6CA59C]">MY MAP</h2>
+
+                        <div
+                            className="relative h-64 w-full px-6 flex items-center justify-center cursor-pointer overflow-hidden [&>svg]:h-full [&>svg]:w-full [&>svg]:max-h-full [&>svg]:max-w-full"
+                            onClick={onOpenMap}
+                            role="button"
+                            aria-label="내 지도 꾸미러 가기"
+                        >
+                            <GangwonMapSvg
+                                regions={GANGWON_REGIONS}
+                                viewBox={GANGWON_VIEW_BOX}
+                                regionStates={sigunguFills.fills}
+                                ariaLabel="내가 방문한 강원도 지도"
+                                // onRegionClick 없음 → 클릭/포커스 불가능한 읽기 전용 지도
+                            />
                         </div>
 
+                        <div className="mt-4 w-full h-[82px] flex items-center justify-between rounded-0 bg-white py-[14px] px-[18px]">
+                            <div className="flex items-center gap-[9px]">
+                                <CircularProgress percent={percent} />
+                                <p className="text-xs text-[#6CA59C]/70">
+                                    <span className="text-base text-[#6CA59C]">{visitedCount}</span>
+                                    /{totalCount}
+                                    <br />
+                                    <span className="text-[#6CA59C]/70">방문 시군</span>
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={onOpenMap}
+                                className="flex w-[142px] h-[37.209px] items-center gap-2 rounded-full bg-[#6CA59C] pl-[13.67px] py-[6.38px] text-[12.15px] font-medium text-white"
+                            >
+                                내 지도 꾸미러 가기
+                                <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* 버튼 3개 */}
+                    <div className="flex gap-[14px]">
                         <button
-                            onClick={onOpenMap}
-                            className="flex w-[142px] h-[37.209px] items-center gap-2 rounded-full bg-[#6CA59C] pl-[13.67px] py-[6.38px] text-[12.15px] font-medium text-white"
+                            onClick={onEventArea}
+                            className="flex flex-1 h-[42px] items-center justify-center gap-[9px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
                         >
-                            내 지도 꾸미러 가기
+                            이벤트 지역
+                            <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
+                        </button>
+                        <button
+                            onClick={onMyAchievement}
+                            className="flex flex-1 h-[42px]  items-center justify-center gap-[35px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
+                        >
+                            내 업적
+                            <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
+                        </button>
+                        <button
+                            onClick={onMyRecord}
+                            className="flex flex-1 h-[42px]  items-center justify-center gap-[34px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
+                        >
+                            내 기록
                             <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
                         </button>
                     </div>
+
+                    {/* 오늘의 관광지 추천 — SpotCard 컴포넌트 재사용 */}
+                    <section>
+                        <h3 className="mb-2 text-white text-base font-bold [text-shadow:0_0_4px_rgba(0,0,0,0.50)]">
+                            오늘의 관광지 추천
+                        </h3>
+
+                        {isLoading && <p className="text-white text-sm">불러오는 중...</p>}
+                        {isError && <p className="text-white text-sm">관광지 정보를 불러오지 못했습니다.</p>}
+
+                        {todaySpots && (
+                            <div
+                                ref={scrollRef}
+                                className="flex gap-[11px] overflow-x-auto -mx-4 px-4 pb-2 cursor-grab active:cursor-grabbing [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                                onWheel={(e) => {
+                                    // 데스크탑 마우스 휠(세로)을 가로 스크롤로 변환 — 모바일 스와이프엔 영향 없음
+                                    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                                        e.currentTarget.scrollLeft += e.deltaY;
+                                    }
+                                }}
+                                onMouseDown={handleMouseDown}
+                            >
+                                {todaySpots.map((spot) => (
+                                    <SpotCard key={spot.id} spot={spot} />
+                                ))}
+                            </div>
+                        )}
+                    </section>
                 </div>
-
-                {/* 버튼 3개 */}
-                <div className="flex gap-[14px]">
-                    <button
-                        onClick={onEventArea}
-                        className="flex flex-1 h-[42px] items-center justify-center gap-[9px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
-                    >
-                        이벤트 지역
-                        <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
-                    </button>
-                    <button
-                        onClick={onMyAchievement}
-                        className="flex flex-1 h-[42px]  items-center justify-center gap-[35px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
-                    >
-                        내 업적
-                        <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
-                    </button>
-                    <button
-                        onClick={onMyRecord}
-                        className="flex flex-1 h-[42px]  items-center justify-center gap-[34px] rounded-full bg-[#6CA59C] py-3 pl-3 text-sm font-medium text-white shadow-[0_0_4px_0_rgba(0,0,0,0.50)]"
-                    >
-                        내 기록
-                        <Image src="/assets/chevron-right.svg" width={18} height={18} alt="" />
-                    </button>
-                </div>
-
-                {/* 오늘의 관광지 추천 — SpotCard 컴포넌트 재사용 */}
-                <section>
-                    <h3 className="mb-2 text-white text-base font-bold [text-shadow:0_0_4px_rgba(0,0,0,0.50)]">
-                        오늘의 관광지 추천
-                    </h3>
-
-                    {isLoading && <p className="text-white text-sm">불러오는 중...</p>}
-                    {isError && <p className="text-white text-sm">관광지 정보를 불러오지 못했습니다.</p>}
-
-                    {todaySpots && (
-                        <div className="flex gap-[11px] overflow-x-auto -mx-4 px-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                            {todaySpots.map((spot) => (
-                                <SpotCard key={spot.id} spot={spot} />
-                            ))}
-                        </div>
-                    )}
-                </section>
             </div>
         </div>
     );
