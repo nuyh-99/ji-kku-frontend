@@ -42,9 +42,9 @@ export default function EventRegionsPage() {
   const { festivals, isLoading: isFestivalsLoading } = useFestivalCards();
 
   const items = data?.content ?? [];
-  const regionStates = getEventRegionStates(
-    items,
-    GANGWON_REGIONS.map((r) => r.code)
+  const regionStates = useMemo(
+    () => getEventRegionStates(items, GANGWON_REGIONS.map((r) => r.code)),
+    [items]
   );
   const eventCodes = useMemo(() => getEventRegionCodes(items), [items]);
 
@@ -79,7 +79,7 @@ export default function EventRegionsPage() {
     const drawnW = vb.width * scale;
     const drawnH = vb.height * scale;
     const padX = (mapWidth - drawnW) / 2; // 좌우는 중앙 정렬(xMid) 그대로
-    const padY = MAP_HEIGHT - drawnH / 2; // 상하는 여백을 전부 위쪽에 (xMidYMax와 일치)
+    const padY = (MAP_HEIGHT - drawnH) / 2; // 상하는 여백을 전부 위쪽에 (xMidYMax와 일치)
     const toContainer = (x: number, y: number) => ({
       x: padX + (x - vb.minX) * scale,
       y: padY + (y - vb.minY) * scale,
@@ -98,8 +98,8 @@ export default function EventRegionsPage() {
 
   // 지도 가장자리 기준 최대 pan 거리 (여백 포함)
   const mapMaxOffsetX = (mapWidth * (ZOOM - 1)) / 2 + PAN_PADDING_X;
-  const mapMaxOffsetYTop = (MAP_HEIGHT * (ZOOM - 1)) / 7 + PAN_PADDING_Y_TOP; // 아래로 내리는 최대치 (위쪽 공백 노출)
-  const mapMaxOffsetYBottom = (MAP_HEIGHT * (ZOOM - 1)) / 5 + PAN_PADDING_Y_BOTTOM; // 위로 올리는 최대치 (아래쪽 공백 노출)
+  const mapMaxOffsetYTop = (MAP_HEIGHT * (ZOOM - 1)) / 2 + PAN_PADDING_Y_TOP;
+  const mapMaxOffsetYBottom = (MAP_HEIGHT * (ZOOM - 1)) / 2 + PAN_PADDING_Y_BOTTOM;
 
   // 이벤트 지역 bbox가 화면 밖으로 나가지 않도록 하는 offset 허용 범위
   // (초기 배치 전용 — 드래그 중에는 사용하지 않음)
@@ -172,7 +172,7 @@ export default function EventRegionsPage() {
     if (!contentBox) return { x: 0, y: 0 };
     const cx = (contentBox.x0 + contentBox.x1) / 2;
     const cy = (contentBox.y0 + contentBox.y1) / 2;
-    const targetYRatio = 0.7; // 필요에 따라 조정
+    const targetYRatio = 0.5; // 필요에 따라 조정
     const raw = {
       x: -(cx - mapWidth / 2) * ZOOM,
       y: -(cy - MAP_HEIGHT * targetYRatio) * ZOOM,
@@ -228,7 +228,7 @@ export default function EventRegionsPage() {
   };
 
   return (
-    <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
+    <div className="relative bg-white px-[17px] pb-4 max-w-[393px] mx-auto" style={{ paddingTop: 44 }}>
   <header className="flex items-center justify-between mb-4">
     <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
       <Image
@@ -253,19 +253,19 @@ export default function EventRegionsPage() {
   </header>
 
       <p
-        className="mt-[19px] text-[#9C9C9C]"
-        style={{
-          width: 248,
-          height: 17,
-          fontFamily: "Pretendard",
-          fontWeight: 400,
-          fontSize: 14,
-          lineHeight: "100%",
-          letterSpacing: "0%",
-        }}
-      >
-        이벤트 지역을 방문하고 배지를 수집해보세요!
-      </p>
+  className="mt-[19px] text-[#9C9C9C]"
+  style={{
+    height: 17,
+    fontFamily: "Pretendard",
+    fontWeight: 400,
+    fontSize: 14,
+    lineHeight: "100%",
+    letterSpacing: "0%",
+    whiteSpace: "nowrap",
+  }}
+>
+  이벤트 지역을 방문하고 배지를 수집해보세요!
+</p>
 
       <div
         ref={containerRef}
@@ -282,25 +282,22 @@ export default function EventRegionsPage() {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
-            transformOrigin: "center center",
-            willChange: "transform",
-            // 단일 radial-gradient 마스크로 가장자리를 자연스럽게 페이드.
-            // mask-composite(교집합) 없이 그라디언트 하나로 처리하므로
-            // Safari/Chrome/Firefox 어디서든 동일하게 렌더링되고,
-            // 색을 덧칠하는 게 아니라 알파(투명도)를 낮추는 방식이라 번짐도 없음.
-            maskImage: `radial-gradient(ellipse at center, black ${
-              FADE_START_RATIO * 100
-            }%, transparent 100%)`,
-            WebkitMaskImage: `radial-gradient(ellipse at center, black ${
-              FADE_START_RATIO * 100
-            }%, transparent 100%)`,
-          }}
-        >
+       <div
+  style={{
+    width: "100%",
+    height: "100%",
+    transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
+    transformOrigin: "center center",
+    transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+    willChange: "transform",
+    maskImage: `radial-gradient(ellipse at center, black ${
+      FADE_START_RATIO * 100
+    }%, transparent 100%)`,
+    WebkitMaskImage: `radial-gradient(ellipse at center, black ${
+      FADE_START_RATIO * 100
+    }%, transparent 100%)`,
+  }}
+>
           <div className="relative h-full w-full">
             {/* 공용 GangwonMapSvg는 수정하지 않음 — 팀장 소유 파일.
                heightMode 없이 className="!h-full"로 h-auto를 override해서
@@ -325,20 +322,20 @@ export default function EventRegionsPage() {
       </div>
 
       <p
-        className="mt-[19px] text-[#6CA59C]"
-        style={{
-          width: 111,
-          height: 18,
-          fontFamily: "Pretendard",
-          fontWeight: 700,
-          fontSize: 15,
-          lineHeight: "100%",
-          letterSpacing: "0%",
-          textAlign: "center",
-        }}
-      >
-        지금 뜨고있는 축제
-      </p>
+  className="mt-[19px] text-[#6CA59C]"
+  style={{
+    height: 18,
+    fontFamily: "Pretendard",
+    fontWeight: 700,
+    fontSize: 15,
+    lineHeight: "100%",
+    letterSpacing: "0%",
+   
+    whiteSpace: "nowrap",
+  }}
+>
+  지금 뜨고있는 축제
+</p>
           {/* 축제 카드 가로 스크롤 리스트 */}
       <div className="mt-3 flex gap-3 overflow-x-auto pb-2 -mx-[17px] px-[17px] scrollbar-hide">
         {isFestivalsLoading && festivals.length === 0 ? (

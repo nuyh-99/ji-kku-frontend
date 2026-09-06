@@ -42,8 +42,8 @@ export interface SpotDetailItem {
   firstImage: string;
   overview: string;
   addr1: string;
-  sigunguCd: number;
-  sigunguNm: string;
-  mapX: number; // 경도
-  mapY: number; // 위도
+  sigunguCd?: number;
+  sigunguNm?: string;
+  mapX: number;
+  mapY: number;
 }

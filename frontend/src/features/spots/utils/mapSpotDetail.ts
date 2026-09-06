@@ -19,9 +19,9 @@ export function mapSpotDetailToDetailData(item: SpotDetailItem): SpotDetailData 
     imageUrl: item.firstImage,
     address: item.addr1,
     description: item.overview,
-    sigunguCd:item.sigunguCd,
-    sigunguNm: item.sigunguNm,
-    lat: item.mapY,   // mapY가 위도
-    lng: item.mapX,   // mapX가 경도
+    sigunguCd: item.sigunguCd ?? 0,
+    sigunguNm: item.sigunguNm ?? "",
+    lat: item.mapY,
+    lng: item.mapX,
   };
 }
