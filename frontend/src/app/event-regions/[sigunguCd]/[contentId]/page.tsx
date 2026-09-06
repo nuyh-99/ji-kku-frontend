@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
-import { getMissionSpotDetail, verifyMissionVisit, MissionSpotItem } from "@/lib/api/mission";
+import { getMissionSpots, verifyMissionVisit, MissionSpotItem } from "@/lib/api/mission";
+import type { MissionSpotsResult } from "@/types/mission";
 
 // TODO: 실제로는 API에서 이미지 배열(images: string[])을 받아와야 함.
 function useSpotImages(imageUrl?: string | null) {
@@ -38,11 +39,14 @@ export default function SpotDetailPage({
   const contentId = Number(resolvedParams.contentId);
   const router = useRouter();
 
-  const { data: spot, isLoading, isError } = useQuery<MissionSpotItem>({
-    queryKey: ["missionSpotDetail", sigunguCd, contentId],
-    queryFn: () => getMissionSpotDetail(sigunguCd, contentId),
-    enabled: !!sigunguCd && !!contentId,
+  // 📌 상세 전용 API가 없으므로, 목록 API를 그대로 재사용 (React Query 캐시 히트 시 재요청도 안 함)
+  const { data, isLoading, isError } = useQuery<MissionSpotsResult>({
+    queryKey: ["missionSpots", sigunguCd],
+    queryFn: () => getMissionSpots(sigunguCd),
+    enabled: !!sigunguCd,
   });
+
+  const spot = data?.content.find((s) => s.contentId === contentId);
 
   if (isLoading) return <div className="px-4 py-4">로딩 중...</div>;
   if (isError || !spot) return <div className="px-4 py-4">정보를 불러오지 못했습니다.</div>;
@@ -108,8 +112,8 @@ function SpotDetailContent({
       // 응답의 isCompleted 가 인증 성사 여부라 이걸로 팝업을 띄운다.
       const res = await verifyMissionVisit(spot.missionSpotId, {});
       if (res.isCompleted) {
+        // 📌 목록 캐시 하나만 무효화하면 상세 페이지도 같은 쿼리 키를 쓰므로 자동 반영됨
         queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
-        queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", sigunguCd, spot.contentId] });
         setShowVerifyPopup(true);
       }
     } catch (e) {
