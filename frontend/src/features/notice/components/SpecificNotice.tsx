@@ -85,64 +85,72 @@ export function SpecificNotice({ id }: SpecificNoticeProps) {
 
     if (!notice) {
         return (
-            <div className="w-full mx-auto min-h-screen bg-[#DCE7E6] flex flex-col items-center justify-center">
-                <p className="text-black font-[Pretendard,sans-serif] text-base">
-                    존재하지 않는 공지입니다.
-                </p>
+            // 바깥 래퍼: 데스크탑에서 화면 전체를 채우는 회색 배경 + 가운데 정렬
+            <div className="min-h-screen w-full bg-gray-200 flex justify-center">
+                {/* 폰 프레임: 모바일 화면 너비로 고정 */}
+                <div className="w-full max-w-[430px] mx-auto min-h-screen bg-[#DCE7E6] flex flex-col items-center justify-center shadow-xl">
+                    <p className="text-black font-[Pretendard,sans-serif] text-base">
+                        존재하지 않는 공지입니다.
+                    </p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full mx-auto min-h-screen bg-white flex flex-col">
-            <div className="w-full min-h-30 bg-white flex flex-col">
-                <div className="relative w-full flex items-center px-[17px] pt-11 pb-[6px]">
-                    <button
-                        onClick={goBack}
-                        aria-label="뒤로가기"
-                        className="bg-transparent p-0 rounded-full inline-flex items-center justify-center transition-colors duration-200 "
-                    >
-                        <img src="/assets/chevron-left.svg" className="w-[28px] h-[28px] block" />
-                    </button>
+        // 바깥 래퍼: 데스크탑에서 화면 전체를 채우는 회색 배경 + 가운데 정렬
+        <div className="min-h-screen w-full bg-gray-200 flex justify-center">
+            {/* 폰 프레임: 모바일 화면 너비로 고정 */}
+            <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white flex flex-col shadow-xl">
+                <div className="w-full min-h-30 bg-white flex flex-col">
+                    <div className="relative w-full flex items-center px-[17px] pt-11 pb-[6px]">
+                        <button
+                            onClick={goBack}
+                            aria-label="뒤로가기"
+                            className="bg-transparent p-0 rounded-full inline-flex items-center justify-center transition-colors duration-200 "
+                        >
+                            <img src="/assets/chevron-left.svg" className="w-[28px] h-[28px] block" />
+                        </button>
 
-                    <button
-                        onClick={onMenu}
-                        aria-label="메뉴"
-                        className="absolute right-4 bg-transparent p-0 rounded-full inline-flex items-center justify-center transition-colors duration-200 hover:bg-black/5"
-                    >
-                        <img src="/assets/menu.png" className="w-[28px] h-[28px] block" />
-                    </button>
+                        <button
+                            onClick={onMenu}
+                            aria-label="메뉴"
+                            className="absolute right-4 bg-transparent p-0 rounded-full inline-flex items-center justify-center transition-colors duration-200 hover:bg-black/5"
+                        >
+                            <img src="/assets/menu.png" className="w-[28px] h-[28px] block" />
+                        </button>
+                    </div>
+
+                    <h1 className="text-black text-center font-[Pretendard,sans-serif] text-[18px] font-bold not-italic leading-normal pb-[20px]">
+                        공지사항
+                    </h1>
                 </div>
 
-                <h1 className="text-black text-center font-[Pretendard,sans-serif] text-[18px] font-bold not-italic leading-normal pb-[20px]">
-                    공지사항
-                </h1>
-            </div>
+                <div className="px-[26px] py-5 flex flex-col gap-[3px]">
+                    <span className="text-black font-[Pretendard,sans-serif] h-[19px] text-[16px] font-bold not-italic leading-normal">
+                        {notice.title}
+                    </span>
+                    <span className="text-[#8B8B8B] font-[Pretendard,sans-serif] h-[17px] text-[12px] font-normal not-italic leading-normal">
+                        {notice.date}
+                    </span>
+                </div>
 
-            <div className="px-[26px] py-5 flex flex-col gap-[3px]">
-                <span className="text-black font-[Pretendard,sans-serif] h-[19px] text-[16px] font-bold not-italic leading-normal">
-                    {notice.title}
-                </span>
-                <span className="text-[#8B8B8B] font-[Pretendard,sans-serif] h-[17px] text-[12px] font-normal not-italic leading-normal">
-                    {notice.date}
-                </span>
-            </div>
+                <div className=" mx-[19px] border-t-1 border-[#D1D1D6]" />
 
-            <div className=" mx-[19px] border-t-1 border-[#D1D1D6]" />
+                <div className="px-[19px] pt-[39px] pb-[29px]">
+                    <p className="text-[#444] font-[Pretendard,sans-serif] text-[15px] font-400 not-italic leading-relaxed whitespace-pre-line">
+                        {notice.body}
+                    </p>
+                </div>
 
-            <div className="px-[19px] pt-[39px] pb-[29px]">
-                <p className="text-[#444] font-[Pretendard,sans-serif] text-[15px] font-400 not-italic leading-relaxed whitespace-pre-line">
-                    {notice.body}
-                </p>
-            </div>
-
-            <div className="px-[19px] pb-8">
-                <button
-                    onClick={onBackToList}
-                    className="bg-[#DCE7E6]/45 text-[#6CA59C] rounded-[5px] px-[9px] py-[7px] text-[14px] font-[Pretendard,sans-serif] font-400 not-italic leading-normal transition-opacity duration-200"
-                >
-                    목록으로 돌아가기
-                </button>
+                <div className="px-[19px] pb-8">
+                    <button
+                        onClick={onBackToList}
+                        className="bg-[#DCE7E6]/45 text-[#6CA59C] rounded-[5px] px-[9px] py-[7px] text-[14px] font-[Pretendard,sans-serif] font-400 not-italic leading-normal transition-opacity duration-200"
+                    >
+                        목록으로 돌아가기
+                    </button>
+                </div>
             </div>
         </div>
     );

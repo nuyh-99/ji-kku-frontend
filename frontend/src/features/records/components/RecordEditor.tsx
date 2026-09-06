@@ -81,7 +81,8 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
   };
 
   return (
-    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-white">
+    <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-white pt-11">
+      {/* 상단 44px 는 OS status bar(시계·배터리) 자리로 비워둔다 — 디자인 프레임과 동일. */}
       <header className="relative flex h-14 shrink-0 items-center px-[17px]">
         <button
           type="button"
