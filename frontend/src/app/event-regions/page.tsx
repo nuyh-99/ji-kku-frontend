@@ -223,34 +223,52 @@ export default function EventRegionsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentBox, mapWidth]);
+const DRAG_THRESHOLD_PX = 4;
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+const pointerIdRef = useRef<number | null>(null);
+
+const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  pointerIdRef.current = e.pointerId;
+  startPosRef.current = { x: e.clientX, y: e.clientY };
+  startOffsetRef.current = offset;
+  // 주의: 여기서 setPointerCapture를 호출하지 않는다.
+};
+
+const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  if (pointerIdRef.current === null) return;
+
+  const dx = e.clientX - startPosRef.current.x;
+  const dy = e.clientY - startPosRef.current.y;
+
+  if (!draggingRef.current) {
+    // 아직 드래그로 확정 안 됨: threshold 넘었는지만 검사
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+
+    // 이 시점부터 진짜 드래그로 확정 → 그제서야 캡처
     draggingRef.current = true;
     setIsDragging(true);
-    startPosRef.current = { x: e.clientX, y: e.clientY };
-    startOffsetRef.current = offset;
     e.currentTarget.setPointerCapture(e.pointerId);
-  };
+  }
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draggingRef.current) return;
-    // 캔버스 전체가 scale배로 축소/확대되어 있으므로,
-    // 실제 화면 이동 거리를 scale로 나눠 디자인 좌표계 기준 이동 거리로 환산한다.
-    const effectiveScale = scale || 1;
-    const deltaX = (e.clientX - startPosRef.current.x) / effectiveScale;
-    const deltaY = (e.clientY - startPosRef.current.y) / effectiveScale;
-    setOffset(
-      getPanClampedOffset({
-        x: startOffsetRef.current.x + deltaX,
-        y: startOffsetRef.current.y + deltaY,
-      })
-    );
-  };
+  const effectiveScale = scale || 1;
+  const deltaX = dx / effectiveScale;
+  const deltaY = dy / effectiveScale;
+  setOffset(
+    getPanClampedOffset({
+      x: startOffsetRef.current.x + deltaX,
+      y: startOffsetRef.current.y + deltaY,
+    })
+  );
+};
 
-  const handlePointerUp = () => {
-    draggingRef.current = false;
-    setIsDragging(false);
-  };
+const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  if (draggingRef.current && pointerIdRef.current !== null) {
+    e.currentTarget.releasePointerCapture(pointerIdRef.current);
+  }
+  draggingRef.current = false;
+  pointerIdRef.current = null;
+  setIsDragging(false);
+};
 
   // 이벤트 지역만 클릭 가능 → app/event-regions/[sigunguCd]/page.tsx로 이동.
   // 이벤트 지역이 아니면 아무 동작도 하지 않는다.

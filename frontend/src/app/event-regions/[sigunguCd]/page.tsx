@@ -229,17 +229,23 @@ function EventRegionContent({
       {/* 2. 상단 헤더 & 게이지 */}
       <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
         <header className="flex items-center justify-between mb-[5px]">
-          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-          </button>
-
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+                    className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                    style={{ width: 40, height: 40, margin: -6 }}
+          >
+                      <Image
+                        src="/assets/chevron-left.svg"
+                        alt="뒤로가기"
+                        width={28}
+                        height={28}
+                        className="shrink-0"
+                      />
+                    </button>
+          
+                    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+                      className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                      style={{ width: 40, height: 40, margin: -6 }}
+                      >
             <div
               className="shrink-0"
               style={{
