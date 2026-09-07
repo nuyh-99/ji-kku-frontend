@@ -350,12 +350,7 @@ export default function EventRegionsPage() {
               transformOrigin: "center center",
               transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
               willChange: "transform",
-              maskImage: `radial-gradient(ellipse at center, black ${
-                FADE_START_RATIO * 100
-              }%, transparent 100%)`,
-              WebkitMaskImage: `radial-gradient(ellipse at center, black ${
-                FADE_START_RATIO * 100
-              }%, transparent 100%)`,
+              
             }}
           >
             <div className="relative h-full w-full">

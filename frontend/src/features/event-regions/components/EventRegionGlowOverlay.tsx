@@ -32,14 +32,22 @@ export default function EventRegionGlowOverlay({
     <svg
       viewBox={viewBox}
       className="pointer-events-none absolute inset-0 h-full w-full"
+      overflow="visible"
       aria-hidden="true"
     >
     
+    <defs>
+        <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#6CA59C" />
+          <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#6CA59CCC" />
+          <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#6CA59C80" />
+        </filter>
+      </defs>
 
 {/* 1) glow — 기존과 동일 */}
 <g>
   {eventRegions.map((r) => (
-    <path key={`glow-${r.code}`} d={r.d} fill={EVENT_FILL} style={{ filter: EVENT_GLOW }} />
+    <path key={`glow-${r.code}`} d={r.d} fill={EVENT_FILL} filter="url(#glow-filter)" />
   ))}
 </g>
 
