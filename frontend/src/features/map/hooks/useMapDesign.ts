@@ -5,11 +5,11 @@
 //
 // 이 파일이 서버 DTO ↔ 화면 표현형(@/types/map) 변환을 전담한다. 컴포넌트가 posX/scale 같은
 // 서버 필드를 직접 보지 않게 해서, 계약이 바뀌어도 매퍼만 고치면 되게 한다.
-import { useSyncExternalStore } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PlacedPhotoCard, PlacedSticker, RegionFill } from "@/types/map";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
-import { getAccessToken } from "@/lib/api/client";
+import { EMD_UNRESOLVED_MESSAGE, useEmds } from "@/lib/hooks/useEmds";
+import { useHasToken } from "@/lib/hooks/useHasToken";
 import {
   addEupmyeondongMapSticker,
   addEupmyeondongMapTravelPost,
@@ -33,7 +33,6 @@ import { stickerNameByUrl } from "../stickers";
 import { mapKeys } from "./queryKeys";
 import type {
   EmdFillResponse,
-  EupmyeondongCode,
   FillType,
   ListResult,
   MapStickerResponse,
@@ -42,20 +41,6 @@ import type {
   SigunguFillResponse,
   StickerResponse,
 } from "../types";
-
-/**
- * ⚠️ 막혀 있음 — 읍면동 식별자 (2026-09-03 실서버 확인).
- * 서버 `emdId` 는 행정동코드가 **아니라** DB 의 별도 id다. 행정동코드 10자리를 그대로 보내면
- * 404 "존재하지 않는 읍면동 ID입니다" 가 떨어진다(스웨거 example 도 301 같은 작은 수다).
- * 코드↔emdId 를 조회할 API 가 아직 없어서 2단계 채우기는 프론트만으로는 붙일 수 없다.
- * 백엔드가 읍면동 목록 API 를 열어주면 이 두 함수만 대응표 조회로 바꾸면 된다.
- */
-function toEmdId(code: EupmyeondongCode): number {
-  return Number(code);
-}
-function toEmdCode(emdId: number): EupmyeondongCode {
-  return String(emdId);
-}
 
 /** 낙관적 업데이트로 먼저 그려둔(아직 서버 id 가 없는) 채움 표시. */
 const PENDING_FILL_MAP_ID = -1;
@@ -90,12 +75,14 @@ interface FillsView {
 
 function toFillsView<T extends FillFields & { fillMapId: number }>(
   list: ListResult<T>,
-  codeOf: (item: T) => string,
+  codeOf: (item: T) => string | null,
 ): FillsView {
   const fills: Record<string, RegionFill> = {};
   const fillMapIdByCode: Record<string, number> = {};
   for (const item of list.content ?? []) {
     const code = codeOf(item);
+    // 대응하는 지역을 못 찾은 채움은 그릴 자리가 없으므로 버린다.
+    if (code === null) continue;
     fills[code] = toRegionFill(item);
     fillMapIdByCode[code] = item.fillMapId;
   }
@@ -175,24 +162,6 @@ function toPlacedPhotoCard(res: MapTravelPostResponse, vb: ViewBox): PlacedPhoto
   };
 }
 
-// ─── 인증 게이트 ──────────────────────────────────────────────────────────
-
-/**
- * 토큰 보유 여부. map-design 은 전부 인증 필수라, 비로그인 상태에서 401을 반복해 던지지 않도록
- * 쿼리를 꺼두는 데 쓴다. localStorage 는 서버 렌더에 없어서, 서버에서는 비로그인으로 본다.
- */
-export function useHasToken(): boolean {
-  return useSyncExternalStore(
-    // 토큰이 바뀌는 순간(로그인/로그아웃)은 페이지 이동을 동반하므로 따로 구독하지 않는다.
-    NO_SUBSCRIBE,
-    () => getAccessToken() !== null,
-    // 서버 스냅샷 — localStorage 가 없으니 항상 비로그인으로 본다.
-    () => false,
-  );
-}
-
-const NO_SUBSCRIBE = () => () => {};
-
 // ─── 조회 ─────────────────────────────────────────────────────────────────
 
 const EMPTY_FILLS: FillsView = { fills: {}, fillMapIdByCode: {} };
@@ -216,12 +185,14 @@ export function useSigunguFills() {
 /** 2단계(읍면동) 채움. 시군구에 들어가 있을 때만 조회한다. */
 export function useEupmyeondongFills(sigunguCd: SigunguCode | null) {
   const hasToken = useHasToken();
+  // 서버 채움은 어느 동인지 emdId 로만 알려준다 — 화면 코드로 되돌리려면 대응표가 필요하다.
+  const { codeOfEmdId } = useEmds(sigunguCd);
   const query = useQuery({
     queryKey: mapKeys.emdFills(sigunguCd ?? ""),
     queryFn: () => getEupmyeondongMapDesign(sigunguCd as string),
     enabled: hasToken && sigunguCd !== null,
     select: (data: ListResult<EmdFillResponse>) =>
-      toFillsView(data, (item) => toEmdCode(item.emdId)),
+      toFillsView(data, (item) => codeOfEmdId(item.emdId)),
   });
   return { ...query, data: query.data ?? EMPTY_FILLS };
 }
@@ -260,7 +231,14 @@ export function useMapStickers(sigunguCd: SigunguCode | null) {
     enabled: hasToken && sigunguCd !== null,
     select: (data: ListResult<MapStickerResponse>) => {
       const vb = viewBoxOf(sigunguCd);
-      return (data.content ?? []).map((res) => toPlacedSticker(res, vb));
+      return (
+        (data.content ?? [])
+          // 스티커와 사진 카드가 같은 테이블을 쓰는데 이 목록은 **둘 다** 준다(2026-09-07 실서버 확인).
+          // 사진 카드(POST)는 useMapPhotoCards 가 그리므로 여기서 걸러낸다 — 안 그러면
+          // stickerUrl 이 없는 행이 빈 href 의 투명 <image> 로 카드 위에 겹쳐 앉는다.
+          .filter((res) => res.stickerType === "STICKER" && res.stickerUrl)
+          .map((res) => toPlacedSticker(res, vb))
+      );
     },
   });
   return { ...query, data: query.data ?? EMPTY_STICKERS };
@@ -295,10 +273,13 @@ type CachedFill = FillFields & { fillMapId: number; sigunguCd?: number; emdId?: 
  */
 export function useFillRegion(activeSigungu: SigunguCode | null) {
   const queryClient = useQueryClient();
+  const { emdIdOfCode, codeOfEmdId } = useEmds(activeSigungu);
   const queryKey = activeSigungu ? mapKeys.emdFills(activeSigungu) : mapKeys.sigunguFills();
 
   const matches = (item: CachedFill, code: string) =>
-    activeSigungu === null ? String(item.sigunguCd) === code : toEmdCode(item.emdId ?? 0) === code;
+    activeSigungu === null
+      ? String(item.sigunguCd) === code
+      : item.emdId !== undefined && codeOfEmdId(item.emdId) === code;
 
   return useMutation({
     mutationFn: async ({ code, fill }: { code: string; fill: RegionFill }) => {
@@ -313,12 +294,20 @@ export function useFillRegion(activeSigungu: SigunguCode | null) {
         const request = { sigunguCd: Number(code), ...body };
         return savedId === null ? fillSigunguMap(request) : updateSigunguMapFill(savedId, request);
       }
-      return savedId === null
-        ? fillEupmyeondongMap(activeSigungu, { emdId: toEmdId(code), ...body })
-        : updateEupmyeondongMapFill(activeSigungu, savedId, body);
+      // 수정은 대상을 경로(fillMapId)로 짚으므로 emdId 가 필요 없다.
+      if (savedId !== null) return updateEupmyeondongMapFill(activeSigungu, savedId, body);
+
+      const emdId = emdIdOfCode(code);
+      if (emdId === null) throw new Error(EMD_UNRESOLVED_MESSAGE);
+      return fillEupmyeondongMap(activeSigungu, { emdId, ...body });
     },
 
     onMutate: async ({ code, fill }) => {
+      // 2단계인데 emdId 를 아직 모르면 요청이 실패한다 —
+      // 칠했다가 되돌리느니 처음부터 그리지 않는다.
+      const emdId = activeSigungu === null ? null : emdIdOfCode(code);
+      if (activeSigungu !== null && emdId === null) return { previous: undefined };
+
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<ListResult<CachedFill>>(queryKey);
       const body = toFillBody(fill);
@@ -330,7 +319,7 @@ export function useFillRegion(activeSigungu: SigunguCode | null) {
             ...content,
             {
               fillMapId: PENDING_FILL_MAP_ID,
-              ...(activeSigungu === null ? { sigunguCd: Number(code) } : { emdId: toEmdId(code) }),
+              ...(emdId === null ? { sigunguCd: Number(code) } : { emdId }),
               ...body,
             },
           ];
