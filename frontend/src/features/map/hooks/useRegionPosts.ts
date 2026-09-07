@@ -10,7 +10,7 @@ import { getEupmyeondongTravelPosts } from "@/lib/api/travelPost";
 import type { RegionPost } from "@/types/map";
 import { mapKeys } from "./queryKeys";
 import type { SigunguCode } from "../types";
-import { useHasToken } from "./useMapDesign";
+import { useHasToken } from "@/lib/hooks/useHasToken";
 
 const EMPTY_POSTS: RegionPost[] = [];
 

@@ -100,7 +100,7 @@ export default function MapView() {
     const [vbX, vbY, vbW, vbH] = map.viewBox.split(/\s+/).map(Number);
     placePhotoCard({
       sigunguCd: handoff.sigunguCd,
-      travelPostId: Number(handoff.recordId),
+      travelPostId: handoff.travelPostId,
       x: region?.labelX ?? vbX + vbW / 2,
       y: region?.labelY ?? vbY + vbH / 2,
       width: DEFAULT_PHOTO_CARD_WIDTH,

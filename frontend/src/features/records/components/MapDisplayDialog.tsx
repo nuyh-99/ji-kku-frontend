@@ -3,11 +3,16 @@
 // "지도에 표시하시겠습니까?" 확인 모달 (디자인 794:3117 / 562:1855).
 // 등록을 누르면 뜬다. 카드 296×255, 라운드 9, 그림자 0 0 4 rgba(0,0,0,0.5).
 //
+// 두 버튼 다 서버 저장을 일으키므로(RecordEditor.submit), 저장 중에는 잠근다 —
+// 연타로 같은 기록이 두 번 만들어지는 걸 막는다.
+//
 // 디자인에는 뒤를 덮는 어두운 막이 없다 — 카드만 떠 있다. 그대로 따르되,
 // 바깥을 눌러 닫을 수 있게 투명한 버튼을 깐다.
 const BRAND = "#6ca59c";
 
 interface MapDisplayDialogProps {
+  /** 저장이 진행 중인지. 참이면 버튼을 잠그고 상태를 보여준다. */
+  saving?: boolean;
   /** 지도에는 올리지 않고 목록에만 저장. */
   onSaveOnly: () => void;
   /** 지도에 사진 카드로 표시. */
@@ -16,6 +21,7 @@ interface MapDisplayDialogProps {
 }
 
 export default function MapDisplayDialog({
+  saving = false,
   onSaveOnly,
   onDisplay,
   onClose,
@@ -26,6 +32,7 @@ export default function MapDisplayDialog({
         type="button"
         aria-label="닫기"
         onClick={onClose}
+        disabled={saving}
         className="fixed inset-0 z-30 cursor-default"
       />
 
@@ -47,14 +54,15 @@ export default function MapDisplayDialog({
           지도에 표시하시겠습니까?
         </h2>
         <p className="mt-[6px] text-center text-[14px] text-[#5f5f5f]">
-          표시하지 않을 경우 리스트에만 저장됩니다
+          {saving ? "기록을 저장하고 있어요…" : "표시하지 않을 경우 리스트에만 저장됩니다"}
         </p>
 
         <div className="mt-auto flex w-full items-center gap-[8px]">
           <button
             type="button"
             onClick={onSaveOnly}
-            className="h-[40px] flex-1 rounded-[8px] border bg-white text-[14px] font-bold"
+            disabled={saving}
+            className="h-[40px] flex-1 rounded-[8px] border bg-white text-[14px] font-bold disabled:opacity-50"
             style={{ borderColor: BRAND, color: BRAND }}
           >
             저장만 하기
@@ -62,7 +70,8 @@ export default function MapDisplayDialog({
           <button
             type="button"
             onClick={onDisplay}
-            className="h-[40px] flex-1 rounded-[8px] text-[14px] font-bold text-white"
+            disabled={saving}
+            className="h-[40px] flex-1 rounded-[8px] text-[14px] font-bold text-white disabled:opacity-50"
             style={{ backgroundColor: BRAND }}
           >
             표시하기
