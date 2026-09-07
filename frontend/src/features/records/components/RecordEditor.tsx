@@ -280,24 +280,11 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
       </div>
 
       {/* 하단 도구 막대 */}
-      <div className="flex h-[56px] shrink-0 items-center gap-[30px] border-t border-[#eee] px-[17px] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex h-[56px] shrink-0 items-center border-t border-[#eee] px-[17px] pb-[env(safe-area-inset-bottom)]">
         <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="사진 첨부">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/record/add-image.png" alt="" className="size-[31px] object-contain" />
         </button>
-        {/*
-          텍스트·정렬은 디자인에 아이콘만 있고 눌렀을 때의 화면이 없다.
-          동작을 지어내지 않고 자리만 지킨다(메뉴(≡)와 같은 처리).
-        */}
-        <button type="button" aria-label="텍스트 서식">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/record/text.png" alt="" className="size-[24px] object-contain" />
-        </button>
-        <button type="button" aria-label="문단 정렬">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/record/align-left.png" alt="" className="size-[19px] object-contain" />
-        </button>
-
         <input
           ref={fileInputRef}
           type="file"
