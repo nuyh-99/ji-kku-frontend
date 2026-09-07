@@ -62,9 +62,40 @@ export function getTravelPostDetail(travelPostId: string) {
     `/travel-posts/detail/${encodeURIComponent(travelPostId)}`
   );
 }
-/** 여행기록 작성. TODO: 요청/응답 타입 확정 필요 */
-export function createTravelPost(body: unknown) {
-  return apiFetch<unknown>("/travel-posts/detail", {
+
+// ─── 기록 작성 (POST /travel-posts/detail) ────────────────────────────────
+// 스키마 출처: OpenAPI TravelPostCreateRequest / TravelPostCreateResponse.
+
+/** 본문 블록 종류. 서버는 글과 사진을 한 배열에 순서(sortOrder)로 섞어 받는다. */
+export type TravelPostBlockType = "TEXT" | "IMAGE";
+
+/** 본문 블록 한 개. TEXT 면 textContent 를, IMAGE 면 imgUrl(업로드된 S3 URL)을 채운다. */
+export interface TravelPostBlockCreateRequest {
+  blockType: TravelPostBlockType;
+  sortOrder: number;
+  textContent?: string;
+  imgUrl?: string;
+}
+
+export interface TravelPostCreateRequest {
+  /** 서버 DB 의 읍·면·동 id — 행정동코드가 아니다(data/regions/emdId 참고). */
+  emdId: number;
+  title: string;
+  /** 방문 날짜, yyyy-MM-dd. */
+  logDate: string;
+  /** 최소 1개 필요하다(minItems: 1). */
+  blocks: TravelPostBlockCreateRequest[];
+}
+
+export interface TravelPostCreateResult {
+  travelPostId: number;
+  title: string;
+  firstImage: string | null;
+}
+
+/** 여행기록 작성. 저장된 기록의 travelPostId 를 돌려준다(지도에 카드로 올릴 때 쓴다). */
+export function createTravelPost(body: TravelPostCreateRequest): Promise<TravelPostCreateResult> {
+  return apiFetch<TravelPostCreateResult>("/travel-posts/detail", {
     method: "POST",
     body,
   });
