@@ -278,7 +278,10 @@ export default function EventRegionsPage() {
           className="absolute flex items-center justify-between"
           style={{ top: 44, left: 17, width: 359, height: 28 }}
         >
-          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+          className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+          style={{ width: 40, height: 40, margin: -6 }}
+>
             <Image
               src="/assets/chevron-left.svg"
               alt="뒤로가기"
@@ -288,7 +291,10 @@ export default function EventRegionsPage() {
             />
           </button>
 
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+            className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+            style={{ width: 40, height: 40, margin: -6 }}
+            >
             <div
               className="shrink-0"
               style={{
@@ -396,15 +402,17 @@ export default function EventRegionsPage() {
 
         {/* 축제 카드 가로 스크롤 리스트 */}
         <div
-          className="absolute flex overflow-hidden"
-          style={{
-            top: 646,
-            left: 17,
-            width: 376,
-            height: 149.0674285888672,
-            gap: 11,
-          }}
-        >
+  className="absolute flex overflow-x-auto overflow-y-hidden festival-scroll"
+  style={{
+    top: 646,
+    left: 17,
+    width: 376,
+    height: 149.0674285888672,
+    gap: 11,
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // 구형 Edge/IE
+  }}
+>
           {isFestivalsLoading && festivals.length === 0 ? (
             // 로딩 중: 카드 스켈레톤 2~3개
             Array.from({ length: 3 }).map((_, i) => (
