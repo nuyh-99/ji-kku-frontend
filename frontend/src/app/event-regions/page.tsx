@@ -260,6 +260,7 @@ export default function EventRegionsPage() {
   };
 
   return (
+    
     <div
       ref={outerRef}
       className="w-full flex items-center justify-center overflow-hidden"
@@ -420,8 +421,10 @@ export default function EventRegionsPage() {
           ) : (
             festivals.map((festival) => <FestivalCard key={festival.id} festival={festival} />)
           )}
+          
         </div>
       </div>
+      
     </div>
   );
 }
