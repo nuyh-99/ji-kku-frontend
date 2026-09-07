@@ -17,7 +17,7 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import DatePickerPopover from "@/components/common/DatePickerPopover";
-import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
+import { ChevronLeftIcon } from "@/components/common/icons";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import { uploadImage } from "@/lib/api/image";
 import { createTravelPost } from "@/lib/api/travelPost";
@@ -183,7 +183,7 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
   return (
     <div className="relative mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-white pt-11">
       {/* 상단 44px 는 OS status bar(시계·배터리) 자리로 비워둔다 — 디자인 프레임과 동일. */}
-      <header className="relative flex h-14 shrink-0 items-center px-[17px]">
+      <header className="flex h-14 shrink-0 items-center px-[17px]">
         <button
           type="button"
           onClick={() => router.back()}
@@ -191,14 +191,6 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
           className="grid size-10 place-items-center rounded-full text-zinc-800 hover:bg-black/5"
         >
           <ChevronLeftIcon className="size-6" />
-        </button>
-        {/* 메뉴 내용이 디자인에 없어 아직 열지 않는다. */}
-        <button
-          type="button"
-          aria-label="메뉴"
-          className="absolute right-[17px] grid size-10 place-items-center rounded-full text-zinc-800 hover:bg-black/5"
-        >
-          <MenuIcon className="size-6" />
         </button>
       </header>
 
