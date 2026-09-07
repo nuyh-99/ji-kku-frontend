@@ -234,7 +234,7 @@ export default function MapView() {
                 type="button"
                 onClick={() => router.push(`/map/${activeSigungu}/posts`)}
                 aria-label="이 지역의 기록 목록"
-                className="absolute right-[76px] bottom-[34px] z-20 grid size-11 place-items-center rounded-full border border-black/10 bg-white shadow"
+                className="absolute right-[76px] bottom-[30px] z-20 grid size-11 place-items-center rounded-full border border-black/10 bg-white shadow"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/icons/map/list.png" alt="" className="size-6 object-contain" />
@@ -244,7 +244,7 @@ export default function MapView() {
                 type="button"
                 onClick={() => transformRef.current?.zoomIn()}
                 aria-label="지도 확대"
-                className="absolute right-[76px] bottom-[34px] z-20 grid size-11 place-items-center rounded-full border border-black/10 bg-white shadow"
+                className="absolute right-[76px] bottom-[30px] z-20 grid size-11 place-items-center rounded-full border border-black/10 bg-white shadow"
                 style={{ color: "#6ca59c" }}
               >
                 <SearchIcon className="size-6" />

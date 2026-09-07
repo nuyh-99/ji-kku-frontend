@@ -36,9 +36,10 @@ export default function DecorateHeader() {
 
       <h1 className="text-base font-medium text-zinc-900">나만의 지도를 꾸며보세요</h1>
 
-      {/* 메뉴 내용이 디자인에 없어 아직 열지 않는다. */}
+      {/* 앱의 다른 화면(홈·기록·행사 등)과 같이 마이페이지로 보낸다. */}
       <button
         type="button"
+        onClick={() => router.push("/mypage")}
         aria-label="메뉴"
         className="absolute right-2 grid size-10 place-items-center rounded-full text-zinc-800 hover:bg-black/5"
       >
