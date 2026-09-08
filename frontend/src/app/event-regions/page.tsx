@@ -15,6 +15,10 @@ import { getEventRegions } from "@/features/event-regions/api/eventRegion";
 import FestivalCard from "@/features/event-regions/components/FestivalCard";
 import { useFestivalCards } from "@/features/event-regions/hooks/useFestivalCards";
 
+// --- 디자인 기준 캔버스 크기 (Figma 스펙 393x852, 스크롤 없이 화면에 맞춰 스케일됨) ---
+const DESIGN_WIDTH = 393;
+const DESIGN_HEIGHT = 852;
+
 const DEFAULT_MAP_WIDTH = 360; // 실측 전 임시값(초기 렌더용). 실제 계산은 측정된 width로 함
 const MAP_HEIGHT = 496; // 디자인 고정 높이
 const ZOOM = 1.6; // 확대 배율 (고정 — 이 값은 바꾸지 않음)
@@ -47,6 +51,31 @@ export default function EventRegionsPage() {
     [items]
   );
   const eventCodes = useMemo(() => getEventRegionCodes(items), [items]);
+
+  // --- 바깥 뷰포트 크기에 맞춰 393x852 디자인 캔버스를 얼마나 축소할지 계산 ---
+  // 가로/세로 중 더 작게 맞는 비율을 써야 스크롤 없이 화면 안에 다 들어감
+  const outerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const widthScale = el.clientWidth / DESIGN_WIDTH;
+      const heightScale = el.clientHeight / DESIGN_HEIGHT;
+      setScale(Math.min(widthScale, heightScale));
+    };
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   // --- 실제 렌더링된 컨테이너 너비 측정 (width: 100%라서 기기마다 다를 수 있음) ---
   const containerRef = useRef<HTMLDivElement>(null);
@@ -194,31 +223,52 @@ export default function EventRegionsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentBox, mapWidth]);
+const DRAG_THRESHOLD_PX = 4;
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+const pointerIdRef = useRef<number | null>(null);
+
+const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  pointerIdRef.current = e.pointerId;
+  startPosRef.current = { x: e.clientX, y: e.clientY };
+  startOffsetRef.current = offset;
+  // 주의: 여기서 setPointerCapture를 호출하지 않는다.
+};
+
+const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  if (pointerIdRef.current === null) return;
+
+  const dx = e.clientX - startPosRef.current.x;
+  const dy = e.clientY - startPosRef.current.y;
+
+  if (!draggingRef.current) {
+    // 아직 드래그로 확정 안 됨: threshold 넘었는지만 검사
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+
+    // 이 시점부터 진짜 드래그로 확정 → 그제서야 캡처
     draggingRef.current = true;
     setIsDragging(true);
-    startPosRef.current = { x: e.clientX, y: e.clientY };
-    startOffsetRef.current = offset;
     e.currentTarget.setPointerCapture(e.pointerId);
-  };
+  }
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draggingRef.current) return;
-    const deltaX = e.clientX - startPosRef.current.x;
-    const deltaY = e.clientY - startPosRef.current.y;
-    setOffset(
-      getPanClampedOffset({
-        x: startOffsetRef.current.x + deltaX,
-        y: startOffsetRef.current.y + deltaY,
-      })
-    );
-  };
+  const effectiveScale = scale || 1;
+  const deltaX = dx / effectiveScale;
+  const deltaY = dy / effectiveScale;
+  setOffset(
+    getPanClampedOffset({
+      x: startOffsetRef.current.x + deltaX,
+      y: startOffsetRef.current.y + deltaY,
+    })
+  );
+};
 
-  const handlePointerUp = () => {
-    draggingRef.current = false;
-    setIsDragging(false);
-  };
+const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  if (draggingRef.current && pointerIdRef.current !== null) {
+    e.currentTarget.releasePointerCapture(pointerIdRef.current);
+  }
+  draggingRef.current = false;
+  pointerIdRef.current = null;
+  setIsDragging(false);
+};
 
   // 이벤트 지역만 클릭 가능 → app/event-regions/[sigunguCd]/page.tsx로 이동.
   // 이벤트 지역이 아니면 아무 동작도 하지 않는다.
@@ -228,131 +278,171 @@ export default function EventRegionsPage() {
   };
 
   return (
-    <div className="relative bg-white px-[17px] pb-4 max-w-[393px] mx-auto" style={{ paddingTop: 44 }}>
-  <header className="flex items-center justify-between mb-4">
-    <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-      <Image
-        src="/assets/chevron-left.svg"
-        alt="뒤로가기"
-        width={28}
-        height={28}
-        className="shrink-0"
-      />
-    </button>
-
-    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+    
+    <div
+      ref={outerRef}
+      className="w-full flex items-center justify-center overflow-hidden"
+      style={{ height: "100dvh" }}
+    >
       <div
-        className="shrink-0"
+        className="relative bg-white"
         style={{
-          width: 28,
-          height: 28,
-          background: "url('/assets/Menu.png') 50% / contain no-repeat",
+          width: DESIGN_WIDTH,
+          height: DESIGN_HEIGHT,
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
         }}
-      />
-    </button>
-  </header>
-
-      <p
-  className="mt-[19px] text-[#9C9C9C]"
-  style={{
-    height: 17,
-    fontFamily: "Pretendard",
-    fontWeight: 400,
-    fontSize: 14,
-    lineHeight: "100%",
-    letterSpacing: "0%",
-    whiteSpace: "nowrap",
-  }}
->
-  이벤트 지역을 방문하고 배지를 수집해보세요!
-</p>
-
-      <div
-        ref={containerRef}
-        className="relative mt-4 w-full overflow-hidden select-none"
-        style={{
-          height: MAP_HEIGHT,
-          borderRadius: 9,
-          border: "1px solid #6CA59C",
-          touchAction: "none",
-          cursor: isDragging ? "grabbing" : "grab",
-        }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
       >
-       <div
-  style={{
-    width: "100%",
-    height: "100%",
-    transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
-    transformOrigin: "center center",
-    transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
-    willChange: "transform",
-    maskImage: `radial-gradient(ellipse at center, black ${
-      FADE_START_RATIO * 100
-    }%, transparent 100%)`,
-    WebkitMaskImage: `radial-gradient(ellipse at center, black ${
-      FADE_START_RATIO * 100
-    }%, transparent 100%)`,
-  }}
+        <header
+          className="absolute flex items-center justify-between"
+          style={{ top: 44, left: 17, width: 359, height: 28 }}
+        >
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+          className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+          style={{ width: 40, height: 40, margin: -6 }}
 >
-          <div className="relative h-full w-full">
-            {/* 공용 GangwonMapSvg는 수정하지 않음 — 팀장 소유 파일.
-               heightMode 없이 className="!h-full"로 h-auto를 override해서
-               높이만 이 페이지 전용으로 강제한다. */}
-            <GangwonMapSvg
-              regions={GANGWON_REGIONS}
-              regionStates={regionStates}
-              viewBox={GANGWON_VIEW_BOX}
-              className="!h-full"
-              onRegionClick={handleRegionClick}
+            <Image
+              src="/assets/chevron-left.svg"
+              alt="뒤로가기"
+              width={28}
+              height={28}
+              className="shrink-0"
             />
+          </button>
 
-            {/* event 지역 teal 테두리 + glow는 원본이 지원하지 않으므로
-               같은 viewBox/좌표를 그대로 재사용하는 오버레이 SVG로 얹는다. */}
-            <EventRegionGlowOverlay
-              regions={GANGWON_REGIONS}
-              eventCodes={eventCodes}
-              viewBox={GANGWON_VIEW_BOX}
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+            className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+            style={{ width: 40, height: 40, margin: -6 }}
+            >
+            <div
+              className="shrink-0"
+              style={{
+                width: 28,
+                height: 28,
+                background: "url('/assets/Menu.png') 50% / contain no-repeat",
+              }}
             />
+          </button>
+        </header>
+
+        <p
+          className="absolute text-[#9C9C9C]"
+          style={{
+            top: 79,
+            left: 17,
+            width: 248,
+            height: 17,
+            fontFamily: "Pretendard",
+            fontWeight: 400,
+            fontSize: 14,
+            lineHeight: "100%",
+            letterSpacing: "0%",
+            whiteSpace: "nowrap",
+          }}
+        >
+          이벤트 지역을 방문하고 배지를 수집해보세요!
+        </p>
+
+        <div
+          ref={containerRef}
+          className="absolute overflow-hidden select-none"
+          style={{
+            top: 108,
+            left: 17,
+            width: 360,
+            height: MAP_HEIGHT,
+            borderRadius: 9,
+            border: "1px solid #6CA59C",
+            touchAction: "none",
+            cursor: isDragging ? "grabbing" : "grab",
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
+              transformOrigin: "center center",
+              transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+              willChange: "transform",
+              
+            }}
+          >
+            <div className="relative h-full w-full">
+              {/* 공용 GangwonMapSvg는 수정하지 않음 — 팀장 소유 파일.
+                 heightMode 없이 className="!h-full"로 h-auto를 override해서
+                 높이만 이 페이지 전용으로 강제한다. */}
+              <GangwonMapSvg
+                regions={GANGWON_REGIONS}
+                regionStates={regionStates}
+                viewBox={GANGWON_VIEW_BOX}
+                className="!h-full"
+                onRegionClick={handleRegionClick}
+              />
+
+              {/* event 지역 teal 테두리 + glow는 원본이 지원하지 않으므로
+                 같은 viewBox/좌표를 그대로 재사용하는 오버레이 SVG로 얹는다. */}
+              <EventRegionGlowOverlay
+                regions={GANGWON_REGIONS}
+                eventCodes={eventCodes}
+                viewBox={GANGWON_VIEW_BOX}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <p
-  className="mt-[19px] text-[#6CA59C]"
+        <p
+          className="absolute text-[#6CA59C]"
+          style={{
+            top: 616,
+            left: 17,
+            width: 111,
+            height: 18,
+            fontFamily: "Pretendard",
+            fontWeight: 700,
+            fontSize: 15,
+            lineHeight: "100%",
+            letterSpacing: "0%",
+            textAlign: "center",
+            whiteSpace: "nowrap",
+          }}
+        >
+          지금 뜨고있는 축제
+        </p>
+
+        {/* 축제 카드 가로 스크롤 리스트 */}
+        <div
+  className="absolute flex overflow-x-auto overflow-y-hidden festival-scroll"
   style={{
-    height: 18,
-    fontFamily: "Pretendard",
-    fontWeight: 700,
-    fontSize: 15,
-    lineHeight: "100%",
-    letterSpacing: "0%",
-   
-    whiteSpace: "nowrap",
+    top: 646,
+    left: 17,
+    width: 376,
+    height: 149.0674285888672,
+    gap: 11,
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // 구형 Edge/IE
   }}
 >
-  지금 뜨고있는 축제
-</p>
-          {/* 축제 카드 가로 스크롤 리스트 */}
-      <div className="mt-3 flex gap-3 overflow-x-auto pb-2 -mx-[17px] px-[17px] scrollbar-hide">
-        {isFestivalsLoading && festivals.length === 0 ? (
-          // 로딩 중: 카드 스켈레톤 2~3개
-          Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="shrink-0 animate-pulse rounded-[6.2px] bg-gray-200"
-              style={{ width: 146.75, height: 149.03 }}
-            />
-          ))
-        ) : (
-          festivals.map((festival) => (
-            <FestivalCard key={festival.id} festival={festival} />
-          ))
-        )}
+          {isFestivalsLoading && festivals.length === 0 ? (
+            // 로딩 중: 카드 스켈레톤 2~3개
+            Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="shrink-0 animate-pulse rounded-[6.2px] bg-gray-200"
+                style={{ width: 146.75, height: 149.03 }}
+              />
+            ))
+          ) : (
+            festivals.map((festival) => <FestivalCard key={festival.id} festival={festival} />)
+          )}
+          
+        </div>
       </div>
+      
     </div>
   );
 }

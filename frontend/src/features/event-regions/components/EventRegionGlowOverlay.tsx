@@ -1,5 +1,14 @@
 "use client";
 
+// GangwonMapSvg(공용, 팀장 소유) 위에 얹는 오버레이.
+// event 지역의 teal 테두리 + glow는 공용 컴포넌트가 지원하지 않으므로,
+// 같은 viewBox와 regions[].d(폴리곤 path)를 그대로 재사용해 픽셀 단위로
+// 겹치는 투명 SVG를 별도로 그린다. 공용 파일은 절대 수정하지 않는다.
+//
+// 주의: glow 레이어(흰색 채움 + blur)가 원본 SVG가 이미 그려놓은 라벨 위를
+// 완전히 덮어버리므로, 이 오버레이 맨 위에 라벨을 다시 한 번 그려서
+// 이벤트 지역의 글씨가 보이도록 한다 (팀장 버전의 "라벨을 맨 마지막에
+// 그린다" 순서와 동일한 이유).
 import type { RegionShape } from "@/types/map";
 
 interface EventRegionGlowOverlayProps {
@@ -30,11 +39,19 @@ export default function EventRegionGlowOverlay({
 
   return (
     <svg
-      viewBox={viewBox}
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      aria-hidden="true"
-    >
-    
+  viewBox={viewBox}
+  className="pointer-events-none absolute inset-0 h-full w-full"
+  overflow="visible"
+  aria-hidden="true"
+>
+  <defs>
+    <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#6CA59C" />
+      <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#6CA59CCC" />
+      <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#6CA59C80" />
+    </filter>
+  </defs>
+
 
 {/* 1) glow — 기존과 동일 */}
 <g>

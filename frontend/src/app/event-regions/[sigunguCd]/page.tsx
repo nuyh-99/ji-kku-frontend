@@ -12,12 +12,15 @@ import type { MissionSpotsResult } from "@/types/mission";
 // 🎛️ 지도 및 핀 보정 상수 설정
 // ==========================================
 const LEFT_ALIGN_OFFSET_X = 20;
+const DESIGN_WIDTH = 393;
+const DESIGN_HEIGHT = 852;
 
 const DEFAULT_MAP_WIDTH = 393; // 초기 너비
-const MAP_HEIGHT = 500; // 지도 컨테이너 높이
-const ZOOM = 1.4; // 지도가 상하로 짤리지 않도록 적절한 배율 설정
+const MAP_HEIGHT = 600; // 지도 컨테이너 높이
+const DESIRED_ZOOM = 1.4; // 지도가 상하로 짤리지 않도록 적절한 배율 설정
 
 const PAN_PADDING_X = 50; // 좌우 드래그 가능 여백
+const PAN_PADDING_Y = 100;
 
 // 📍 핀 보정 오프셋
 const PIN_OFFSET_X = -250; // 핀 너비(40px)의 절반만큼 좌로 이동하여 중앙 맞춤
@@ -100,36 +103,85 @@ function EventRegionContent({
   // 컨테이너 너비 측정
   const containerRef = useRef<HTMLDivElement>(null);
   const [mapWidth, setMapWidth] = useState(DEFAULT_MAP_WIDTH);
+  const [contentBox, setContentBox] = useState<{width:number;height:number} | null>(null);
 
   useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+  const svgEl = containerRef.current?.querySelector("svg");
+  if (!svgEl) return;
+  try {
+    const { width, height } = (svgEl as SVGSVGElement).getBBox();
+    setContentBox({ width, height });
+  } catch {
+    // 렌더 전 호출 시 예외 무시
+  }
+}, [map?.viewBox, mapWidth]);
+  const outerRef = useRef<HTMLDivElement>(null);
+const [scale, setScale] = useState(1);
 
-    const update = () => setMapWidth(el.clientWidth);
-    update();
+useLayoutEffect(() => {
+  const el = outerRef.current;
+  if (!el) return;
 
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // 맨 왼쪽 정렬 기준 offset 계산
-  const baseLeftOffset = useMemo(() => {
-    const leftX = (mapWidth * (ZOOM - 1)) / 2 + LEFT_ALIGN_OFFSET_X;
-    return { x: leftX, y: 0 };
-  }, [mapWidth]);
-
-  const mapMaxOffsetX = (mapWidth * (ZOOM - 1)) / 2 + PAN_PADDING_X;
-  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-  const getPanClampedOffset = (rawX: number) => {
-    return {
-      x: clamp(rawX, -mapMaxOffsetX, mapMaxOffsetX + LEFT_ALIGN_OFFSET_X * 2),
-      y: 0,
-    };
+  const updateScale = () => {
+    const { clientWidth, clientHeight } = el;
+    const scaleX = clientWidth / DESIGN_WIDTH;
+    const scaleY = clientHeight / DESIGN_HEIGHT;
+    setScale(Math.min(scaleX, scaleY));
   };
 
-  const [offset, setOffset] = useState(baseLeftOffset);
+  updateScale();
+  const observer = new ResizeObserver(updateScale);
+  observer.observe(el);
+  return () => observer.disconnect();
+}, []);
+
+ // 변경
+const { effectiveZoom, mapMaxOffsetX, mapMaxOffsetY } = useMemo(() => {
+  if (!map?.viewBox) return { effectiveZoom: 1, mapMaxOffsetX: 0, mapMaxOffsetY: 0 };
+
+  const vbW = contentBox?.width ?? Number(map.viewBox.split(" ")[2]);
+  const vbH = contentBox?.height ?? Number(map.viewBox.split(" ")[3]);
+  const mapAspect = vbW / vbH;
+  const containerAspect = mapWidth / MAP_HEIGHT;
+
+  let baseW: number, baseH: number;
+  if (mapAspect > containerAspect) {
+    baseW = mapWidth;
+    baseH = mapWidth / mapAspect;
+  } else {
+    baseH = MAP_HEIGHT;
+    baseW = MAP_HEIGHT * mapAspect;
+  }
+
+  // 세로가 컨테이너 높이를 넘지 않는 선에서만 확대 (상/하단 잘림 방지)
+  const maxSafeZoom = MAP_HEIGHT / baseH;
+  const zoom = Math.min(DESIRED_ZOOM, maxSafeZoom);
+
+  const scaledW = baseW * zoom;
+  const scaledH = baseH * zoom;
+
+  return {
+      effectiveZoom: zoom,
+      mapMaxOffsetX: Math.max(0, (scaledW - mapWidth) / 2) + PAN_PADDING_X,
+      mapMaxOffsetY: Math.max(0, (scaledH - MAP_HEIGHT) / 2) + PAN_PADDING_Y, // PAN_PADDING_Y 추가
+    };
+}, [map?.viewBox, mapWidth, contentBox]);
+
+const baseOffset = useMemo(() => {
+  const leftX = (mapWidth * (effectiveZoom - 1)) / 2 + LEFT_ALIGN_OFFSET_X;
+  return { x: leftX, y: 0 };
+}, [mapWidth, effectiveZoom]);
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const getPanClampedOffset = (rawX: number, rawY: number) => {
+  return {
+    x: clamp(rawX, -mapMaxOffsetX, mapMaxOffsetX + LEFT_ALIGN_OFFSET_X * 2),
+    y: clamp(rawY, -mapMaxOffsetY, mapMaxOffsetY),
+  };
+};
+
+  const [offset, setOffset] = useState(baseOffset);
   const [isDragging, setIsDragging] = useState(false);
   const draggingRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
@@ -138,14 +190,14 @@ function EventRegionContent({
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setOffset(baseLeftOffset);
-  }, [baseLeftOffset]);
+    setOffset(baseOffset);
+  }, [baseOffset]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.pointerType === "mouse") return;
+    e.preventDefault(); // 브라우저 기본 동작 방지
 
     draggingRef.current = true;
-    setIsDragging(true);
     startPosRef.current = { x: e.clientX, y: e.clientY };
     startOffsetRef.current = offset;
 
@@ -157,15 +209,20 @@ function EventRegionContent({
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draggingRef.current) return;
-    const deltaX = e.clientX - startPosRef.current.x;
+  if (!draggingRef.current) return;
+  const deltaX = e.clientX - startPosRef.current.x;
+  const deltaY = e.clientY - startPosRef.current.y;
 
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      setOffset(getPanClampedOffset(startOffsetRef.current.x + deltaX));
-    });
-  };
-
+  if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  rafRef.current = requestAnimationFrame(() => {
+    setOffset(
+      getPanClampedOffset(
+        startOffsetRef.current.x + deltaX,
+        startOffsetRef.current.y + deltaY
+      )
+    );
+  });
+};
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     draggingRef.current = false;
     setIsDragging(false);
@@ -204,7 +261,20 @@ function EventRegionContent({
   const selectedSpot = spots.find((s) => s.contentId === selectedContentId);
   const router = useRouter();
   return (
-    <div className="relative min-h-screen w-full max-w-[393px] mx-auto overflow-hidden pb-8 select-none">
+  <div
+    ref={outerRef}
+    className="w-full flex items-center justify-center overflow-hidden"
+    style={{ height: "100dvh" }}
+  >
+    <div
+      className="relative bg-white overflow-hidden select-none"
+      style={{
+        width: DESIGN_WIDTH,
+        height: DESIGN_HEIGHT,
+        transform: `scale(${scale})`,
+        transformOrigin: "center center",
+      }}
+    >
       {/* 1. 배경 이미지 & 블러 */}
       <div
         className="pointer-events-none absolute z-0 overflow-hidden"
@@ -227,19 +297,25 @@ function EventRegionContent({
       </div>
 
       {/* 2. 상단 헤더 & 게이지 */}
-      <div className="relative px-[17px] pb-4" style={{ paddingTop: 44 }}>
-        <header className="flex items-center justify-between mb-[5px]">
-          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-          </button>
-
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+      <div className="relative px-[17px] pb-4 z-20 pointer-events-none" style={{ paddingTop: 44 }}>
+        <header className="flex items-center justify-between mb-[5px] pointer-events-auto">
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+                    className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                    style={{ width: 40, height: 40, margin: -6 }}
+          >
+                      <Image
+                        src="/assets/chevron-left.svg"
+                        alt="뒤로가기"
+                        width={28}
+                        height={28}
+                        className="shrink-0"
+                      />
+                    </button>
+          
+                    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+                      className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                      style={{ width: 40, height: 40, margin: -6 }}
+                      >
             <div
               className="shrink-0"
               style={{
@@ -251,7 +327,9 @@ function EventRegionContent({
           </button>
         </header>
 
-        <EventRegionGauge visitedCount={spots.filter((s) => s.isCompleted).length} />
+        <div className="pointer-events-auto">
+          <EventRegionGauge visitedCount={spots.filter((s) => s.isCompleted).length} />
+            </div>
 
         <p
   className="absolute text-[14px] text-white/70"
@@ -276,7 +354,7 @@ function EventRegionContent({
       {map ? (
         <div
           ref={containerRef}
-          className="relative z-10 w-full overflow-hidden select-none flex items-center justify-center"
+          className="relative z-10 w-full overflow-hidden select-none flex items-center justify-center cursor-grab active:cursor-grabbing pointer-events-auto"
           style={{
             height: MAP_HEIGHT,
             touchAction: "none",
@@ -301,16 +379,14 @@ function EventRegionContent({
           <div
             className="w-full h-full flex items-center justify-center"
             style={{
-              transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
-              transformOrigin: "center center",
-              willChange: "transform",
-            }}
+  transform: `translate(${offset.x}px, ${offset.y}px) scale(${effectiveZoom})`,
+  transformOrigin: "center center",
+  willChange: "transform",
+}}
           >
             <div
               className="relative h-full w-full flex items-center justify-center
-                [&_path]:[transform-box:fill-box]
-                [&_path]:[transform-origin:center]
-                [&_path]:[transform:scale(0.979)]
+                
                 [&_path]:stroke-[url(#border-fade-gradient)]
                 [&_path]:[stroke-width:2px]
                 [&_path]:[stroke-linejoin:round]
@@ -325,7 +401,7 @@ function EventRegionContent({
                 viewBox={map.viewBox}
                 labelSize={map.labelSize}
                 ariaLabel="이벤트 지역 지도"
-                className="w-full h-full max-h-full object-contain"
+                 className="!w-full !h-full"
                 overlay={
                   <g className="mission-spot-markers pointer-events-auto">
                     {/* 📌 4. 배열(spots)을 map으로 반복하여 마커 여러 개 그리기 */}
@@ -362,6 +438,7 @@ function EventRegionContent({
           }}
         />
       )}
+    </div>
     </div>
   );
 }
@@ -407,44 +484,54 @@ function MissionSpotMarker({
 function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
   const clamped = Math.min(5, Math.max(0, visitedCount));
 
-  // 💡 시작점으로부터 70px씩 누적되도록 설정 (마지막은 317)
-  const widths = [0, 15,85, 155, 225, 295];
+  const widths = [0, 56.15, 115.6, 173.4, 231.2, 289];
   const fillWidth = widths[clamped];
-
-  const numberLefts = [30, 100, 170, 240, 315];
 
   return (
     <div className="relative h-[100px] w-full">
-      {/* 숫자 1~5 */}
-      {numberLefts.map((leftPos, i) => (
-        <span
-          key={i + 1}
-          className="absolute text-[12px] text-[#294E49]"
-          style={{
-            top: 0,
-            left: leftPos,
-            fontFamily: "Pretendard",
-            fontStyle: "normal",
-            fontWeight: 400,
-            lineHeight: "normal",
-          }}
-        >
-          {i + 1}
-        </span>
-      ))}
+      <div
+  className="absolute flex justify-between"
+  style={{
+    top: 0,
+    left: 13,
+    width: 327,
+    height: 14,
+  }}
+>
+  {[0, 1, 2, 3, 4, 5].map((num) => (
+    <span
+      key={num}
+      className="text-[12px] text-[#294E49]"
+      style={{
+        fontFamily: "Pretendard",
+        fontStyle: "normal",
+        fontWeight: 400,
+        lineHeight: "normal",
+      }}
+    >
+      {num}
+    </span>
+  ))}
+</div>
 
       {/* 배경 게이지 바 */}
       <div
         className="absolute rounded-[126px]"
-        style={{ top: 20, left: 18, width: 315, height: 26, background: "#6CA59C" }}
+        style={{
+          top: 19, // 96 - 77(헤더 높이) = 19
+          left: 13,
+          width: 333,
+          height: 26,
+          background: "#6CA59CB0",
+        }}
       >
         {clamped > 0 && (
           <div
             className="absolute rounded-l-[126px] transition-all duration-500"
             style={{
               top: 0,
-              left: 0,
-              width: fillWidth, // 💡 게이지 바 시작점으로부터 70px 간격씩 채워짐
+              left: 13,
+              width: fillWidth,
               height: 26,
               background: "#FFFFFF",
               boxShadow: "0px 0px 10px 2px #FFFFFF",

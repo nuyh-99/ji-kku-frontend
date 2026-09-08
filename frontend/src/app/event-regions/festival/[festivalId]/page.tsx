@@ -57,10 +57,35 @@ function FestivalDetailContent({
 }) {
   const images = useFestivalImages(festival.imageUrl);
   const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
 
+  // --- 스케일 캔버스 (여기 추가) ---
+  const DESIGN_WIDTH = 393;
+  const DESIGN_HEIGHT = 852;
+  const outerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+useEffect(() => {
+  const outerEl = outerRef.current;
+  if (!outerEl) return;
+
+  const update = () => {
+    const widthScale = outerEl.clientWidth / DESIGN_WIDTH;
+    const heightScale = outerEl.clientHeight / DESIGN_HEIGHT;
+    setScale(Math.min(widthScale, heightScale));
+  };
+
+  update();
+  window.addEventListener("resize", update);
+  return () => {
+    window.removeEventListener("resize", update);
+  };
+}, []);
   // --- 이미지 스크롤 캐러셀 ---
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // ... 이하 기존 코드 그대로
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -92,17 +117,40 @@ function FestivalDetailContent({
   };
 
   return (
-    <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
+    
+<div
+  ref={outerRef}
+  className="w-full flex items-center justify-center overflow-hidden bg-gray-900"
+  style={{ height: "100dvh" }}
+>
+  <div style={{ width: DESIGN_WIDTH * scale, height: DESIGN_HEIGHT * scale }}>
+    <div
+      className="relative bg-white pb-8"
+      style={{
+        width: DESIGN_WIDTH,
+        height: DESIGN_HEIGHT,
+        overflowY: "auto",
+        paddingTop: 44,
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
+      }}
+    >
       <div className="px-[17px]">
         <header
-          className="flex items-start justify-center mb-4"
+          className="flex items-start justify-center mb-2"
           style={{ width: 359, height: 28, gap: 303 }}
         >
-          <button aria-label="뒤로가기" onClick={onBack} type="button">
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+          className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+          style={{ width: 40, height: 40, margin: -6 }}
+>
             <Image src="/assets/chevron-left.svg" alt="뒤로가기" width={28} height={28} className="shrink-0" />
           </button>
 
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
+          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+            className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+            style={{ width: 40, height: 40, margin: -6 }}
+            >
             <div
               className="shrink-0"
               style={{
@@ -153,32 +201,40 @@ function FestivalDetailContent({
       <div className="px-[17px]">
         {/* 축제 이름 */}
         <h1
-          className="mt-[26px]"
-          style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
+          className="mt-[15px]"
+          style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16,  color: "#6CA59C" }}
         >
           {festival.title}
         </h1>
 
         {/* 상세 주소 */}
         <p
-          className="mt-1"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
+          className="mt-[5px]"
+          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", letterSpacing: "0em", color: "#9C9C9C" }}
         >
           {festival.address}
         </p>
 
-        {/* 상세 설명 */}
-        <p
-          className="mt-6 whitespace-pre-line"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
-        >
-          {festival.description}
-        </p>
+       {/* 상세 설명 */}
+<p
+  className={`mt-[15px] whitespace-pre-line ${isExpanded ? "" : "line-clamp-2"}`}
+  style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "110%", color: "#000000" }}
+>
+  {festival.description}
+</p>
+<button
+  type="button"
+  onClick={() => setIsExpanded((prev) => !prev)}
+  className="mt-1 text-gray-500 hover:text-gray-400 active:text-gray-400 transition-colors"
+  style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: 13 }}
+>
+  {isExpanded ? "접기" : "더보기"}
+</button>
 
         {/* 이용 정보 (축제 전용 데이터: period, venue 반영) */}
         <dl
-          className="mt-4 space-y-1"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, color: "#000000" }}
+          className="mt-[8px] space-y-0.5"
+          style={{ fontFamily: "Pretendard", fontWeight: 400, lineHeight: "100%", fontSize: 14, color: "#000000" }}
         >
           <div className="flex gap-1">
             <dt className="text-gray-500">축제기간 :</dt>
@@ -216,6 +272,8 @@ function FestivalDetailContent({
           지도 확인하기
         </button>
       </div>
+    </div>
+    </div>
     </div>
   );
 }
