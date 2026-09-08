@@ -45,25 +45,35 @@ export default function SigunguRecordsPage({
   };
 
   return (
-    <div className="relative pb-8">
-  {/* 상단 헤더 */}
-  <div className="relative px-[17px]" style={{ paddingTop: 44 }}>
+     <div
+  className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[393px]"
+>
+  <div className="relative pb-8">
+    {/* 상단 헤더 */}
+    <div className="relative px-[17px]" style={{ paddingTop: 44 }}>
         <header
           className="flex items-start justify-center"
           style={{ width: 359, height: 28, gap: 303 }}
         >
-          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-          </button>
-
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
-            <div
+          
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+                    className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                    style={{ width: 40, height: 40, margin: -6 }}
+          >
+                      <Image
+                        src="/assets/chevron-left.svg"
+                        alt="뒤로가기"
+                        width={28}
+                        height={28}
+                        className="shrink-0"
+                      />
+                    </button>
+          
+                    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+                      className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                      style={{ width: 40, height: 40, margin: -6 }}
+                      >
+          <div
               className="shrink-0"
               style={{
                 width: 28,
@@ -234,6 +244,7 @@ export default function SigunguRecordsPage({
           </button>
         ))}
       </div>
+    </div>
     </div>
   );
 }

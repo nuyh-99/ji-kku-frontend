@@ -29,14 +29,13 @@ export default function RecordsPage() {
     async function load() {
       try {
         const data = await getSigunguTravelPostStatus();
-
-        // O(1) 조회를 위해 Set으로 변환
-        const recordedIdSet = new Set(data.content.map((item) => Number(item.sigunguCd)));
-
+console.log("API 응답:", data.content); // 여기서 실제 필드명, 값, 몇 개가 오는지 확인
+const recordedIdSet = new Set(data.content.map((item) => Number(item.sigunguCd)));
+console.log("recordedIdSet:", recordedIdSet);
         // 마스터 리스트 중 "기록이 있는" 시군구만 필터링 -> 이것만 pill로 렌더링
         const filtered = masterSigunguList.filter((sigungu) =>
-          recordedIdSet.has(sigungu.sigunguCd)
-        );
+  recordedIdSet.has(Number(sigungu.sigunguCd))
+);
         setVisibleSigunguList(filtered);
       } catch (err) {
         if (err instanceof ApiError) {
@@ -58,25 +57,34 @@ export default function RecordsPage() {
   }, [router]);
 
   return (
-    <div className="relative w-full max-w-[393px] mx-auto pb-8" style={{ paddingTop: 44 }}>
-      <div className="px-[17px]">
+    <div
+  className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[393px]"
+>
+  <div className="pb-8" style={{ paddingTop: 44 }}>
+    <div className="px-[17px]">
         {/* 상단 헤더 */}
         <header
           className="flex items-start justify-center mb-4"
           style={{ width: 359, height: 28, gap: 303 }}
         >
-          <button aria-label="뒤로가기" onClick={() => router.back()} type="button">
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-          </button>
-
-          <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button">
-            <div
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+                    className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                    style={{ width: 40, height: 40, margin: -6 }}
+          >
+                      <Image
+                        src="/assets/chevron-left.svg"
+                        alt="뒤로가기"
+                        width={28}
+                        height={28}
+                        className="shrink-0"
+                      />
+                    </button>
+          
+                    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+                      className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                      style={{ width: 40, height: 40, margin: -6 }}
+                      >
+           <div
               className="shrink-0"
               style={{
                 width: 28,
@@ -148,6 +156,7 @@ export default function RecordsPage() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

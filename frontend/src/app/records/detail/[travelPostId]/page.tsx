@@ -24,18 +24,24 @@ export default function TravelPostDetailPage({
           className="absolute left-0 top-0 flex w-full items-center justify-between px-[17px]"
           style={{ paddingTop: 44 }}
         >
-          <button type="button" aria-label="뒤로가기" onClick={() => router.back()}>
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-          </button>
-
-          <button type="button" aria-label="메뉴" onClick={() => router.push("/mypage")}>
-            <div
+          <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
+                    className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                    style={{ width: 40, height: 40, margin: -6 }}
+          >
+                      <Image
+                        src="/assets/chevron-left.svg"
+                        alt="뒤로가기"
+                        width={28}
+                        height={28}
+                        className="shrink-0"
+                      />
+                    </button>
+          
+                    <button aria-label="메뉴" onClick={() => router.push("/mypage")} type="button"
+                      className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+                      style={{ width: 40, height: 40, margin: -6 }}
+                      >
+          <div
               className="shrink-0"
               style={{
                 width: 28,
