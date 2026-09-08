@@ -18,7 +18,6 @@ export default function AchievementsPage() {
       try {
         const response = await getBadges();
         const badgeList: BadgeItem[] = response.content;
-        console.log("badgeList:", badgeList)
 
         const regionBadgeNos = badgeList
           .filter((badge) => badge.badgeType === "REGION")
