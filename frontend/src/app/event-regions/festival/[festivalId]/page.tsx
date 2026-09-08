@@ -120,7 +120,7 @@ useEffect(() => {
     
 <div
   ref={outerRef}
-  className="w-full flex items-center justify-center overflow-hidden bg-gray-900"
+  className="w-full flex items-center justify-center overflow-hidden"
   style={{ height: "100dvh" }}
 >
   <div style={{ width: DESIGN_WIDTH * scale, height: DESIGN_HEIGHT * scale }}>
