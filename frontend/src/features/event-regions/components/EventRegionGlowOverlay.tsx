@@ -46,10 +46,10 @@ export default function EventRegionGlowOverlay({
 >
   <defs>
     <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#6CA59C" />
-      <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#6CA59CCC" />
-      <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#6CA59C80" />
-    </filter>
+  <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#6CA59C" floodOpacity="1" />
+  <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#6CA59C" floodOpacity="0.8" />
+  <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#6CA59C" floodOpacity="0.5" />
+</filter>
   </defs>
 
 

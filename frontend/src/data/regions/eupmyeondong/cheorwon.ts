@@ -14,6 +14,15 @@ export const CHEORWON_VIEW_BOX = "0 0 682 435";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const CHEORWON_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const CHEORWON_TRANSFORM = {
+  scale: 73745.579855,
+  offsetX: 18.7,
+  offsetY: 12,
+  minX: 2.218476,
+  maxY: 0.725552,
+};
+
 export const CHEORWON_REGIONS: RegionShape[] = [
   {
     code: "5178025000",

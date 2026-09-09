@@ -233,6 +233,17 @@ const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
   startOffsetRef.current = offset;
   // 주의: 여기서 setPointerCapture를 호출하지 않는다.
 };
+// 기존 useRef들 아래에 추가
+const transformRef = useRef<HTMLDivElement>(null);
+const currentOffsetRef = useRef(offset); // 항상 최신 offset을 들고 있음
+
+// offset이 React state로 바뀔 때(초기 배치 등) ref도 같이 갱신
+useEffect(() => {
+  currentOffsetRef.current = offset;
+  if (transformRef.current) {
+    transformRef.current.style.transform = `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`;
+  }
+}, [offset]);
 
 const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
   if (pointerIdRef.current === null) return;
@@ -241,24 +252,25 @@ const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
   const dy = e.clientY - startPosRef.current.y;
 
   if (!draggingRef.current) {
-    // 아직 드래그로 확정 안 됨: threshold 넘었는지만 검사
     if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-
-    // 이 시점부터 진짜 드래그로 확정 → 그제서야 캡처
     draggingRef.current = true;
-    setIsDragging(true);
+    setIsDragging(true); // 커서/transition 스위칭용이라 이건 그대로 state로 둬도 OK (드래그당 1번만 발생)
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   const effectiveScale = scale || 1;
   const deltaX = dx / effectiveScale;
   const deltaY = dy / effectiveScale;
-  setOffset(
-    getPanClampedOffset({
-      x: startOffsetRef.current.x + deltaX,
-      y: startOffsetRef.current.y + deltaY,
-    })
-  );
+  const next = getPanClampedOffset({
+    x: startOffsetRef.current.x + deltaX,
+    y: startOffsetRef.current.y + deltaY,
+  });
+
+  currentOffsetRef.current = next;
+  // React state 대신 DOM에 직접 반영 → 리렌더 없이 그 프레임에 바로 그려짐
+  if (transformRef.current) {
+    transformRef.current.style.transform = `translate(${next.x}px, ${next.y}px) scale(${ZOOM})`;
+  }
 };
 
 const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -268,6 +280,9 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
   draggingRef.current = false;
   pointerIdRef.current = null;
   setIsDragging(false);
+
+  // 드래그가 끝났을 때만 React state로 커밋 (다음 렌더/클램프 등과 동기화)
+  setOffset(currentOffsetRef.current);
 };
 
   // 이벤트 지역만 클릭 가능 → app/event-regions/[sigunguCd]/page.tsx로 이동.
@@ -361,17 +376,18 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
-              transformOrigin: "center center",
-              transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
-              willChange: "transform",
-              
-            }}
-          >
+          
+            <div
+  ref={transformRef}   // ← 이 줄만 추가
+  style={{
+    width: "100%",
+    height: "100%",
+    transform: `translate(${offset.x}px, ${offset.y}px) scale(${ZOOM})`,
+    transformOrigin: "center center",
+    transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+    willChange: "transform",
+  }}
+>
             <div className="relative h-full w-full">
               {/* 공용 GangwonMapSvg는 수정하지 않음 — 팀장 소유 파일.
                  heightMode 없이 className="!h-full"로 h-auto를 override해서
@@ -394,7 +410,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
             </div>
           </div>
         </div>
-
+        
         <p
           className="absolute text-[#6CA59C]"
           style={{

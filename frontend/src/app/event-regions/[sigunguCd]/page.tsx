@@ -24,8 +24,8 @@ const PAN_PADDING_Y = 100;
 
 
 // 📍 핀 보정 오프셋
-const PIN_OFFSET_X = -250; // 핀 너비(40px)의 절반만큼 좌로 이동하여 중앙 맞춤
-const PIN_OFFSET_Y = -410; // 핀 높이(40px)만큼 위로 올려서 뾰족한 끝이 지점에 닿게 함
+const PIN_OFFSET_X = 0; // 핀 너비(40px)의 절반만큼 좌로 이동하여 중앙 맞춤
+const PIN_OFFSET_Y = 0 // 핀 높이(40px)만큼 위로 올려서 뾰족한 끝이 지점에 닿게 함
 
 // ==========================================
 // 🎛️ 지역별(sigunguCd) 위경도 → SVG 좌표 보정값
@@ -33,54 +33,31 @@ const PIN_OFFSET_Y = -410; // 핀 높이(40px)만큼 위로 올려서 뾰족한 
 // 프론트에서 재현하기 위한 지역별 계수. 값은 지역마다 캘리브레이션 필요.
 // (담당자에게 transform export 요청 전까지의 임시 우회.)
 // ==========================================
-const REGION_TRANSFORM: Record
-  string,
-  { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number }
-> = {
-  "51110": { scale: 72102.351635, offsetX: 12.2, offsetY: 12, minX: 2.225414, maxY: 0.719876 }, // 춘천
-  "51130": { scale: 79451.800491, offsetX: 12.6, offsetY: 12, minX: 2.229551, maxY: 0.707101 }, // 원주
-  "51150": { scale: 76524.954399, offsetX: 12, offsetY: 12.5, minX: 2.244151, maxY: 0.71618 }, // 강릉
-  "51170": { scale: 185818.261793, offsetX: 12, offsetY: 13.5, minX: 2.250735, maxY: 0.709286 }, // 동해
-  "51190": { scale: 138886.748676, offsetX: 63.9, offsetY: 12, minX: 2.249156, maxY: 0.703564 }, // 태백
-  "51210": { scale: 190481.309113, offsetX: 16.3, offsetY: 12, minX: 2.241349, maxY: 0.723115 }, // 속초
-  "51230": { scale: 72741.486887, offsetX: 12, offsetY: 12.7, minX: 2.248784, maxY: 0.70644 }, // 삼척
-  "51720": { scale: 34311.635496, offsetX: 25.6, offsetY: 12, minX: 2.22591, maxY: 0.716777 }, // 홍천
-  "51730": { scale: 69075.742939, offsetX: 13.6, offsetY: 12, minX: 2.229819, maxY: 0.71094 }, // 횡성
-  "51750": { scale: 46120.465864, offsetX: 20.3, offsetY: 12, minX: 2.235994, maxY: 0.704933 }, // 영월
-  "51760": { scale: 70736.064222, offsetX: 18.9, offsetY: 12, minX: 2.238271, maxY: 0.714028 }, // 평창
-  "51770": { scale: 77812.800519, offsetX: 12, offsetY: 14, minX: 2.242854, maxY: 0.708992 }, // 정선
-  "51780": { scale: 73745.579855, offsetX: 18.7, offsetY: 12, minX: 2.218476, maxY: 0.725552 }, // 철원
-  "51790": { scale: 77763.93131, offsetX: 12.6, offsetY: 12, minX: 2.224083, maxY: 0.725842 }, // 화천
-  "51800": { scale: 114515.232289, offsetX: 15.7, offsetY: 12, minX: 2.231225, maxY: 0.725552 }, // 양구
-  "51810": { scale: 68742.697983, offsetX: 19.5, offsetY: 12, minX: 2.233624, maxY: 0.726377 }, // 인제
-  "51820": { scale: 90591.847921, offsetX: 35.9, offsetY: 12, minX: 2.237581, maxY: 0.731711 }, // 고성
-  "51830": { scale: 92605.643895, offsetX: 13, offsetY: 12, minX: 2.241075, maxY: 0.721573 }, // 양양
-};
-
+/**
+ * 🛠️ 백엔드 연동용: mapX(경도), mapY(위도) -> SVG viewBox 좌표 변환 함수
+ * scripts/generate-eupmyeondong.mjs 의 웹 메르카토르 투영 로직을 지역별 계수로 재현.
+ */
 const toRadiansClient = (deg: number) => (deg * Math.PI) / 180;
 const projectLonClient = (lon: number) => toRadiansClient(lon);
 const projectLatClient = (lat: number) =>
   Math.log(Math.tan(Math.PI / 4 + toRadiansClient(lat) / 2));
 
-/**
- * 🛠️ 백엔드 연동용: mapX(경도), mapY(위도) -> SVG viewBox 좌표 변환 함수
- * scripts/generate-eupmyeondong.mjs 의 웹 메르카토르 투영 로직을 지역별 계수로 재현.
- */
-function calculatePinCoordinates(spot: MissionSpotItem, sigunguCd: number) {
+function calculatePinCoordinates(
+  spot: MissionSpotItem,
+  transform?: { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number },
+) {
   let x = 0;
   let y = 0;
 
-  // 💡 string이든 number든 안전하게 숫자로 수치화
   const lng = Number(spot.mapX);
   const lat = Number(spot.mapY);
-  const t = REGION_TRANSFORM[String(sigunguCd)];
 
-  if (!isNaN(lng) && !isNaN(lat) && lng > 0 && lat > 0 && t) {
+  if (!isNaN(lng) && !isNaN(lat) && lng > 0 && lat > 0 && transform) {
     const px = projectLonClient(lng);
     const py = projectLatClient(lat);
 
-    x = (px - t.minX) * t.scale + t.offsetX;
-    y = (t.maxY - py) * t.scale + t.offsetY;
+    x = (px - transform.minX) * transform.scale + transform.offsetX;
+    y = (transform.maxY - py) * transform.scale + transform.offsetY;
   } else {
     const item = spot as any;
     x = Number(item.x ?? 0);
@@ -92,7 +69,6 @@ function calculatePinCoordinates(spot: MissionSpotItem, sigunguCd: number) {
     y: y + PIN_OFFSET_Y,
   };
 }
-
 export default function EventRegionPage({
   params,
 }: {
@@ -222,7 +198,7 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
   const draggingRef = useRef(false);
   const startPosRef = useRef({ x: 0, y: 0 });
   const startOffsetRef = useRef({ x: 0, y: 0 });
-
+const mapContainerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -243,56 +219,51 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
   } catch {}
 };
 
-  const targetOffsetRef = useRef(offset);
-const LERP_FACTOR = 0.6; // 0~1, 작을수록 더 부드럽고 느리게 따라옴
+const targetOffsetRef = useRef(offset);
 
-const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-  if (!draggingRef.current) return;
-  const deltaX = e.clientX - startPosRef.current.x;
-  const deltaY = e.clientY - startPosRef.current.y;
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    const deltaX = e.clientX - startPosRef.current.x;
+    const deltaY = e.clientY - startPosRef.current.y;
 
-  targetOffsetRef.current = getPanClampedOffset(
-    startOffsetRef.current.x + deltaX,
-    startOffsetRef.current.y + deltaY
-  );
+    const nextX = clamp(
+      startOffsetRef.current.x + deltaX,
+      -mapMaxOffsetX,
+      mapMaxOffsetX + LEFT_ALIGN_OFFSET_X * 2
+    );
+    const nextY = clamp(
+      startOffsetRef.current.y + deltaY,
+      -mapUpMaxOffsetY,
+      mapDownStopY
+    );
 
-  if (!rafRef.current) {
-    const animate = () => {
-      setOffset((prev) => {
-        const next = {
-          x: prev.x + (targetOffsetRef.current.x - prev.x) * LERP_FACTOR,
-          y: prev.y + (targetOffsetRef.current.y - prev.y) * LERP_FACTOR,
-        };
-        return next;
-      });
+    targetOffsetRef.current = { x: nextX, y: nextY };
 
-      if (draggingRef.current) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        rafRef.current = null;
-      }
-    };
-    rafRef.current = requestAnimationFrame(animate);
-  }
-};
-
-const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-  draggingRef.current = false;
-  setIsDragging(false);
-
-  if (rafRef.current) {
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
-  }
-  // 최종 목표값으로 스냅 (transition이 부드럽게 처리)
-  setOffset(targetOffsetRef.current);
-
-  try {
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
+    // 💡 React 리렌더링 없이 DOM을 직접 움직여서 버벅임 제거
+    if (mapContainerRef.current) {
+      mapContainerRef.current.style.transform = `translate(${nextX}px, ${nextY}px) scale(${effectiveZoom})`;
+      mapContainerRef.current.style.transition = "none";
     }
-  } catch {}
-};
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setIsDragging(false);
+
+    // 손을 뗄 때 최종 위치를 React 상태에 반영
+    setOffset(targetOffsetRef.current);
+
+    if (mapContainerRef.current) {
+      mapContainerRef.current.style.transition = "transform 280ms cubic-bezier(0.22, 1, 0.36, 1)";
+    }
+
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+  };
 
   // 📍 스팟 마커 클릭 시 팝업 스크린 좌표 계산 (클릭된 특정 spot의 contentId 저장)
   const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
@@ -436,12 +407,12 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
           </svg>
 
           <div
+  ref={mapContainerRef}
   className="w-full h-full flex items-center justify-center"
   style={{
     transform: `translate(${offset.x}px, ${offset.y}px) scale(${effectiveZoom})`,
     transformOrigin: "center center",
     willChange: "transform",
-    transition: isDragging ? "none" : "transform 280ms cubic-bezier(0.22, 1, 0.36, 1)",
   }}
 >
             <div
@@ -469,7 +440,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
                       <MissionSpotMarker
                         key={item.contentId}
                         spot={item}
-                        sigunguCd={sigunguCd}
+                        transform={map.transform}
                         onClick={(e) => handleSpotClick(e, item.contentId)}
                       />
                     ))}
@@ -506,14 +477,14 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
 // 📌 마커 컴포넌트
 function MissionSpotMarker({
   spot,
-  sigunguCd,
+  transform,
   onClick,
 }: {
   spot: MissionSpotItem;
-  sigunguCd: number;
+  transform?: { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number };
   onClick: (e: React.MouseEvent) => void;
 }) {
-  const { x: spotX, y: spotY } = calculatePinCoordinates(spot, sigunguCd);
+  const { x: spotX, y: spotY } = calculatePinCoordinates(spot, transform);
 
   return (
     <g
@@ -522,13 +493,7 @@ function MissionSpotMarker({
       className="cursor-pointer transition-transform duration-200 hover:scale-110"
       style={{ pointerEvents: "all" }}
     >
-      <ellipse
-        cx="0"
-        cy="0"
-        rx={10.5}
-        ry={5}
-        fill="#9C9C9C85"
-      />
+      <ellipse cx="0" cy="0" rx={10.5} ry={5} fill="#9C9C9C85" />
       <image
         href="/event-region/where.png"
         x="-20"

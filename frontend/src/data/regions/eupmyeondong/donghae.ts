@@ -14,6 +14,15 @@ export const DONGHAE_VIEW_BOX = "0 0 682 761";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const DONGHAE_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const DONGHAE_TRANSFORM = {
+  scale: 185818.261793,
+  offsetX: 12,
+  offsetY: 13.5,
+  minX: 2.250735,
+  maxY: 0.709286,
+};
+
 export const DONGHAE_REGIONS: RegionShape[] = [
   {
     code: "5117051000",

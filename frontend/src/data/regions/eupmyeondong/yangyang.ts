@@ -14,6 +14,15 @@ export const YANGYANG_VIEW_BOX = "0 0 682 639";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const YANGYANG_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const YANGYANG_TRANSFORM = {
+  scale: 92605.643895,
+  offsetX: 13,
+  offsetY: 12,
+  minX: 2.241075,
+  maxY: 0.721573,
+};
+
 export const YANGYANG_REGIONS: RegionShape[] = [
   {
     code: "5183025000",

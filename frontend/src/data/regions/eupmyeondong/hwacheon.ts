@@ -14,6 +14,15 @@ export const HWACHEON_VIEW_BOX = "0 0 682 648";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const HWACHEON_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const HWACHEON_TRANSFORM = {
+  scale: 77763.93131,
+  offsetX: 12.6,
+  offsetY: 12,
+  minX: 2.224083,
+  maxY: 0.725842,
+};
+
 export const HWACHEON_REGIONS: RegionShape[] = [
   {
     code: "5179025000",

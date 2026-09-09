@@ -14,6 +14,15 @@ export const PYEONGCHANG_VIEW_BOX = "0 0 682 887";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const PYEONGCHANG_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const PYEONGCHANG_TRANSFORM = {
+  scale: 70736.064222,
+  offsetX: 18.9,
+  offsetY: 12,
+  minX: 2.238271,
+  maxY: 0.714028,
+};
+
 export const PYEONGCHANG_REGIONS: RegionShape[] = [
   {
     code: "5176025000",

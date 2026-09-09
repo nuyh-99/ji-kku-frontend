@@ -14,6 +14,15 @@ export const SAMCHEOK_VIEW_BOX = "0 0 682 724";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const SAMCHEOK_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const SAMCHEOK_TRANSFORM = {
+  scale: 72741.486887,
+  offsetX: 12,
+  offsetY: 12.7,
+  minX: 2.248784,
+  maxY: 0.70644,
+};
+
 export const SAMCHEOK_REGIONS: RegionShape[] = [
   {
     code: "5123025000",

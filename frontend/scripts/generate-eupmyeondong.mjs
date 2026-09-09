@@ -329,9 +329,18 @@ function buildSigungu(features, tolerance) {
     };
   });
 
-  return { regions, viewBox: `0 0 ${CANVAS_W} ${canvasH}` };
+   return {
+    regions,
+    viewBox: `0 0 ${CANVAS_W} ${canvasH}`,
+    transform: {
+      scale: Number(scale.toFixed(6)),
+      offsetX: round(offsetX),
+      offsetY: round(offsetY),
+      minX: Number(minX.toFixed(6)),
+      maxY: Number(maxY.toFixed(6)),
+    },
+  };
 }
-
 /**
  * 지도 하나의 라벨 크기.
  * 행정동이 25개인 시(춘천·원주)와 5개인 군(화천·양구)이 같은 캔버스를 쓰므로,
@@ -359,7 +368,7 @@ const ATTRIBUTION = [
   `//       https://github.com/vuski/admdongkor — ${SOURCE_VERSION}.`,
 ].join("\n");
 
-function renderRegionFile({ sigunguCd, sigunguName, constPrefix, regions, labelSize, viewBox }) {
+function renderRegionFile({ sigunguCd, sigunguName, constPrefix, regions, labelSize, viewBox, transform }) {
   const body = regions
     .map((r) => {
       const label = labelFits(r, labelSize)
@@ -383,6 +392,15 @@ export const ${constPrefix}_VIEW_BOX = "${viewBox}";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const ${constPrefix}_LABEL_SIZE = ${labelSize};
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const ${constPrefix}_TRANSFORM = {
+  scale: ${transform.scale},
+  offsetX: ${transform.offsetX},
+  offsetY: ${transform.offsetY},
+  minX: ${transform.minX},
+  maxY: ${transform.maxY},
+};
+
 export const ${constPrefix}_REGIONS: RegionShape[] = [
 ${body}
 ];
@@ -390,19 +408,19 @@ ${body}
 }
 
 function renderIndexFile(entries) {
-  const imports = entries
-    .map(
-      (e) =>
-        `import {\n  ${e.constPrefix}_LABEL_SIZE,\n  ${e.constPrefix}_REGIONS,\n  ${e.constPrefix}_VIEW_BOX,\n} from "./${e.fileName}";`,
-    )
-    .join("\n");
+ const imports = entries
+  .map(
+    (e) =>
+      `import {\n  ${e.constPrefix}_LABEL_SIZE,\n  ${e.constPrefix}_REGIONS,\n  ${e.constPrefix}_TRANSFORM,\n  ${e.constPrefix}_VIEW_BOX,\n} from "./${e.fileName}";`,
+  )
+  .join("\n");
 
   const table = entries
-    .map(
-      (e) =>
-        `  // ${e.sigunguName} (${e.regionCount}개 동)\n  "${e.sigunguCd}": {\n    viewBox: ${e.constPrefix}_VIEW_BOX,\n    labelSize: ${e.constPrefix}_LABEL_SIZE,\n    regions: ${e.constPrefix}_REGIONS,\n  },`,
-    )
-    .join("\n");
+  .map(
+    (e) =>
+      `  // ${e.sigunguName} (${e.regionCount}개 동)\n  "${e.sigunguCd}": {\n    viewBox: ${e.constPrefix}_VIEW_BOX,\n    labelSize: ${e.constPrefix}_LABEL_SIZE,\n    regions: ${e.constPrefix}_REGIONS,\n    transform: ${e.constPrefix}_TRANSFORM,\n  },`,
+  )
+  .join("\n");
 
   return `// 시·군·구 → 읍·면·동 지도 색인.
 // 지도 2단계(시군구를 탭해 들어간 화면)가 이 표에서 렌더 데이터를 찾는다.
@@ -419,6 +437,8 @@ export interface EupmyeondongMap {
   /** 지역명 라벨 크기(viewBox 단위). */
   labelSize: number;
   regions: RegionShape[];
+   /** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+  transform: { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number };
 }
 
 /** 강원특별자치도 18개 시·군 전체의 읍·면·동 지도. */
@@ -480,7 +500,7 @@ async function main() {
     const fileName = FILE_NAMES[sigunguCd];
     const constPrefix = fileName.toUpperCase();
 
-    const { regions, viewBox } = buildSigungu(features, tolerance);
+    const { regions, viewBox, transform } = buildSigungu(features, tolerance);
     const labelSize = pickLabelSize(regions);
     const contents = renderRegionFile({
       sigunguCd,
@@ -489,6 +509,7 @@ async function main() {
       regions,
       labelSize,
       viewBox,
+      transform,
     });
     await writeFile(resolve(OUT_DIR, `${fileName}.ts`), contents, "utf8");
 

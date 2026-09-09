@@ -14,6 +14,15 @@ export const INJE_VIEW_BOX = "0 0 682 887";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const INJE_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const INJE_TRANSFORM = {
+  scale: 68742.697983,
+  offsetX: 19.5,
+  offsetY: 12,
+  minX: 2.233624,
+  maxY: 0.726377,
+};
+
 export const INJE_REGIONS: RegionShape[] = [
   {
     code: "5181025000",

@@ -14,6 +14,15 @@ export const TAEBAEK_VIEW_BOX = "0 0 682 887";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const TAEBAEK_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const TAEBAEK_TRANSFORM = {
+  scale: 138886.748676,
+  offsetX: 63.9,
+  offsetY: 12,
+  minX: 2.249156,
+  maxY: 0.703564,
+};
+
 export const TAEBAEK_REGIONS: RegionShape[] = [
   {
     code: "5119051500",

@@ -14,6 +14,15 @@ export const GOSEONG_VIEW_BOX = "0 0 682 887";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const GOSEONG_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const GOSEONG_TRANSFORM = {
+  scale: 90591.847921,
+  offsetX: 35.9,
+  offsetY: 12,
+  minX: 2.237581,
+  maxY: 0.731711,
+};
+
 export const GOSEONG_REGIONS: RegionShape[] = [
   {
     code: "5182025000",

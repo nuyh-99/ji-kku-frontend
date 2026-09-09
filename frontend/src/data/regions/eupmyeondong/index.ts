@@ -6,24 +6,114 @@
 //       공공누리 제1유형(출처표시). 가공: vuski/admdongkor(CC BY 4.0),
 //       https://github.com/vuski/admdongkor — ver20260701.
 import type { RegionShape } from "@/types/map";
-import { CHUNCHEON_LABEL_SIZE, CHUNCHEON_REGIONS, CHUNCHEON_VIEW_BOX } from "./chuncheon";
-import { WONJU_LABEL_SIZE, WONJU_REGIONS, WONJU_VIEW_BOX } from "./wonju";
-import { GANGNEUNG_LABEL_SIZE, GANGNEUNG_REGIONS, GANGNEUNG_VIEW_BOX } from "./gangneung";
-import { DONGHAE_LABEL_SIZE, DONGHAE_REGIONS, DONGHAE_VIEW_BOX } from "./donghae";
-import { TAEBAEK_LABEL_SIZE, TAEBAEK_REGIONS, TAEBAEK_VIEW_BOX } from "./taebaek";
-import { SOKCHO_LABEL_SIZE, SOKCHO_REGIONS, SOKCHO_VIEW_BOX } from "./sokcho";
-import { SAMCHEOK_LABEL_SIZE, SAMCHEOK_REGIONS, SAMCHEOK_VIEW_BOX } from "./samcheok";
-import { HONGCHEON_LABEL_SIZE, HONGCHEON_REGIONS, HONGCHEON_VIEW_BOX } from "./hongcheon";
-import { HOENGSEONG_LABEL_SIZE, HOENGSEONG_REGIONS, HOENGSEONG_VIEW_BOX } from "./hoengseong";
-import { YEONGWOL_LABEL_SIZE, YEONGWOL_REGIONS, YEONGWOL_VIEW_BOX } from "./yeongwol";
-import { PYEONGCHANG_LABEL_SIZE, PYEONGCHANG_REGIONS, PYEONGCHANG_VIEW_BOX } from "./pyeongchang";
-import { JEONGSEON_LABEL_SIZE, JEONGSEON_REGIONS, JEONGSEON_VIEW_BOX } from "./jeongseon";
-import { CHEORWON_LABEL_SIZE, CHEORWON_REGIONS, CHEORWON_VIEW_BOX } from "./cheorwon";
-import { HWACHEON_LABEL_SIZE, HWACHEON_REGIONS, HWACHEON_VIEW_BOX } from "./hwacheon";
-import { YANGGU_LABEL_SIZE, YANGGU_REGIONS, YANGGU_VIEW_BOX } from "./yanggu";
-import { INJE_LABEL_SIZE, INJE_REGIONS, INJE_VIEW_BOX } from "./inje";
-import { GOSEONG_LABEL_SIZE, GOSEONG_REGIONS, GOSEONG_VIEW_BOX } from "./goseong";
-import { YANGYANG_LABEL_SIZE, YANGYANG_REGIONS, YANGYANG_VIEW_BOX } from "./yangyang";
+import {
+  CHUNCHEON_LABEL_SIZE,
+  CHUNCHEON_REGIONS,
+  CHUNCHEON_TRANSFORM,
+  CHUNCHEON_VIEW_BOX,
+} from "./chuncheon";
+import {
+  WONJU_LABEL_SIZE,
+  WONJU_REGIONS,
+  WONJU_TRANSFORM,
+  WONJU_VIEW_BOX,
+} from "./wonju";
+import {
+  GANGNEUNG_LABEL_SIZE,
+  GANGNEUNG_REGIONS,
+  GANGNEUNG_TRANSFORM,
+  GANGNEUNG_VIEW_BOX,
+} from "./gangneung";
+import {
+  DONGHAE_LABEL_SIZE,
+  DONGHAE_REGIONS,
+  DONGHAE_TRANSFORM,
+  DONGHAE_VIEW_BOX,
+} from "./donghae";
+import {
+  TAEBAEK_LABEL_SIZE,
+  TAEBAEK_REGIONS,
+  TAEBAEK_TRANSFORM,
+  TAEBAEK_VIEW_BOX,
+} from "./taebaek";
+import {
+  SOKCHO_LABEL_SIZE,
+  SOKCHO_REGIONS,
+  SOKCHO_TRANSFORM,
+  SOKCHO_VIEW_BOX,
+} from "./sokcho";
+import {
+  SAMCHEOK_LABEL_SIZE,
+  SAMCHEOK_REGIONS,
+  SAMCHEOK_TRANSFORM,
+  SAMCHEOK_VIEW_BOX,
+} from "./samcheok";
+import {
+  HONGCHEON_LABEL_SIZE,
+  HONGCHEON_REGIONS,
+  HONGCHEON_TRANSFORM,
+  HONGCHEON_VIEW_BOX,
+} from "./hongcheon";
+import {
+  HOENGSEONG_LABEL_SIZE,
+  HOENGSEONG_REGIONS,
+  HOENGSEONG_TRANSFORM,
+  HOENGSEONG_VIEW_BOX,
+} from "./hoengseong";
+import {
+  YEONGWOL_LABEL_SIZE,
+  YEONGWOL_REGIONS,
+  YEONGWOL_TRANSFORM,
+  YEONGWOL_VIEW_BOX,
+} from "./yeongwol";
+import {
+  PYEONGCHANG_LABEL_SIZE,
+  PYEONGCHANG_REGIONS,
+  PYEONGCHANG_TRANSFORM,
+  PYEONGCHANG_VIEW_BOX,
+} from "./pyeongchang";
+import {
+  JEONGSEON_LABEL_SIZE,
+  JEONGSEON_REGIONS,
+  JEONGSEON_TRANSFORM,
+  JEONGSEON_VIEW_BOX,
+} from "./jeongseon";
+import {
+  CHEORWON_LABEL_SIZE,
+  CHEORWON_REGIONS,
+  CHEORWON_TRANSFORM,
+  CHEORWON_VIEW_BOX,
+} from "./cheorwon";
+import {
+  HWACHEON_LABEL_SIZE,
+  HWACHEON_REGIONS,
+  HWACHEON_TRANSFORM,
+  HWACHEON_VIEW_BOX,
+} from "./hwacheon";
+import {
+  YANGGU_LABEL_SIZE,
+  YANGGU_REGIONS,
+  YANGGU_TRANSFORM,
+  YANGGU_VIEW_BOX,
+} from "./yanggu";
+import {
+  INJE_LABEL_SIZE,
+  INJE_REGIONS,
+  INJE_TRANSFORM,
+  INJE_VIEW_BOX,
+} from "./inje";
+import {
+  GOSEONG_LABEL_SIZE,
+  GOSEONG_REGIONS,
+  GOSEONG_TRANSFORM,
+  GOSEONG_VIEW_BOX,
+} from "./goseong";
+import {
+  YANGYANG_LABEL_SIZE,
+  YANGYANG_REGIONS,
+  YANGYANG_TRANSFORM,
+  YANGYANG_VIEW_BOX,
+} from "./yangyang";
 
 /** 읍·면·동 지도 한 벌 (경계 + 좌표계). */
 export interface EupmyeondongMap {
@@ -32,6 +122,8 @@ export interface EupmyeondongMap {
   /** 지역명 라벨 크기(viewBox 단위). */
   labelSize: number;
   regions: RegionShape[];
+   /** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+  transform: { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number };
 }
 
 /** 강원특별자치도 18개 시·군 전체의 읍·면·동 지도. */
@@ -41,108 +133,126 @@ export const EUPMYEONDONG_BY_SIGUNGU: Record<string, EupmyeondongMap> = {
     viewBox: CHUNCHEON_VIEW_BOX,
     labelSize: CHUNCHEON_LABEL_SIZE,
     regions: CHUNCHEON_REGIONS,
+    transform: CHUNCHEON_TRANSFORM,
   },
   // 원주시 (25개 동)
   "51130": {
     viewBox: WONJU_VIEW_BOX,
     labelSize: WONJU_LABEL_SIZE,
     regions: WONJU_REGIONS,
+    transform: WONJU_TRANSFORM,
   },
   // 강릉시 (21개 동)
   "51150": {
     viewBox: GANGNEUNG_VIEW_BOX,
     labelSize: GANGNEUNG_LABEL_SIZE,
     regions: GANGNEUNG_REGIONS,
+    transform: GANGNEUNG_TRANSFORM,
   },
   // 동해시 (10개 동)
   "51170": {
     viewBox: DONGHAE_VIEW_BOX,
     labelSize: DONGHAE_LABEL_SIZE,
     regions: DONGHAE_REGIONS,
+    transform: DONGHAE_TRANSFORM,
   },
   // 태백시 (8개 동)
   "51190": {
     viewBox: TAEBAEK_VIEW_BOX,
     labelSize: TAEBAEK_LABEL_SIZE,
     regions: TAEBAEK_REGIONS,
+    transform: TAEBAEK_TRANSFORM,
   },
   // 속초시 (8개 동)
   "51210": {
     viewBox: SOKCHO_VIEW_BOX,
     labelSize: SOKCHO_LABEL_SIZE,
     regions: SOKCHO_REGIONS,
+    transform: SOKCHO_TRANSFORM,
   },
   // 삼척시 (12개 동)
   "51230": {
     viewBox: SAMCHEOK_VIEW_BOX,
     labelSize: SAMCHEOK_LABEL_SIZE,
     regions: SAMCHEOK_REGIONS,
+    transform: SAMCHEOK_TRANSFORM,
   },
   // 홍천군 (10개 동)
   "51720": {
     viewBox: HONGCHEON_VIEW_BOX,
     labelSize: HONGCHEON_LABEL_SIZE,
     regions: HONGCHEON_REGIONS,
+    transform: HONGCHEON_TRANSFORM,
   },
   // 횡성군 (9개 동)
   "51730": {
     viewBox: HOENGSEONG_VIEW_BOX,
     labelSize: HOENGSEONG_LABEL_SIZE,
     regions: HOENGSEONG_REGIONS,
+    transform: HOENGSEONG_TRANSFORM,
   },
   // 영월군 (9개 동)
   "51750": {
     viewBox: YEONGWOL_VIEW_BOX,
     labelSize: YEONGWOL_LABEL_SIZE,
     regions: YEONGWOL_REGIONS,
+    transform: YEONGWOL_TRANSFORM,
   },
   // 평창군 (8개 동)
   "51760": {
     viewBox: PYEONGCHANG_VIEW_BOX,
     labelSize: PYEONGCHANG_LABEL_SIZE,
     regions: PYEONGCHANG_REGIONS,
+    transform: PYEONGCHANG_TRANSFORM,
   },
   // 정선군 (9개 동)
   "51770": {
     viewBox: JEONGSEON_VIEW_BOX,
     labelSize: JEONGSEON_LABEL_SIZE,
     regions: JEONGSEON_REGIONS,
+    transform: JEONGSEON_TRANSFORM,
   },
   // 철원군 (7개 동)
   "51780": {
     viewBox: CHEORWON_VIEW_BOX,
     labelSize: CHEORWON_LABEL_SIZE,
     regions: CHEORWON_REGIONS,
+    transform: CHEORWON_TRANSFORM,
   },
   // 화천군 (5개 동)
   "51790": {
     viewBox: HWACHEON_VIEW_BOX,
     labelSize: HWACHEON_LABEL_SIZE,
     regions: HWACHEON_REGIONS,
+    transform: HWACHEON_TRANSFORM,
   },
   // 양구군 (5개 동)
   "51800": {
     viewBox: YANGGU_VIEW_BOX,
     labelSize: YANGGU_LABEL_SIZE,
     regions: YANGGU_REGIONS,
+    transform: YANGGU_TRANSFORM,
   },
   // 인제군 (6개 동)
   "51810": {
     viewBox: INJE_VIEW_BOX,
     labelSize: INJE_LABEL_SIZE,
     regions: INJE_REGIONS,
+    transform: INJE_TRANSFORM,
   },
   // 고성군 (5개 동)
   "51820": {
     viewBox: GOSEONG_VIEW_BOX,
     labelSize: GOSEONG_LABEL_SIZE,
     regions: GOSEONG_REGIONS,
+    transform: GOSEONG_TRANSFORM,
   },
   // 양양군 (6개 동)
   "51830": {
     viewBox: YANGYANG_VIEW_BOX,
     labelSize: YANGYANG_LABEL_SIZE,
     regions: YANGYANG_REGIONS,
+    transform: YANGYANG_TRANSFORM,
   },
 };
 
