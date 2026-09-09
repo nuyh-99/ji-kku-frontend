@@ -14,6 +14,15 @@ export const SOKCHO_VIEW_BOX = "0 0 682 497";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const SOKCHO_LABEL_SIZE = 13;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const SOKCHO_TRANSFORM = {
+  scale: 190481.309113,
+  offsetX: 16.3,
+  offsetY: 12,
+  minX: 2.241349,
+  maxY: 0.723115,
+};
+
 export const SOKCHO_REGIONS: RegionShape[] = [
   {
     code: "5121051000",

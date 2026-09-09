@@ -14,6 +14,15 @@ export const YEONGWOL_VIEW_BOX = "0 0 682 408";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const YEONGWOL_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const YEONGWOL_TRANSFORM = {
+  scale: 46120.465864,
+  offsetX: 20.3,
+  offsetY: 12,
+  minX: 2.235994,
+  maxY: 0.704933,
+};
+
 export const YEONGWOL_REGIONS: RegionShape[] = [
   {
     code: "5175025000",

@@ -14,6 +14,15 @@ export const WONJU_VIEW_BOX = "0 0 682 656";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const WONJU_LABEL_SIZE = 8;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const WONJU_TRANSFORM = {
+  scale: 79451.800491,
+  offsetX: 12.6,
+  offsetY: 12,
+  minX: 2.229551,
+  maxY: 0.707101,
+};
+
 export const WONJU_REGIONS: RegionShape[] = [
   {
     code: "5113025000",

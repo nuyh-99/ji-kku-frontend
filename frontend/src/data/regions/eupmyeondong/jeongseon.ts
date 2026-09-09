@@ -14,6 +14,15 @@ export const JEONGSEON_VIEW_BOX = "0 0 682 788";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const JEONGSEON_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const JEONGSEON_TRANSFORM = {
+  scale: 77812.800519,
+  offsetX: 12,
+  offsetY: 14,
+  minX: 2.242854,
+  maxY: 0.708992,
+};
+
 export const JEONGSEON_REGIONS: RegionShape[] = [
   {
     code: "5177025000",

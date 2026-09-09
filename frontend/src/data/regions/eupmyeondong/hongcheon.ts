@@ -14,6 +14,15 @@ export const HONGCHEON_VIEW_BOX = "0 0 682 321";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const HONGCHEON_LABEL_SIZE = 12;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const HONGCHEON_TRANSFORM = {
+  scale: 34311.635496,
+  offsetX: 25.6,
+  offsetY: 12,
+  minX: 2.22591,
+  maxY: 0.716777,
+};
+
 export const HONGCHEON_REGIONS: RegionShape[] = [
   {
     code: "5172025000",

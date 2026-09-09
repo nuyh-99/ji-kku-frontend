@@ -14,6 +14,15 @@ export const HOENGSEONG_VIEW_BOX = "0 0 682 600";
 /** 지도 위 지역명 라벨 크기(viewBox 단위). 행정동 크기에 맞춰 자동 산출. */
 export const HOENGSEONG_LABEL_SIZE = 14;
 
+/** 위경도(웹 메르카토르) → 이 지도 viewBox 좌표 변환 계수. */
+export const HOENGSEONG_TRANSFORM = {
+  scale: 69075.742939,
+  offsetX: 13.6,
+  offsetY: 12,
+  minX: 2.229819,
+  maxY: 0.71094,
+};
+
 export const HOENGSEONG_REGIONS: RegionShape[] = [
   {
     code: "5173025000",
