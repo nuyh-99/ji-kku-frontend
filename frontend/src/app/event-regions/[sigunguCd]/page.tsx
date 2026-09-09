@@ -16,40 +16,71 @@ const DESIGN_WIDTH = 393;
 const DESIGN_HEIGHT = 852;
 
 const DEFAULT_MAP_WIDTH = 393; // 초기 너비
-const MAP_HEIGHT = 600; // 지도 컨테이너 높이
-const DESIRED_ZOOM = 1.4; // 지도가 상하로 짤리지 않도록 적절한 배율 설정
+const MAP_HEIGHT = 700; // 지도 컨테이너 높이
+const DESIRED_ZOOM = 1.1; // 지도가 상하로 짤리지 않도록 적절한 배율 설정
 
 const PAN_PADDING_X = 50; // 좌우 드래그 가능 여백
 const PAN_PADDING_Y = 100;
+
 
 // 📍 핀 보정 오프셋
 const PIN_OFFSET_X = -250; // 핀 너비(40px)의 절반만큼 좌로 이동하여 중앙 맞춤
 const PIN_OFFSET_Y = -410; // 핀 높이(40px)만큼 위로 올려서 뾰족한 끝이 지점에 닿게 함
 
+// ==========================================
+// 🎛️ 지역별(sigunguCd) 위경도 → SVG 좌표 보정값
+// scripts/generate-eupmyeondong.mjs 의 웹 메르카토르 투영 + fit 로직을
+// 프론트에서 재현하기 위한 지역별 계수. 값은 지역마다 캘리브레이션 필요.
+// (담당자에게 transform export 요청 전까지의 임시 우회.)
+// ==========================================
+const REGION_TRANSFORM: Record
+  string,
+  { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number }
+> = {
+  "51110": { scale: 72102.351635, offsetX: 12.2, offsetY: 12, minX: 2.225414, maxY: 0.719876 }, // 춘천
+  "51130": { scale: 79451.800491, offsetX: 12.6, offsetY: 12, minX: 2.229551, maxY: 0.707101 }, // 원주
+  "51150": { scale: 76524.954399, offsetX: 12, offsetY: 12.5, minX: 2.244151, maxY: 0.71618 }, // 강릉
+  "51170": { scale: 185818.261793, offsetX: 12, offsetY: 13.5, minX: 2.250735, maxY: 0.709286 }, // 동해
+  "51190": { scale: 138886.748676, offsetX: 63.9, offsetY: 12, minX: 2.249156, maxY: 0.703564 }, // 태백
+  "51210": { scale: 190481.309113, offsetX: 16.3, offsetY: 12, minX: 2.241349, maxY: 0.723115 }, // 속초
+  "51230": { scale: 72741.486887, offsetX: 12, offsetY: 12.7, minX: 2.248784, maxY: 0.70644 }, // 삼척
+  "51720": { scale: 34311.635496, offsetX: 25.6, offsetY: 12, minX: 2.22591, maxY: 0.716777 }, // 홍천
+  "51730": { scale: 69075.742939, offsetX: 13.6, offsetY: 12, minX: 2.229819, maxY: 0.71094 }, // 횡성
+  "51750": { scale: 46120.465864, offsetX: 20.3, offsetY: 12, minX: 2.235994, maxY: 0.704933 }, // 영월
+  "51760": { scale: 70736.064222, offsetX: 18.9, offsetY: 12, minX: 2.238271, maxY: 0.714028 }, // 평창
+  "51770": { scale: 77812.800519, offsetX: 12, offsetY: 14, minX: 2.242854, maxY: 0.708992 }, // 정선
+  "51780": { scale: 73745.579855, offsetX: 18.7, offsetY: 12, minX: 2.218476, maxY: 0.725552 }, // 철원
+  "51790": { scale: 77763.93131, offsetX: 12.6, offsetY: 12, minX: 2.224083, maxY: 0.725842 }, // 화천
+  "51800": { scale: 114515.232289, offsetX: 15.7, offsetY: 12, minX: 2.231225, maxY: 0.725552 }, // 양구
+  "51810": { scale: 68742.697983, offsetX: 19.5, offsetY: 12, minX: 2.233624, maxY: 0.726377 }, // 인제
+  "51820": { scale: 90591.847921, offsetX: 35.9, offsetY: 12, minX: 2.237581, maxY: 0.731711 }, // 고성
+  "51830": { scale: 92605.643895, offsetX: 13, offsetY: 12, minX: 2.241075, maxY: 0.721573 }, // 양양
+};
+
+const toRadiansClient = (deg: number) => (deg * Math.PI) / 180;
+const projectLonClient = (lon: number) => toRadiansClient(lon);
+const projectLatClient = (lat: number) =>
+  Math.log(Math.tan(Math.PI / 4 + toRadiansClient(lat) / 2));
+
 /**
  * 🛠️ 백엔드 연동용: mapX(경도), mapY(위도) -> SVG viewBox 좌표 변환 함수
+ * scripts/generate-eupmyeondong.mjs 의 웹 메르카토르 투영 로직을 지역별 계수로 재현.
  */
-function calculatePinCoordinates(spot: MissionSpotItem, viewBox?: string) {
+function calculatePinCoordinates(spot: MissionSpotItem, sigunguCd: number) {
   let x = 0;
   let y = 0;
 
   // 💡 string이든 number든 안전하게 숫자로 수치화
   const lng = Number(spot.mapX);
   const lat = Number(spot.mapY);
+  const t = REGION_TRANSFORM[String(sigunguCd)];
 
-  if (!isNaN(lng) && !isNaN(lat) && lng > 0 && lat > 0 && viewBox) {
-    const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(" ").map(Number);
+  if (!isNaN(lng) && !isNaN(lat) && lng > 0 && lat > 0 && t) {
+    const px = projectLonClient(lng);
+    const py = projectLatClient(lat);
 
-    const MIN_LNG = 127.0;
-    const MAX_LNG = 129.6;
-    const MIN_LAT = 37.0;
-    const MAX_LAT = 38.6;
-
-    const ratioX = (lng - MIN_LNG) / (MAX_LNG - MIN_LNG);
-    const ratioY = (MAX_LAT - lat) / (MAX_LAT - MIN_LAT);
-
-    x = vbX + ratioX * vbWidth;
-    y = vbY + ratioY * vbHeight;
+    x = (px - t.minX) * t.scale + t.offsetX;
+    y = (t.maxY - py) * t.scale + t.offsetY;
   } else {
     const item = spot as any;
     x = Number(item.x ?? 0);
@@ -105,12 +136,14 @@ function EventRegionContent({
   const [mapWidth, setMapWidth] = useState(DEFAULT_MAP_WIDTH);
   const [contentBox, setContentBox] = useState<{width:number;height:number} | null>(null);
 
-  useLayoutEffect(() => {
+ useLayoutEffect(() => {
   const svgEl = containerRef.current?.querySelector("svg");
   if (!svgEl) return;
   try {
     const { width, height } = (svgEl as SVGSVGElement).getBBox();
-    setContentBox({ width, height });
+    if (width > 0 && height > 0) {   // 👈 유효한 값일 때만 반영
+      setContentBox({ width, height });
+    }
   } catch {
     // 렌더 전 호출 시 예외 무시
   }
@@ -136,11 +169,11 @@ useLayoutEffect(() => {
 }, []);
 
  // 변경
-const { effectiveZoom, mapMaxOffsetX, mapMaxOffsetY } = useMemo(() => {
-  if (!map?.viewBox) return { effectiveZoom: 1, mapMaxOffsetX: 0, mapMaxOffsetY: 0 };
+const { effectiveZoom, mapMaxOffsetX, mapDownStopY, mapUpMaxOffsetY } = useMemo(() => {
+  if (!map?.viewBox) return { effectiveZoom: 1, mapMaxOffsetX: 0, mapDownStopY: 0, mapUpMaxOffsetY: 0 };
 
-  const vbW = contentBox?.width ?? Number(map.viewBox.split(" ")[2]);
-  const vbH = contentBox?.height ?? Number(map.viewBox.split(" ")[3]);
+  const vbW = (contentBox?.width || Number(map.viewBox.split(" ")[2])) || 1;
+  const vbH = (contentBox?.height || Number(map.viewBox.split(" ")[3])) || 1;
   const mapAspect = vbW / vbH;
   const containerAspect = mapWidth / MAP_HEIGHT;
 
@@ -153,20 +186,23 @@ const { effectiveZoom, mapMaxOffsetX, mapMaxOffsetY } = useMemo(() => {
     baseW = MAP_HEIGHT * mapAspect;
   }
 
-  // 세로가 컨테이너 높이를 넘지 않는 선에서만 확대 (상/하단 잘림 방지)
   const maxSafeZoom = MAP_HEIGHT / baseH;
   const zoom = Math.min(DESIRED_ZOOM, maxSafeZoom);
 
   const scaledW = baseW * zoom;
   const scaledH = baseH * zoom;
 
-  return {
-      effectiveZoom: zoom,
-      mapMaxOffsetX: Math.max(0, (scaledW - mapWidth) / 2) + PAN_PADDING_X,
-      mapMaxOffsetY: Math.max(0, (scaledH - MAP_HEIGHT) / 2) + PAN_PADDING_Y, // PAN_PADDING_Y 추가
-    };
-}, [map?.viewBox, mapWidth, contentBox]);
+  const verticalOverflow = Math.max(0, (scaledH - MAP_HEIGHT) / 2);
 
+  const PAN_PADDING_Y_UP_EXTRA = 40; // 👈 위로 더 올라갈 수 있게 보정하는 여유값 (숫자 조절하며 테스트)
+
+return {
+  effectiveZoom: zoom,
+  mapMaxOffsetX: Math.max(0, (scaledW - mapWidth) / 2) + PAN_PADDING_X,
+  mapDownStopY: verticalOverflow + PAN_PADDING_Y,
+  mapUpMaxOffsetY: verticalOverflow + PAN_PADDING_Y_UP_EXTRA, // 👈 여기 보정
+};
+}, [map?.viewBox, mapWidth, contentBox]);
 const baseOffset = useMemo(() => {
   const leftX = (mapWidth * (effectiveZoom - 1)) / 2 + LEFT_ALIGN_OFFSET_X;
   return { x: leftX, y: 0 };
@@ -177,7 +213,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 const getPanClampedOffset = (rawX: number, rawY: number) => {
   return {
     x: clamp(rawX, -mapMaxOffsetX, mapMaxOffsetX + LEFT_ALIGN_OFFSET_X * 2),
-    y: clamp(rawY, -mapMaxOffsetY, mapMaxOffsetY),
+    y: clamp(rawY, -mapUpMaxOffsetY, mapDownStopY),
   };
 };
 
@@ -194,49 +230,69 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
   }, [baseOffset]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0 && e.pointerType === "mouse") return;
-    e.preventDefault(); // 브라우저 기본 동작 방지
+  if (e.button !== 0 && e.pointerType === "mouse") return;
+  e.preventDefault();
 
-    draggingRef.current = true;
-    startPosRef.current = { x: e.clientX, y: e.clientY };
-    startOffsetRef.current = offset;
+  draggingRef.current = true;
+  setIsDragging(true);   // 👈 누락되어 있던 부분
+  startPosRef.current = { x: e.clientX, y: e.clientY };
+  startOffsetRef.current = offset;
 
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // ignore
-    }
-  };
+  try {
+    e.currentTarget.setPointerCapture(e.pointerId);
+  } catch {}
+};
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const targetOffsetRef = useRef(offset);
+const LERP_FACTOR = 0.6; // 0~1, 작을수록 더 부드럽고 느리게 따라옴
+
+const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
   if (!draggingRef.current) return;
   const deltaX = e.clientX - startPosRef.current.x;
   const deltaY = e.clientY - startPosRef.current.y;
 
-  if (rafRef.current) cancelAnimationFrame(rafRef.current);
-  rafRef.current = requestAnimationFrame(() => {
-    setOffset(
-      getPanClampedOffset(
-        startOffsetRef.current.x + deltaX,
-        startOffsetRef.current.y + deltaY
-      )
-    );
-  });
-};
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    draggingRef.current = false;
-    setIsDragging(false);
+  targetOffsetRef.current = getPanClampedOffset(
+    startOffsetRef.current.x + deltaX,
+    startOffsetRef.current.y + deltaY
+  );
 
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  if (!rafRef.current) {
+    const animate = () => {
+      setOffset((prev) => {
+        const next = {
+          x: prev.x + (targetOffsetRef.current.x - prev.x) * LERP_FACTOR,
+          y: prev.y + (targetOffsetRef.current.y - prev.y) * LERP_FACTOR,
+        };
+        return next;
+      });
 
-    try {
-      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-        e.currentTarget.releasePointerCapture(e.pointerId);
+      if (draggingRef.current) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        rafRef.current = null;
       }
-    } catch {
-      // ignore
+    };
+    rafRef.current = requestAnimationFrame(animate);
+  }
+};
+
+const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  draggingRef.current = false;
+  setIsDragging(false);
+
+  if (rafRef.current) {
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+  }
+  // 최종 목표값으로 스냅 (transition이 부드럽게 처리)
+  setOffset(targetOffsetRef.current);
+
+  try {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
     }
-  };
+  } catch {}
+};
 
   // 📍 스팟 마커 클릭 시 팝업 스크린 좌표 계산 (클릭된 특정 spot의 contentId 저장)
   const handleSpotClick = (e: React.MouseEvent, contentId: number) => {
@@ -335,10 +391,12 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
   className="absolute text-[14px] text-white/70"
   style={{
     top: 130, // 이 값이 현재 너무 아래에 있다면, 게이지 바(top: 20) 위쪽으로 오도록 더 작은 값(예: -12 등)으로 올려주셔야 합니다!
-    left: 40,
+    left: 0,
+    right:0,
+    margin: "0 auto",
     color: "#FFF",
     textAlign: "center",
-    fontFamily: "Pretendard",
+    fontFamily: "Pretendard Variable",
     fontSize: "14px",
     fontStyle: "normal",
     fontWeight: 400,
@@ -350,21 +408,22 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
       </div>
 
       {/* 3. SVG 지도 영역 */}
-      <div className="mt-15">
+      <div className="-mt-5">
       {map ? (
         <div
-          ref={containerRef}
-          className="relative z-10 w-full overflow-hidden select-none flex items-center justify-center cursor-grab active:cursor-grabbing pointer-events-auto"
-          style={{
-            height: MAP_HEIGHT,
-            touchAction: "none",
-            cursor: isDragging ? "grabbing" : "grab",
-          }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-        >
+  ref={containerRef}
+  className="relative z-10 w-full overflow-hidden select-none flex items-center justify-center cursor-grab active:cursor-grabbing pointer-events-auto"
+  style={{
+    height: MAP_HEIGHT,
+  
+    touchAction: "none",
+    cursor: isDragging ? "grabbing" : "grab",
+  }}
+  onPointerDownCapture={handlePointerDown}   // 👈 여기 Capture로 변경
+  onPointerMove={handlePointerMove}
+  onPointerUp={handlePointerUp}
+  onPointerLeave={handlePointerUp}
+>
           {/* SVG 선 그라디언트 정의 */}
           <svg className="absolute w-0 h-0 overflow-hidden" aria-hidden="true">
             <defs>
@@ -377,13 +436,14 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
           </svg>
 
           <div
-            className="w-full h-full flex items-center justify-center"
-            style={{
-  transform: `translate(${offset.x}px, ${offset.y}px) scale(${effectiveZoom})`,
-  transformOrigin: "center center",
-  willChange: "transform",
-}}
-          >
+  className="w-full h-full flex items-center justify-center"
+  style={{
+    transform: `translate(${offset.x}px, ${offset.y}px) scale(${effectiveZoom})`,
+    transformOrigin: "center center",
+    willChange: "transform",
+    transition: isDragging ? "none" : "transform 280ms cubic-bezier(0.22, 1, 0.36, 1)",
+  }}
+>
             <div
               className="relative h-full w-full flex items-center justify-center
                 
@@ -409,7 +469,7 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
                       <MissionSpotMarker
                         key={item.contentId}
                         spot={item}
-                        viewBox={map.viewBox}
+                        sigunguCd={sigunguCd}
                         onClick={(e) => handleSpotClick(e, item.contentId)}
                       />
                     ))}
@@ -446,14 +506,14 @@ const getPanClampedOffset = (rawX: number, rawY: number) => {
 // 📌 마커 컴포넌트
 function MissionSpotMarker({
   spot,
-  viewBox,
+  sigunguCd,
   onClick,
 }: {
   spot: MissionSpotItem;
-  viewBox?: string;
+  sigunguCd: number;
   onClick: (e: React.MouseEvent) => void;
 }) {
-  const { x: spotX, y: spotY } = calculatePinCoordinates(spot, viewBox);
+  const { x: spotX, y: spotY } = calculatePinCoordinates(spot, sigunguCd);
 
   return (
     <g
