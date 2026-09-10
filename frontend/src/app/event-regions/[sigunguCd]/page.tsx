@@ -321,7 +321,6 @@ function EventRegionContent({
               margin: "0 auto",
               color: "#FFF",
               textAlign: "center",
-              fontFamily: "Pretendard Variable",
               fontSize: "14px",
               fontStyle: "normal",
               fontWeight: 400,
@@ -511,7 +510,7 @@ function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
         style={{ top: 0, left: 13, width: 327, height: 14 }}
       >
         {[0, 1, 2, 3, 4, 5].map((num) => (
-          <span key={num} className="text-[12px] text-[#294E49]" style={{ fontFamily: "Pretendard" }}>
+          <span key={num} className="text-[12px] text-[#294E49]" >
             {num}
           </span>
         ))}

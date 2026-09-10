@@ -90,7 +90,7 @@ export default function SigunguRecordsPage({
   style={{ marginTop: 7, width: 359 }}
 >
            <h1
-    className="whitespace-nowrap text-[16px] font-bold not-italic leading-normal text-[#6CA59C] font-pretendard"
+    className="whitespace-nowrap text-[16px] font-bold not-italic leading-normal text-[#6CA59C]"
     
   >
     {sigunguNm}
@@ -202,7 +202,6 @@ export default function SigunguRecordsPage({
                   rounded-[20px]
                   bg-[#6CA59C]/70
                   text-white
-                  font-pretendard
                   font-normal
                   text-[12px]
                   leading-[100%]
@@ -222,7 +221,6 @@ export default function SigunguRecordsPage({
                   h-[18px]
                   rounded-[20px]
                   bg-white/70
-                  font-pretendard
                   font-normal
                   text-[12px]
                   leading-[100%]

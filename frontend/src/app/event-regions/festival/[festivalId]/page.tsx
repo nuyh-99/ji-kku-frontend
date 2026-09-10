@@ -202,7 +202,7 @@ useEffect(() => {
         {/* 축제 이름 */}
         <h1
           className="mt-[15px]"
-          style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16,  color: "#6CA59C" }}
+          style={{ fontWeight: 700, fontSize: 16,  color: "#6CA59C" }}
         >
           {festival.title}
         </h1>
@@ -210,7 +210,7 @@ useEffect(() => {
         {/* 상세 주소 */}
         <p
           className="mt-[5px]"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", letterSpacing: "0em", color: "#9C9C9C" }}
+          style={{ fontWeight: 400, fontSize: 12, lineHeight: "100%", letterSpacing: "0em", color: "#9C9C9C" }}
         >
           {festival.address}
         </p>
@@ -218,7 +218,7 @@ useEffect(() => {
        {/* 상세 설명 */}
 <p
   className={`mt-[15px] whitespace-pre-line ${isExpanded ? "" : "line-clamp-2"}`}
-  style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "110%", color: "#000000" }}
+  style={{  fontWeight: 400, fontSize: 14, lineHeight: "110%", color: "#000000" }}
 >
   {festival.description}
 </p>
@@ -226,7 +226,7 @@ useEffect(() => {
   type="button"
   onClick={() => setIsExpanded((prev) => !prev)}
   className="mt-1 text-gray-500 hover:text-gray-400 active:text-gray-400 transition-colors"
-  style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: 13 }}
+  style={{ fontWeight: 600, fontSize: 13 }}
 >
   {isExpanded ? "접기" : "더보기"}
 </button>
@@ -234,7 +234,7 @@ useEffect(() => {
         {/* 이용 정보 (축제 전용 데이터: period, venue 반영) */}
         <dl
           className="mt-[8px] space-y-0.5"
-          style={{ fontFamily: "Pretendard", fontWeight: 400, lineHeight: "100%", fontSize: 14, color: "#000000" }}
+          style={{   fontWeight: 400, lineHeight: "100%", fontSize: 14, color: "#000000" }}
         >
           <div className="flex gap-1">
             <dt className="text-gray-500">축제기간 :</dt>
@@ -264,7 +264,6 @@ useEffect(() => {
             borderRadius: 9,
             border: "1px solid #6CA59C",
             color: "#6CA59C",
-            fontFamily: "Pretendard",
             fontWeight: 700,
             fontSize: 14,
           }}
