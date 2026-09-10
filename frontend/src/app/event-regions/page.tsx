@@ -264,7 +264,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     <div className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
         <header
           className="absolute flex items-center justify-between"
-          style={{ top: 44, left: 17, width: 359, height: 28 }}
+          style={{ top: 44, left: 17, right: 17, height: 28 }}
         >
           <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
           className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
@@ -317,7 +317,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
           style={{
             top: 108,
             left: 17,
-            width: 360,
+            right: 17,
             height: MAP_HEIGHT,
             borderRadius: 9,
             border: "1px solid #6CA59C",
@@ -388,7 +388,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
   style={{
     top: 646,
     left: 17,
-    width: 376,
+    right: 17,
     height: 149.0674285888672,
     gap: 11,
     scrollbarWidth: "none", // Firefox

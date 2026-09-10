@@ -52,8 +52,8 @@ export default function SigunguRecordsPage({
     {/* 상단 헤더 */}
     <div className="relative px-[17px]" style={{ paddingTop: 44 }}>
         <header
-          className="flex items-start justify-center"
-          style={{ width: 359, height: 28, gap: 303 }}
+          className="flex w-full items-center justify-between"
+          style={{ height: 28 }}
         >
           
           <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
@@ -86,8 +86,8 @@ export default function SigunguRecordsPage({
 
         {/* sigunguNm + 캘린더 버튼: 헤더 그룹이랑 위아래로 7px */}
         <div
-  className="flex items-center justify-center"
-  style={{ marginTop: 7, width: 359 }}
+  className="flex w-full items-center justify-center"
+  style={{ marginTop: 7 }}
 >
            <h1
     className="whitespace-nowrap text-[16px] font-bold not-italic leading-normal text-[#6CA59C]"

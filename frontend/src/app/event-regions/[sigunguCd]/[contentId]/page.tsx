@@ -140,47 +140,47 @@ function SpotDetailContent({
     setIsDescExpanded((prev) => !prev);
   };
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  // 클릭하면 검증 절차 없이 바로 인증 완료 화면을 보여준다.
-  // 백엔드가 위치 인증을 제대로 완료 처리해줄지 보장이 안 되므로, 게이지가 같이 올라가도록
-  // missionSpots 캐시를 낙관적으로 먼저 갱신한다 — 이후 실제 서버 응답이 오면 그걸로 덮어써도 무방.
-  const handleVerifyVisit = () => {
+  // 방문 인증은 실제로 위치를 확인하는 기능이 맞다 — 현재 위치를 서버로 보내고,
+  // 서버가 범위 안이라고 확인해줘야만(isCompleted) 인증 완료 화면을 보여준다.
+  const handleVerifyVisit = async () => {
     const missionSpotId = spot.missionSpotId;
-    if (!missionSpotId) return;
+    if (!missionSpotId || isVerifying) return;
 
-    setShowVerifyPopup(true);
-    markMissionSpotCompleted(missionSpotId);
+    setIsVerifying(true);
 
-    queryClient.setQueryData<MissionSpotsResult>(["missionSpots", sigunguCd], (old) =>
-      old
-        ? {
-            ...old,
-            content: old.content.map((s) =>
-              s.missionSpotId === missionSpotId ? { ...s, isCompleted: true } : s
-            ),
-          }
-        : old
-    );
-    queryClient.setQueryData<MissionSpotItem>(["missionSpotDetail", missionSpotId], (old) =>
-      old ? { ...old, isCompleted: true } : old
-    );
-
-    getCurrentPosition()
-      .then((position) =>
-        verifyMissionVisit(missionSpotId, {
-          userX: position.coords.longitude,
-          userY: position.coords.latitude,
-        })
-      )
-      .then((res) => {
-        if (res.isCompleted) {
-          queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", missionSpotId] });
-          queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
-        }
-      })
-      .catch(() => {
-        // 백엔드 위치 인증이 실패해도 화면은 이미 인증된 것으로 보여주기로 했으니 조용히 무시한다.
+    try {
+      const position = await getCurrentPosition();
+      const res = await verifyMissionVisit(missionSpotId, {
+        userX: position.coords.longitude,
+        userY: position.coords.latitude,
       });
+
+      if (res.isCompleted) {
+        markMissionSpotCompleted(missionSpotId);
+        queryClient.setQueryData<MissionSpotsResult>(["missionSpots", sigunguCd], (old) =>
+          old
+            ? {
+                ...old,
+                content: old.content.map((s) =>
+                  s.missionSpotId === missionSpotId ? { ...s, isCompleted: true } : s
+                ),
+              }
+            : old
+        );
+        queryClient.setQueryData<MissionSpotItem>(["missionSpotDetail", missionSpotId], (old) =>
+          old ? { ...old, isCompleted: true } : old
+        );
+        queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", missionSpotId] });
+        queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
+        setShowVerifyPopup(true);
+      }
+    } catch {
+      // 위치 확인 실패, 범위 밖 등 — 별도 알림 없이 조용히 무시한다.
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const handleCloseVerifyPopup = () => {
@@ -192,8 +192,8 @@ function SpotDetailContent({
       <div className="pb-8" style={{ paddingTop: 44 }}>
           <div className="px-[17px]">
             <header
-              className="flex items-start justify-center mb-2"
-              style={{ width: 359, height: 28, gap: 303 }}
+              className="flex w-full items-center justify-between mb-2"
+              style={{ height: 28 }}
             >
               <button
                 aria-label="뒤로가기"
@@ -328,7 +328,8 @@ function SpotDetailContent({
             {/* 방문 인증하기 버튼 */}
             <button
               onClick={handleVerifyVisit}
-              className="mt-[6px] flex w-full items-center justify-center text-white"
+              disabled={isVerifying}
+              className="mt-[6px] flex w-full items-center justify-center text-white disabled:opacity-60"
               style={{
                 height: 51,
                 borderRadius: 9,
@@ -337,7 +338,7 @@ function SpotDetailContent({
                 fontSize: 14,
               }}
             >
-              방문 인증하기
+              {isVerifying ? "위치 확인 중..." : "방문 인증하기"}
             </button>
           </div>
       </div>

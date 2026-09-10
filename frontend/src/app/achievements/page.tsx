@@ -36,45 +36,40 @@ export default function AchievementsPage() {
   }, []);
 
   return (
-    // 화면 전체를 감싸는 바깥 래퍼: 브라우저 크기와 무관하게 항상 중앙에 393x852만 렌더링
-    <div className="flex min-h-screen w-full items-center justify-center">
-      {/* 실제 화면 영역: 393x852로 고정, overflow는 세로 스크롤만 허용 */}
-      <div
-        className="relative bg-white overflow-y-auto overflow-x-hidden scrollbar-hide"
-        style={{ width: 393, height: 852, paddingTop: 88, paddingLeft: 17, paddingRight: 17, paddingBottom: 16 }}
+    <div className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
+      {/* 절대 좌표로 정확히 고정되는 헤더 */}
+      <header
+        className="absolute flex items-center justify-between"
+        style={{ top: 44, left: 17, right: 17, height: 28 }}
       >
-        {/* 절대 좌표로 정확히 고정되는 헤더 */}
-        <header
-          className="absolute flex items-center justify-between"
-          style={{ top: 44, left: 17, width: 359, height: 28 }}
+        <button
+          aria-label="뒤로가기"
+          onClick={() => router.back()}
+          type="button"
+          className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+          style={{ width: 40, height: 40, margin: -6 }}
         >
-          <button
-            aria-label="뒤로가기"
-            onClick={() => router.back()}
-            type="button"
-            className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
-            style={{ width: 40, height: 40, margin: -6 }}
-          >
-            <Image
-              src="/assets/chevron-left.svg"
-              alt="뒤로가기"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-          </button>
+          <Image
+            src="/assets/chevron-left.svg"
+            alt="뒤로가기"
+            width={28}
+            height={28}
+            className="shrink-0"
+          />
+        </button>
 
-          <button
-            aria-label="메뉴"
-            onClick={() => router.push("/mypage")}
-            type="button"
-            className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
-            style={{ width: 40, height: 40, margin: -6 }}
-          >
-            <Image src="/assets/Menu.png" alt="메뉴" width={28} height={28} className="shrink-0" />
-          </button>
-        </header>
+        <button
+          aria-label="메뉴"
+          onClick={() => router.push("/mypage")}
+          type="button"
+          className="flex items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+          style={{ width: 40, height: 40, margin: -6 }}
+        >
+          <Image src="/assets/Menu.png" alt="메뉴" width={28} height={28} className="shrink-0" />
+        </button>
+      </header>
 
+      <div className="px-[17px]" style={{ paddingTop: 88, paddingBottom: 16 }}>
         {/* 축하 배너 */}
         <div className="relative w-full h-[81px] rounded-[9px] bg-[#C3DAD7] overflow-hidden">
           <p className="absolute top-[21px] left-[26px] text-[16px] font-normal leading-none text-[#5F5F5F]">
@@ -90,7 +85,7 @@ export default function AchievementsPage() {
             alt=""
             width={70}
             height={70}
-            className="absolute top-[6px] left-[288px] -rotate-90"
+            className="absolute top-[6px] right-[35px] -rotate-90"
           />
         </div>
 
