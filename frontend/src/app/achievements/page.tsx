@@ -127,12 +127,9 @@ export default function AchievementsPage() {
                   )}
                 </div>
 
-                <span
-                  className="mt-2 text-[15px] font-normal text-black"
-                  style={{ fontFamily: "Pretendard", lineHeight: "normal" }}
-                >
-                  {badge.name}
-                </span>
+                <span className="mt-2 text-[15px] font-normal text-black" style={{ lineHeight: "normal" }}>
+  {badge.name}
+</span>
               </div>
             );
           })}
