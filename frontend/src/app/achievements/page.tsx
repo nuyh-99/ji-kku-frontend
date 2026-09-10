@@ -6,12 +6,15 @@ import { useRouter } from "next/navigation";
 
 import { getBadges } from "@/lib/api/mission";
 import { regionBadges } from "@/data/region-badges";
+import { getLocallyUnlockedBadgeNos } from "@/lib/achievements/localBadges";
 import type { BadgeItem } from "@/types/mission";
 
 export default function AchievementsPage() {
   const router = useRouter();
 
-  const [unlockedNos, setUnlockedNos] = useState<Set<string>>(new Set());
+  // 백엔드가 아직 방문 인증을 제대로 완료 처리 못 해줄 수 있어서, 지역 게이지가 다 찼을 때
+  // 클라이언트에 남겨둔 기록도 같이 합쳐서 배지를 보여준다.
+  const [unlockedNos, setUnlockedNos] = useState<Set<string>>(() => getLocallyUnlockedBadgeNos());
 
   useEffect(() => {
     async function fetchBadges() {
@@ -23,7 +26,7 @@ export default function AchievementsPage() {
           .filter((badge) => badge.badgeType === "REGION")
           .map((badge) => badge.badgeNo);
 
-        setUnlockedNos(new Set(regionBadgeNos));
+        setUnlockedNos((prev) => new Set([...prev, ...regionBadgeNos]));
       } catch (error) {
         console.error("배지 목록을 불러오지 못했습니다.", error);
       }
