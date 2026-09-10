@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { MOCK_RECORD_DETAIL } from "@/data/mock-recordDetail";
+import { useQuery } from "@tanstack/react-query";
+import { getTravelPostDetail } from "@/lib/api/travelPost";
 
 export default function TravelPostDetailPage({
   params,
@@ -13,12 +14,20 @@ export default function TravelPostDetailPage({
   const { travelPostId } = use(params);
   const router = useRouter();
 
-  const record = MOCK_RECORD_DETAIL;
+  const { data: record, isLoading, isError } = useQuery({
+    queryKey: ["travelPostDetail", travelPostId],
+    queryFn: () => getTravelPostDetail(travelPostId),
+  });
+
+  if (isLoading) return <div className="px-4 py-4">로딩 중...</div>;
+  if (isError || !record) return <div className="px-4 py-4">정보를 불러오지 못했습니다.</div>;
+
+  const blocks = [...record.blocks].sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="relative mx-auto min-h-dvh w-full max-w-[393px] bg-white">
       {/* 상단 고정 영역 */}
-      <div className="fixed left-0 top-0 z-30 h-[113px] w-full bg-white">
+      <div className="sticky top-0 z-30 h-[113px] w-full bg-white">
         {/* 뒤로가기 / 메뉴: 좌우 17px, 위 44px */}
         <header
           className="absolute left-0 top-0 flex w-full items-center justify-between px-[17px]"
@@ -86,18 +95,18 @@ export default function TravelPostDetailPage({
       </div>
 
       {/* 기록 내용 */}
-      <main className="pt-[70px]">
+      <main>
         <div className="flex flex-col gap-[15px]">
-          {record.contents.map((content, index) => {
-            if (content.type === "image" && content.src) {
+          {blocks.map((block) => {
+            if (block.blockType === "IMAGE" && block.imgUrl) {
               return (
                 <div
-                  key={`${content.type}-${index}`}
+                  key={block.travelPostBlockId}
                   className="relative w-full overflow-hidden"
                 >
                   <Image
-                    src={content.src}
-                    alt={`여행 기록 이미지 ${index + 1}`}
+                    src={block.imgUrl}
+                    alt={`여행 기록 이미지 ${block.sortOrder + 1}`}
                     width={349}
                     height={300}
                     className="h-auto w-full object-cover"
@@ -106,10 +115,10 @@ export default function TravelPostDetailPage({
               );
             }
 
-            if (content.type === "text" && content.text) {
+            if (block.blockType === "TEXT" && block.textContent) {
               return (
                 <p
-                  key={`${content.type}-${index}`}
+                  key={block.travelPostBlockId}
                   className="
                     w-[349px]
                     mx-auto
@@ -122,7 +131,7 @@ export default function TravelPostDetailPage({
                     text-black
                   "
                 >
-                  {content.text}
+                  {block.textContent}
                 </p>
               );
             }

@@ -8,7 +8,7 @@ import { getMissionSpots, type MissionSpotItem } from "@/lib/api/mission";
 import GangwonMapSvg from "@/components/map/GangwonMapSvg";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import type { MissionSpotsResult } from "@/types/mission";
-
+import { createPortal } from "react-dom";
 // ==========================================
 // 🎛️ 지도 및 핀 보정 상수 설정
 // ==========================================
@@ -100,10 +100,12 @@ function EventRegionContent({
   const containerRef = useRef<HTMLDivElement>(null);
   const outerRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  
 
   const [mapWidth, setMapWidth] = useState(DEFAULT_MAP_WIDTH);
   const [contentBox, setContentBox] = useState<{width:number;height:number} | null>(null);
   const [scale, setScale] = useState(1);
+  const [mapLayerEl, setMapLayerEl] = useState<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
     const svgEl = containerRef.current?.querySelector("svg");
@@ -185,6 +187,10 @@ function EventRegionContent({
   useEffect(() => {
     setOffset(baseOffset);
   }, [baseOffset]);
+
+  useEffect(() => {
+    setMapLayerEl(mapContainerRef.current);
+  }, []);
 
   const DRAG_THRESHOLD = 6;
 
@@ -358,7 +364,7 @@ function EventRegionContent({
 
               <div
                 ref={mapContainerRef}
-                className="w-full h-full flex items-center justify-center"
+                className="relative w-full h-full flex items-center justify-center"
                 style={{
                   transform: `translate(${offset.x}px, ${offset.y}px) scale(${effectiveZoom})`,
                   transformOrigin: "center center",
@@ -391,11 +397,10 @@ function EventRegionContent({
                             transform={map.transform}
                             isSelected={selectedContentId === item.contentId}
                             effectiveZoom={effectiveZoom}
-                            offset={offset}
-                            contentBox={contentBox}
                             onSelect={() => setSelectedContentId(item.contentId)}
                             onClose={() => setSelectedContentId(null)}
                             sigunguCd={sigunguCd}
+                            portalContainer={mapLayerEl}
                           />
                         ))}
                       </g>
@@ -420,36 +425,52 @@ function MissionSpotMarker({
   transform,
   isSelected,
   effectiveZoom,
-  offset,
-  contentBox,
   onSelect,
   onClose,
   sigunguCd,
+  portalContainer,
 }: {
   spot: MissionSpotItem;
   transform?: { scale: number; offsetX: number; offsetY: number; minX: number; maxY: number };
   isSelected: boolean;
   effectiveZoom: number;
-  offset: { x: number; y: number };
-  contentBox: { width: number; height: number } | null;
   onSelect: () => void;
   onClose: () => void;
   sigunguCd: number;
+  portalContainer: HTMLDivElement | null;
 }) {
   const { x: spotSvgX, y: spotSvgY } = calculatePinCoordinates(spot, transform);
 
-  // SVG 내부 좌표를 지도 컨테이너 기준 화면 좌표로 변환
-  const centerX = contentBox ? contentBox.width / 2 : 0;
-  const centerY = contentBox ? contentBox.height / 2 : 0;
-
-  const screenX = (DESIGN_WIDTH / 2) + ((spotSvgX - centerX) * effectiveZoom) + offset.x;
-  const screenY = 160 + (MAP_HEIGHT / 2) + ((spotSvgY - centerY) * effectiveZoom) + offset.y;
-
   const POPUP_WIDTH = 136;
   const POPUP_HEIGHT = 171;
+  const POPUP_GAP = 10;
 
-  const popupX = screenX - POPUP_WIDTH / 2;
-  const popupY = screenY - POPUP_HEIGHT - 80
+  const pinImgRef = useRef<SVGImageElement>(null);
+  const [popupPos, setPopupPos] = useState<{ x: number; y: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!isSelected) {
+      setPopupPos(null);
+      return;
+    }
+
+    const pinEl = pinImgRef.current;
+    if (!pinEl || !portalContainer) return;
+
+    // portalContainer(=mapContainerRef)는 지도 pan/zoom과 같은 transform을 받는 컨테이너이므로,
+    // 여기서 구하는 좌표는 그 local(변환 전) 좌표계 기준 — 드래그로 offset이 바뀌어도
+    // 팝업이 같은 transform을 함께 받아 자동으로 따라 움직인다.
+    const pinRect = pinEl.getBoundingClientRect();
+    const containerRect = portalContainer.getBoundingClientRect();
+
+    const centerX = (pinRect.left + pinRect.width / 2 - containerRect.left) / effectiveZoom;
+    const topY = (pinRect.top - containerRect.top) / effectiveZoom;
+
+    setPopupPos({
+      x: centerX - POPUP_WIDTH / 2,
+      y: topY - POPUP_HEIGHT - POPUP_GAP,
+    });
+  }, [isSelected, effectiveZoom, portalContainer]);
 
   return (
     <>
@@ -468,6 +489,7 @@ function MissionSpotMarker({
         >
           <ellipse cx="0" cy="0" rx={10.5} ry={5} fill="#9C9C9C85" />
           <image
+            ref={pinImgRef}
             href="/event-region/where.png"
             x="-20"
             y="-40"
@@ -478,30 +500,39 @@ function MissionSpotMarker({
         </g>
       </g>
 
-      {isSelected && (
-        <foreignObject
-          x={popupX - (DESIGN_WIDTH / 2) - offset.x}
-          y={popupY - 160 - (MAP_HEIGHT / 2) - offset.y}
-          width={POPUP_WIDTH * 2}
-          height={POPUP_HEIGHT * 2}
-          style={{ overflow: "visible", pointerEvents: "all" }}
-        >
-          <EventSpotPopup
-            sigunguCd={sigunguCd}
-            spot={spot}
-            screenPos={{ x: popupX, y: popupY }}
-            onClose={onClose}
-          />
-        </foreignObject>
-      )}
+      {isSelected &&
+        portalContainer &&
+        popupPos &&
+        createPortal(
+          <div
+            className="absolute z-50"
+            style={{
+              left: popupPos.x,
+              top: popupPos.y,
+              width: POPUP_WIDTH,
+              height: POPUP_HEIGHT,
+              pointerEvents: "auto",
+            }}
+          >
+            <EventSpotPopup
+              sigunguCd={sigunguCd}
+              spot={spot}
+              screenPos={popupPos}
+              onClose={onClose}
+            />
+          </div>,
+          portalContainer
+        )}
     </>
   );
 }
 
 function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
   const clamped = Math.min(5, Math.max(0, visitedCount));
-  const widths = [0, 56.15, 115.6, 173.4, 231.2, 289];
-  const fillWidth = widths[clamped];
+  const TRACK_WIDTH = 333;
+  // 라벨 0~5, 5칸으로 트랙을 균등 분할 — 왼쪽 끝(0)에서 시작해 5/5에서 트랙 오른쪽 끝까지 정확히 채운다.
+  const STEP = TRACK_WIDTH / 5;
+  const fillWidth = STEP * clamped;
 
   return (
     <div className="relative h-[100px] w-full">
@@ -517,15 +548,15 @@ function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
       </div>
 
       <div
-        className="absolute rounded-[126px]"
-        style={{ top: 19, left: 13, width: 333, height: 26, background: "#6CA59CB0" }}
+        className="absolute overflow-hidden rounded-[126px]"
+        style={{ top: 19, left: 13, width: TRACK_WIDTH, height: 26, background: "#6CA59CB0" }}
       >
         {clamped > 0 && (
           <div
             className="absolute rounded-l-[126px] transition-all duration-500"
             style={{
               top: 0,
-              left: 13,
+              left: 0,
               width: fillWidth,
               height: 26,
               background: "#FFFFFF",
@@ -602,14 +633,14 @@ function EventSpotPopup({
 
         <p
           className="absolute truncate text-[12px] font-semibold text-black"
-          style={{ top: 108, left: 10, width: 116, height: 14, fontFamily: "Pretendard" }}
+          style={{ top: 108, left: 10, width: 116, height: 14 }}
         >
           {spot.title}
         </p>
 
         <p
           className="absolute truncate text-[8px] text-[#9C9C9C]"
-          style={{ top: 124, left: 10, width: 116, height: 10, fontFamily: "Pretendard" }}
+          style={{ top: 124, left: 10, width: 116, height: 10 }}
         >
           {spot.overview || "상세 페이지에서 확인하세요."}
         </p>
