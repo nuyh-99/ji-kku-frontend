@@ -61,36 +61,14 @@ export default function TravelPostDetailPage({
           </button>
         </header>
 
-        {/* 읍면동 이름: 위 83px, 왼쪽 132px */}
-        <div
-          className="
-            absolute
-            left-[132px]
-            top-[83px]
-            whitespace-nowrap
-            text-[16px]
-            font-bold
-            leading-[100%]
-            text-[#6CA59C]
-          "
-        >
-          {record.emdNm}
-        </div>
-
-        {/* 날짜: 위 85px, 왼쪽 182px */}
-        <div
-          className="
-            absolute
-            left-[182px]
-            top-[85px]
-            whitespace-nowrap
-            text-[14px]
-            font-bold
-            leading-[100%]
-            text-[#6CA59CB2]
-          "
-        >
-          {record.logDate}
+        {/* 읍면동 이름 + 날짜: 헤더 폭 전체 기준 가운데 정렬, 서로 다른 글자 크기는 베이스라인으로 맞춤 */}
+        <div className="absolute left-0 top-[83px] flex w-full items-baseline justify-center gap-[6px]">
+          <span className="whitespace-nowrap text-[16px] font-bold leading-[100%] text-[#6CA59C]">
+            {record.emdNm}
+          </span>
+          <span className="whitespace-nowrap text-[14px] font-bold leading-[100%] text-[#6CA59CB2]">
+            {record.logDate}
+          </span>
         </div>
       </div>
 

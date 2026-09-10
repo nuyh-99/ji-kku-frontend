@@ -317,7 +317,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
           style={{
             top: 108,
             left: 17,
-            width: 360,
+            right: 17,
             height: MAP_HEIGHT,
             borderRadius: 9,
             border: "1px solid #6CA59C",
@@ -388,7 +388,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
   style={{
     top: 646,
     left: 17,
-    width: 376,
+    right: 17,
     height: 149.0674285888672,
     gap: 11,
     scrollbarWidth: "none", // Firefox

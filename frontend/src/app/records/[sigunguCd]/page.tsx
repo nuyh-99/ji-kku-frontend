@@ -86,8 +86,8 @@ export default function SigunguRecordsPage({
 
         {/* sigunguNm + 캘린더 버튼: 헤더 그룹이랑 위아래로 7px */}
         <div
-  className="flex items-center justify-center"
-  style={{ marginTop: 7, width: 359 }}
+  className="flex w-full items-center justify-center"
+  style={{ marginTop: 7 }}
 >
            <h1
     className="whitespace-nowrap text-[16px] font-bold not-italic leading-normal text-[#6CA59C]"
