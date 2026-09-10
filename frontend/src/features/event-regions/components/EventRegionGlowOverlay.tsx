@@ -44,21 +44,31 @@ export default function EventRegionGlowOverlay({
   overflow="visible"
   aria-hidden="true"
 >
-  <defs>
-    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
-  <feGaussianBlur stdDeviation="6" result="blur" />
-  <feMerge>
-    <feMergeNode in="blur" />
-    <feMergeNode in="SourceGraphic" />
-  </feMerge>
-</filter>
-  </defs>
-
+ <defs>
+  <filter
+    id="glow"
+    x="-150%"
+    y="-150%"
+    width="400%"
+    height="400%"
+    colorInterpolationFilters="sRGB"
+  >
+    <feDropShadow dx="0" dy="0" stdDeviation="2.5"  floodColor="#6CA59C" floodOpacity="1"   result="s1" />
+    <feDropShadow dx="0" dy="0" stdDeviation="10"   floodColor="#6CA59C" floodOpacity="0.8" result="s2" />
+    <feDropShadow dx="0" dy="0" stdDeviation="5"    floodColor="#6CA59C" floodOpacity="0.5" result="s3" />
+    <feMerge>
+      <feMergeNode in="s1" />
+      <feMergeNode in="s2" />
+      <feMergeNode in="s3" />
+      <feMergeNode in="SourceGraphic" />
+    </feMerge>
+  </filter>
+</defs>
 
 {/* 1) glow — 기존과 동일 */}
 <g>
   {eventRegions.map((r) => (
-    <path key={`glow-${r.code}`} d={r.d} fill={EVENT_FILL} style={{ filter: EVENT_GLOW }} />
+    <path key={`glow-${r.code}`} d={r.d} fill={EVENT_FILL} filter="url(#glow)" />
   ))}
 </g>
 
