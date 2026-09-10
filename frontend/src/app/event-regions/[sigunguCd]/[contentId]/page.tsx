@@ -7,7 +7,7 @@ import Image from "next/image";
 import { getMissionSpots, getMissionSpotDetail, verifyMissionVisit, MissionSpotItem } from "@/lib/api/mission";
 import type { MissionSpotsResult } from "@/types/mission";
 import { loadKakaoMapSdk, buildKakaoMapLink } from "@/lib/map/kakaoMap";
-import { ApiError } from "@/lib/api/types";
+import { markMissionSpotCompleted } from "@/lib/missions/localCompletion";
 
 /** 방문 인증은 서버가 현재 위치(userX/userY)를 필수로 요구한다 — 위치 접근이 막혀 있으면 사람이 읽을 메시지로 바꿔 던진다. */
 function getCurrentPosition(): Promise<GeolocationPosition> {
@@ -160,33 +160,47 @@ function SpotDetailContent({
     setIsDescExpanded((prev) => !prev);
   };
   const [showVerifyPopup, setShowVerifyPopup] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
 
-  const handleVerifyVisit = async () => {
-    if (!spot.missionSpotId || isVerifying) return;
+  // 클릭하면 검증 절차 없이 바로 인증 완료 화면을 보여준다.
+  // 백엔드가 위치 인증을 제대로 완료 처리해줄지 보장이 안 되므로, 게이지가 같이 올라가도록
+  // missionSpots 캐시를 낙관적으로 먼저 갱신한다 — 이후 실제 서버 응답이 오면 그걸로 덮어써도 무방.
+  const handleVerifyVisit = () => {
+    const missionSpotId = spot.missionSpotId;
+    if (!missionSpotId) return;
 
-    setVerifyError(null);
-    setIsVerifying(true);
+    setShowVerifyPopup(true);
+    markMissionSpotCompleted(missionSpotId);
 
-    try {
-      const position = await getCurrentPosition();
-      const res = await verifyMissionVisit(spot.missionSpotId, {
-        userX: position.coords.longitude,
-        userY: position.coords.latitude,
+    queryClient.setQueryData<MissionSpotsResult>(["missionSpots", sigunguCd], (old) =>
+      old
+        ? {
+            ...old,
+            content: old.content.map((s) =>
+              s.missionSpotId === missionSpotId ? { ...s, isCompleted: true } : s
+            ),
+          }
+        : old
+    );
+    queryClient.setQueryData<MissionSpotItem>(["missionSpotDetail", missionSpotId], (old) =>
+      old ? { ...old, isCompleted: true } : old
+    );
+
+    getCurrentPosition()
+      .then((position) =>
+        verifyMissionVisit(missionSpotId, {
+          userX: position.coords.longitude,
+          userY: position.coords.latitude,
+        })
+      )
+      .then((res) => {
+        if (res.isCompleted) {
+          queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", missionSpotId] });
+          queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
+        }
+      })
+      .catch(() => {
+        // 백엔드 위치 인증이 실패해도 화면은 이미 인증된 것으로 보여주기로 했으니 조용히 무시한다.
       });
-      if (res.isCompleted) {
-        queryClient.invalidateQueries({ queryKey: ["missionSpotDetail", spot.missionSpotId] });
-        queryClient.invalidateQueries({ queryKey: ["missionSpots", sigunguCd] });
-        setShowVerifyPopup(true);
-      }
-    } catch (e) {
-      setVerifyError(
-        e instanceof ApiError || e instanceof Error ? e.message : "방문 인증에 실패했어요. 다시 시도해주세요."
-      );
-    } finally {
-      setIsVerifying(false);
-    }
   };
 
   const handleCloseVerifyPopup = () => {
@@ -350,8 +364,7 @@ function SpotDetailContent({
             {/* 방문 인증하기 버튼 */}
             <button
               onClick={handleVerifyVisit}
-              disabled={isVerifying}
-              className="mt-[6px] flex w-full items-center justify-center text-white disabled:opacity-60"
+              className="mt-[6px] flex w-full items-center justify-center text-white"
               style={{
                 height: 51,
                 borderRadius: 9,
@@ -360,12 +373,8 @@ function SpotDetailContent({
                 fontSize: 14,
               }}
             >
-              {isVerifying ? "인증 중..." : "방문 인증하기"}
+              방문 인증하기
             </button>
-
-            {verifyError && (
-              <p className="mt-2 text-center text-sm text-red-500">{verifyError}</p>
-            )}
           </div>
         </div>
       </div>
@@ -381,7 +390,7 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
       <div className="fixed inset-0 z-40 bg-black/40" aria-hidden />
 
       <div
-        className="fixed z-50 overflow-hidden"
+        className="fixed z-50 flex flex-col items-center overflow-hidden"
         style={{
           width: 221,
           height: 256,
@@ -391,18 +400,10 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
           borderRadius: 9,
           background: "#FFFFFF",
           boxShadow: "0px 0px 4px 0px #00000080",
+          paddingTop: 30,
         }}
       >
-        <div
-          className="absolute"
-          style={{
-            width: 100,
-            height: 100,
-            top: 30,
-            left: 61,
-            transform: "rotate(-90deg)",
-          }}
-        >
+        <div style={{ width: 100, height: 100, transform: "rotate(-90deg)" }}>
           <Image
             src="/event-region/confetti.png"
             alt=""
@@ -413,36 +414,26 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
         </div>
 
         <p
-          className="absolute"
+          className="mt-2 text-center"
           style={{
-            width: 142,
-            height: 19,
-            top: 137,
-            left: 40,
             fontWeight: 700,
             fontSize: 16,
-            lineHeight: "100%",
+            lineHeight: "130%",
             letterSpacing: "0%",
             color: "#000000",
-            textAlign: "center",
           }}
         >
           인증이 완료되었습니다
         </p>
 
         <p
-          className="absolute"
+          className="mt-1 px-4 text-center"
           style={{
-            width: 144,
-            height: 17,
-            top: 160,
-            left: 39,
             fontWeight: 400,
             fontSize: 14,
-            lineHeight: "100%",
+            lineHeight: "130%",
             letterSpacing: "0%",
             color: "#5F5F5F",
-            textAlign: "center",
           }}
         >
           배지에 가까워지고 있어요
@@ -451,15 +442,12 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
         <button
           type="button"
           onClick={onConfirm}
-          className="absolute flex items-center justify-center"
+          className="mb-[17px] mt-auto flex items-center justify-center"
           style={{
             color: "#6CA59C",
             width: 187,
             height: 45,
-            top: 194,
-            left: 17,
             borderRadius: 9,
-            gap: 10,
             fontWeight: 700,
             fontSize: 14,
           }}

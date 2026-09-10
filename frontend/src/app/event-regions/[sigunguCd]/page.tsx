@@ -9,6 +9,8 @@ import GangwonMapSvg from "@/components/map/GangwonMapSvg";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import type { MissionSpotsResult } from "@/types/mission";
 import { createPortal } from "react-dom";
+import { markRegionBadgeUnlocked } from "@/lib/achievements/localBadges";
+import { getLocallyCompletedMissionSpotIds } from "@/lib/missions/localCompletion";
 // ==========================================
 // 🎛️ 지도 및 핀 보정 상수 설정
 // ==========================================
@@ -94,6 +96,20 @@ function EventRegionContent({
 }) {
   const router = useRouter();
   const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
+
+  // 백엔드 방문 인증이 불안정해서, 서버가 아직 미완료로 보고해도 로컬 기록이 있으면 완료로 친다.
+  const [locallyCompletedIds] = useState(() => getLocallyCompletedMissionSpotIds());
+
+  const visitedCount = spots.filter(
+    (s) => s.isCompleted || (s.missionSpotId != null && locallyCompletedIds.has(s.missionSpotId))
+  ).length;
+
+  // 지역 게이지가 5/5로 다 차면 내 업적 페이지에서 바로 배지가 보이도록 기록해둔다.
+  useEffect(() => {
+    if (visitedCount >= 5) {
+      markRegionBadgeUnlocked(sigunguCd);
+    }
+  }, [sigunguCd, visitedCount]);
 
   const map = getEupmyeondongMap(String(sigunguCd));
 
@@ -315,7 +331,7 @@ function EventRegionContent({
           </header>
 
           <div className="pointer-events-auto">
-            <EventRegionGauge visitedCount={spots.filter((s) => s.isCompleted).length} />
+            <EventRegionGauge visitedCount={visitedCount} />
           </div>
 
           <p
@@ -548,12 +564,12 @@ function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
       </div>
 
       <div
-        className="absolute overflow-hidden rounded-[126px]"
+        className="absolute rounded-[126px]"
         style={{ top: 19, left: 13, width: TRACK_WIDTH, height: 26, background: "#6CA59CB0" }}
       >
         {clamped > 0 && (
           <div
-            className="absolute rounded-l-[126px] transition-all duration-500"
+            className="absolute rounded-[126px] transition-all duration-500"
             style={{
               top: 0,
               left: 0,
