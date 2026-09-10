@@ -40,7 +40,7 @@ export default function AchievementsPage() {
     <div className="flex min-h-screen w-full items-center justify-center">
       {/* 실제 화면 영역: 393x852로 고정, overflow는 세로 스크롤만 허용 */}
       <div
-        className="relative bg-white overflow-y-auto overflow-x-hidden"
+        className="relative bg-white overflow-y-auto overflow-x-hidden scrollbar-hide"
         style={{ width: 393, height: 852, paddingTop: 88, paddingLeft: 17, paddingRight: 17, paddingBottom: 16 }}
       >
         {/* 절대 좌표로 정확히 고정되는 헤더 */}

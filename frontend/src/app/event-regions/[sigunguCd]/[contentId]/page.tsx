@@ -25,7 +25,6 @@ function getCurrentPosition(): Promise<GeolocationPosition> {
 }
 
 const DESIGN_WIDTH = 393;
-const DESIGN_HEIGHT = 852;
 
 function useSpotImages(imageUrl?: string | null) {
   return imageUrl ? [imageUrl] : [];
@@ -79,25 +78,6 @@ function SpotDetailContent({
   const queryClient = useQueryClient();
   const images = useSpotImages(spot.firstImage);
   const router = useRouter();
-
-  // --- 스케일 캔버스 (최초 1회 너비 기준 고정) ---
-  const outerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const updateScale = () => {
-      // 높이 변화에 영향을 받지 않도록 오직 브라우저 창 너비 기준으로만 고정 계산
-      const nextScale = window.innerWidth / DESIGN_WIDTH;
-      // 최대 1을 넘지 않게 하거나 필요에 따라 조정 가능
-      setScale(nextScale > 1 ? 1 : nextScale);
-    };
-
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => {
-      window.removeEventListener("resize", updateScale);
-    };
-  }, []);
 
   // --- 이미지 스크롤 캐러셀 ---
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -208,24 +188,8 @@ function SpotDetailContent({
   };
 
   return (
-    <div
-      ref={outerRef}
-      className="w-full flex items-center justify-center overflow-hidden"
-      style={{ height: "100dvh" }}
-    >
-      <div style={{ width: DESIGN_WIDTH * scale, height: DESIGN_HEIGHT * scale }}>
-        <div
-          className="relative bg-white pb-8 scrollbar-hide"
-          style={{
-            width: DESIGN_WIDTH,
-            height: DESIGN_HEIGHT,
-            overflowY: "auto",
-            overflowX: "hidden",
-            paddingTop: 44,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
-        >
+    <div className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
+      <div className="pb-8" style={{ paddingTop: 44 }}>
           <div className="px-[17px]">
             <header
               className="flex items-start justify-center mb-2"
@@ -376,7 +340,6 @@ function SpotDetailContent({
               방문 인증하기
             </button>
           </div>
-        </div>
       </div>
 
       {showVerifyPopup && <VisitVerifiedPopup onConfirm={handleCloseVerifyPopup} />}

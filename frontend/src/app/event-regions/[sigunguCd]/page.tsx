@@ -15,10 +15,8 @@ import { getLocallyCompletedMissionSpotIds } from "@/lib/missions/localCompletio
 // 🎛️ 지도 및 핀 보정 상수 설정
 // ==========================================
 const LEFT_ALIGN_OFFSET_X = 20;
-const DESIGN_WIDTH = 393;
-const DESIGN_HEIGHT = 852;
 
-const DEFAULT_MAP_WIDTH = 393; 
+const DEFAULT_MAP_WIDTH = 393;
 const MAP_HEIGHT = 700; 
 const DESIRED_ZOOM = 1.1; 
 
@@ -114,13 +112,10 @@ function EventRegionContent({
   const map = getEupmyeondongMap(String(sigunguCd));
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const outerRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  
 
   const [mapWidth, setMapWidth] = useState(DEFAULT_MAP_WIDTH);
   const [contentBox, setContentBox] = useState<{width:number;height:number} | null>(null);
-  const [scale, setScale] = useState(1);
   const [mapLayerEl, setMapLayerEl] = useState<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
@@ -133,23 +128,6 @@ function EventRegionContent({
       }
     } catch {}
   }, [map?.viewBox, mapWidth]);
-
-  useLayoutEffect(() => {
-    const el = outerRef.current;
-    if (!el) return;
-
-    const updateScale = () => {
-      const { clientWidth, clientHeight } = el;
-      const scaleX = clientWidth / DESIGN_WIDTH;
-      const scaleY = clientHeight / DESIGN_HEIGHT;
-      setScale(Math.min(scaleX, scaleY));
-    };
-
-    updateScale();
-    const observer = new ResizeObserver(updateScale);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const { effectiveZoom, mapMaxOffsetX, mapDownStopY, mapUpMaxOffsetY } = useMemo(() => {
     if (!map?.viewBox) return { effectiveZoom: 1, mapMaxOffsetX: 0, mapDownStopY: 0, mapUpMaxOffsetY: 0 };
@@ -278,23 +256,10 @@ function EventRegionContent({
   const selectedSpot = spots.find((s) => s.contentId === selectedContentId);
 
   return (
-    <div
-      ref={outerRef}
-      className="w-full flex items-center justify-center overflow-hidden"
-      style={{ height: "100dvh" }}
-    >
-      <div
-        className="relative bg-white overflow-hidden select-none"
-        style={{
-          width: DESIGN_WIDTH,
-          height: DESIGN_HEIGHT,
-          transform: `scale(${scale})`,
-          transformOrigin: "center center",
-        }}
-      >
+    <div className="relative mx-auto overflow-y-auto overflow-x-hidden select-none bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
         <div
           className="pointer-events-none absolute z-0 overflow-hidden"
-          style={{ width: 430, height: 872, top: -2, left: -20 }}
+          style={{ top: -2, left: -20, right: -20, bottom: -20 }}
         >
           <Image src="/event-region/event-background.png" alt="" fill className="object-cover" priority />
           <div
@@ -431,7 +396,6 @@ function EventRegionContent({
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

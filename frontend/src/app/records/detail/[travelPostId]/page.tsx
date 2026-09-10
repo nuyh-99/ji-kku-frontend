@@ -25,7 +25,7 @@ export default function TravelPostDetailPage({
   const blocks = [...record.blocks].sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
-    <div className="relative mx-auto min-h-dvh w-full max-w-[393px] bg-white">
+    <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-white">
       {/* 상단 고정 영역 */}
       <div className="sticky top-0 z-30 h-[113px] w-full bg-white">
         {/* 뒤로가기 / 메뉴: 좌우 17px, 위 44px */}
