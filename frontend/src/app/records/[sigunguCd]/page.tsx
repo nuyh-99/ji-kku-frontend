@@ -100,7 +100,8 @@ export default function SigunguRecordsPage({
     aria-label="날짜 선택"
     onClick={() => setShowDatePicker((prev) => !prev)}
     type="button"
-    className="shrink-0 ml-2"
+    className="flex shrink-0 items-center justify-center rounded-full hover:bg-gray-200 active:bg-gray-200 transition-colors"
+    style={{ width: 35, height: 35, margin: -6, marginLeft: 2 }}
   >
     <div
       style={{

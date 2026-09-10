@@ -50,10 +50,11 @@ export interface CountyMapConfig {
 // @/types/mission.ts
 
 // 1. 방문 인증 요청 시 보낼 Body 타입
+// 서버가 @NotNull로 강제하는 필수 필드 — 관광지 좌표를 mapX(경도)/mapY(위도)로 부르는 것과
+// 같은 규칙으로, 방문자 본인의 현재 좌표를 userX(경도)/userY(위도)로 받는다.
 export interface VerifyMissionVisitBody {
-  latitude?: number;
-  longitude?: number;
-  [key: string]: unknown;
+  userX: number;
+  userY: number;
 }
 
 // 2. 인증 성공 시 백엔드가 주는 result 데이터 타입

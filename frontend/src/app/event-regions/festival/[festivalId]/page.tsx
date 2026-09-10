@@ -6,25 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { getFestivalDetail } from "@/lib/api/spot";
 import { mapFestivalDetailToDetailData } from "@/features/event-regions/utils/mapFestivalDetail";
+import { loadKakaoMapSdk, buildKakaoMapLink } from "@/lib/map/kakaoMap";
 
 // TODO: 실제로는 API에서 이미지 배열(images: string[])을 받아와야 함.
 function useFestivalImages(imageUrl: string) {
   return imageUrl ? [imageUrl] : [];
-}
-
-type NaverLatLng = object;
-type NaverMap = object;
-
-interface NaverMapsApi {
-  LatLng: new (lat: number, lng: number) => NaverLatLng;
-  Map: new (element: HTMLElement, options: { center: NaverLatLng; zoom: number }) => NaverMap;
-  Marker: new (options: { position: NaverLatLng; map: NaverMap }) => unknown;
-}
-
-declare global {
-  interface Window {
-    naver?: { maps: NaverMapsApi };
-  }
 }
 
 export default function FestivalDetailPage({
@@ -94,26 +80,38 @@ useEffect(() => {
     setCurrentIndex(index);
   };
 
-  // --- 네이버 지도 ---
+  // --- 카카오맵 ---
   const mapRef = useRef<HTMLDivElement>(null);
+  const [isMapSdkReady, setIsMapSdkReady] = useState(false);
+  const [isMapSdkError, setIsMapSdkError] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !window.naver || !mapRef.current) return;
+    let cancelled = false;
 
-    const center = new window.naver.maps.LatLng(festival.lat, festival.lng);
-    const map = new window.naver.maps.Map(mapRef.current, {
-      center,
-      zoom: 16,
-    });
-    new window.naver.maps.Marker({ position: center, map });
-  }, [festival.lat, festival.lng]);
+    loadKakaoMapSdk()
+      .then(() => {
+        if (!cancelled) setIsMapSdkReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setIsMapSdkError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMapSdkReady || !window.kakao || !mapRef.current) return;
+
+    const center = new window.kakao.maps.LatLng(festival.lat, festival.lng);
+    const map = new window.kakao.maps.Map(mapRef.current, { center, level: 4 });
+    new window.kakao.maps.Marker({ position: center, map });
+  }, [isMapSdkReady, festival.lat, festival.lng]);
 
   const handleCheckLocation = () => {
     const { lat, lng, title } = festival;
-    const naverMapUrl = `https://map.naver.com/p/search/${encodeURIComponent(
-      title
-    )}?c=${lng},${lat},16,0,0,0,dh`;
-    window.open(naverMapUrl, "_blank");
+    window.open(buildKakaoMapLink(title, lat, lng), "_blank");
   };
 
   return (
@@ -246,16 +244,17 @@ useEffect(() => {
           </div>
         </dl>
 
-        {/* 네이버 지도 */}
+        {/* 카카오맵 */}
         <div
           ref={mapRef}
           className="mt-6 flex items-center justify-center bg-[#EEEEEE] text-sm text-gray-400"
           style={{ width: 360, height: 222 }}
         >
-          {typeof window !== "undefined" && !window.naver && "지도 SDK 로드 필요"}
+          {isMapSdkError && "지도를 불러오지 못했습니다"}
+          {!isMapSdkReady && !isMapSdkError && "지도 로딩 중..."}
         </div>
 
-        {/* 위치 확인하기 버튼 → 네이버 지도 웹으로 새 탭 이동 */}
+        {/* 위치 확인하기 버튼 → 카카오맵 웹으로 새 탭 이동 */}
         <button
           onClick={handleCheckLocation}
           className="mt-4 flex w-full items-center justify-center"
