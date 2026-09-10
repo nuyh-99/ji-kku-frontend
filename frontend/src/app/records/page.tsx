@@ -99,7 +99,6 @@ console.log("recordedIdSet:", recordedIdSet);
         <h1
           className="font-bold mb-[12px]"
           style={{
-            fontFamily: "Pretendard",
             fontWeight: 700,
             fontSize: 16,
             lineHeight: "normal",
@@ -130,7 +129,7 @@ console.log("recordedIdSet:", recordedIdSet);
               >
                 <span
                   style={{
-                    fontFamily: "Pretendard",
+                    
                     fontWeight: 400,
                     fontSize: 16,
                     fontStyle: "normal",

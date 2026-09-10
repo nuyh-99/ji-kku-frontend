@@ -212,7 +212,7 @@ function SpotDetailContent({
         <div className="px-[17px] pb-8">
           <div className="mt-[26px] flex items-center justify-between">
             <h1
-              style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
+              style={{ fontWeight: 700, fontSize: 16, lineHeight: "100%", color: "#6CA59C" }}
             >
               {spot.title}
             </h1>
@@ -220,21 +220,21 @@ function SpotDetailContent({
 
           <p
             className="mt-1"
-            style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
+            style={{ fontWeight: 400, fontSize: 12, lineHeight: "100%", color: "#9C9C9C" }}
           >
             {spot.addr1}
           </p>
 
           <p
             className="mt-6 whitespace-pre-line"
-            style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
+            style={{ fontWeight: 400, fontSize: 14, lineHeight: "160%", color: "#000000" }}
           >
             {spot.overview}
           </p>
 
           <dl
             className="mt-4 space-y-1"
-            style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, color: "#000000" }}
+            style={{ fontWeight: 400, fontSize: 14, color: "#000000" }}
           >
             <div className="flex gap-1">
               <dt className="text-gray-500">지역 :</dt>
@@ -258,7 +258,6 @@ function SpotDetailContent({
               borderRadius: 9,
               border: "1px solid #6CA59C",
               color: "#6CA59C",
-              fontFamily: "Pretendard",
               fontWeight: 700,
               fontSize: 14,
             }}
@@ -273,7 +272,6 @@ function SpotDetailContent({
               height: 51,
               borderRadius: 9,
               background: "#6CA59C",
-              fontFamily: "Pretendard",
               fontWeight: 700,
               fontSize: 14,
             }}
@@ -333,7 +331,6 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
             height: 19,
             top: 137,
             left: 40,
-            fontFamily: "Pretendard",
             fontWeight: 700,
             fontSize: 16,
             lineHeight: "100%",
@@ -352,7 +349,6 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
             height: 17,
             top: 160,
             left: 39,
-            fontFamily: "Pretendard",
             fontWeight: 400,
             fontSize: 14,
             lineHeight: "100%",
@@ -376,7 +372,6 @@ function VisitVerifiedPopup({ onConfirm }: { onConfirm: () => void }) {
             left: 17,
             borderRadius: 9,
             gap: 10,
-            fontFamily: "Pretendard",
             fontWeight: 700,
             fontSize: 14,
           }}

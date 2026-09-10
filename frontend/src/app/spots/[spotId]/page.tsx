@@ -204,7 +204,7 @@ function SpotDetailContent({
             {/* 장소 이름 */}
             <h1
               className="mt-[15px]"
-              style={{ fontFamily: "Pretendard", fontWeight: 700, fontSize: 16, color: "#6CA59C" }}
+              style={{ fontWeight: 700, fontSize: 16, color: "#6CA59C" }}
             >
               {spot.title}
             </h1>
@@ -213,7 +213,7 @@ function SpotDetailContent({
             <p
               className="mt-[5px]"
               style={{
-                fontFamily: "Pretendard",
+                
                 fontWeight: 400,
                 fontSize: 12,
                 lineHeight: "100%",
@@ -228,7 +228,7 @@ function SpotDetailContent({
             <p
               ref={descRef}
               className={`mt-[15px] whitespace-pre-line ${!isDescExpanded ? "line-clamp-4" : ""}`}
-              style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: 14, lineHeight: "110%", color: "#000000" }}
+              style={{  fontWeight: 400, fontSize: 14, lineHeight: "110%", color: "#000000" }}
             >
               {spot.description}
             </p>
@@ -237,7 +237,7 @@ function SpotDetailContent({
                 type="button"
                 onClick={() => setIsDescExpanded((v) => !v)}
                 className="mt-1 text-gray-500 hover:text-gray-400 active:text-gray-400 transition-colors"
-                style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: 13 }}
+                style={{ fontWeight: 600, fontSize: 13 }}
               >
                 {isDescExpanded ? "접기" : "더보기"}
               </button>
@@ -261,7 +261,6 @@ function SpotDetailContent({
                 borderRadius: 9,
                 border: "1px solid #6CA59C",
                 color: "#6CA59C",
-                fontFamily: "Pretendard",
                 fontWeight: 700,
                 fontSize: 14,
               }}
