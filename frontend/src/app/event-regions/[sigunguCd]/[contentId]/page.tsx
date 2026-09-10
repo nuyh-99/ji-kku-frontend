@@ -192,8 +192,8 @@ function SpotDetailContent({
       <div className="pb-8" style={{ paddingTop: 44 }}>
           <div className="px-[17px]">
             <header
-              className="flex items-start justify-center mb-2"
-              style={{ width: 359, height: 28, gap: 303 }}
+              className="flex w-full items-center justify-between mb-2"
+              style={{ height: 28 }}
             >
               <button
                 aria-label="뒤로가기"

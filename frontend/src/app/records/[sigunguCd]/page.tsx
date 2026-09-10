@@ -52,8 +52,8 @@ export default function SigunguRecordsPage({
     {/* 상단 헤더 */}
     <div className="relative px-[17px]" style={{ paddingTop: 44 }}>
         <header
-          className="flex items-start justify-center"
-          style={{ width: 359, height: 28, gap: 303 }}
+          className="flex w-full items-center justify-between"
+          style={{ height: 28 }}
         >
           
           <button aria-label="뒤로가기" onClick={() => router.back()} type="button"
