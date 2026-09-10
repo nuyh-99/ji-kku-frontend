@@ -46,7 +46,7 @@ export default function SigunguRecordsPage({
 
   return (
      <div
-  className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[393px]"
+  className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide"
 >
   <div className="relative pb-8">
     {/* 상단 헤더 */}

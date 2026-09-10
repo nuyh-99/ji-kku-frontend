@@ -15,10 +15,6 @@ import { getEventRegions } from "@/features/event-regions/api/eventRegion";
 import FestivalCard from "@/features/event-regions/components/FestivalCard";
 import { useFestivalCards } from "@/features/event-regions/hooks/useFestivalCards";
 
-// --- 디자인 기준 캔버스 크기 (Figma 스펙 393x852, 스크롤 없이 화면에 맞춰 스케일됨) ---
-const DESIGN_WIDTH = 393;
-const DESIGN_HEIGHT = 852;
-
 const DEFAULT_MAP_WIDTH = 360; // 실측 전 임시값(초기 렌더용). 실제 계산은 측정된 width로 함
 const MAP_HEIGHT = 496; // 디자인 고정 높이
 const ZOOM = 1.6; // 확대 배율 (고정 — 이 값은 바꾸지 않음)
@@ -51,31 +47,6 @@ export default function EventRegionsPage() {
     [items]
   );
   const eventCodes = useMemo(() => getEventRegionCodes(items), [items]);
-
-  // --- 바깥 뷰포트 크기에 맞춰 393x852 디자인 캔버스를 얼마나 축소할지 계산 ---
-  // 가로/세로 중 더 작게 맞는 비율을 써야 스크롤 없이 화면 안에 다 들어감
-  const outerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  useLayoutEffect(() => {
-    const el = outerRef.current;
-    if (!el) return;
-
-    const update = () => {
-      const widthScale = el.clientWidth / DESIGN_WIDTH;
-      const heightScale = el.clientHeight / DESIGN_HEIGHT;
-      setScale(Math.min(widthScale, heightScale));
-    };
-    update();
-
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    window.addEventListener("resize", update);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", update);
-    };
-  }, []);
 
   // --- 실제 렌더링된 컨테이너 너비 측정 (width: 100%라서 기기마다 다를 수 있음) ---
   const containerRef = useRef<HTMLDivElement>(null);
@@ -258,12 +229,9 @@ const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
-  const effectiveScale = scale || 1;
-  const deltaX = dx / effectiveScale;
-  const deltaY = dy / effectiveScale;
   const next = getPanClampedOffset({
-    x: startOffsetRef.current.x + deltaX,
-    y: startOffsetRef.current.y + deltaY,
+    x: startOffsetRef.current.x + dx,
+    y: startOffsetRef.current.y + dy,
   });
 
   currentOffsetRef.current = next;
@@ -293,21 +261,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
   };
 
   return (
-    
-    <div
-      ref={outerRef}
-      className="w-full flex items-center justify-center overflow-hidden"
-      style={{ height: "100dvh" }}
-    >
-      <div
-        className="relative bg-white"
-        style={{
-          width: DESIGN_WIDTH,
-          height: DESIGN_HEIGHT,
-          transform: `scale(${scale})`,
-          transformOrigin: "center center",
-        }}
-      >
+    <div className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
         <header
           className="absolute flex items-center justify-between"
           style={{ top: 44, left: 17, width: 359, height: 28 }}
@@ -453,10 +407,7 @@ const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
           ) : (
             festivals.map((festival) => <FestivalCard key={festival.id} festival={festival} />)
           )}
-          
         </div>
-      </div>
-      
     </div>
   );
 }

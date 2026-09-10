@@ -58,7 +58,7 @@ console.log("recordedIdSet:", recordedIdSet);
 
   return (
     <div
-  className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[393px]"
+  className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide"
 >
   <div className="pb-8" style={{ paddingTop: 44 }}>
     <div className="px-[17px]">

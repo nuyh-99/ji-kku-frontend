@@ -42,27 +42,6 @@ function SpotDetailContent({
   const images = useSpotImages(spot.imageUrl);
   const router = useRouter();
 
-  // --- 스케일 캔버스 ---
-  const DESIGN_WIDTH = 393;
-  const DESIGN_HEIGHT = 852;
-  const outerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const outerEl = outerRef.current;
-    if (!outerEl) return;
-
-    const update = () => {
-      const widthScale = outerEl.clientWidth / DESIGN_WIDTH;
-      const heightScale = outerEl.clientHeight / DESIGN_HEIGHT;
-      setScale(Math.min(widthScale, heightScale));
-    };
-
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
   // --- 이미지 스크롤 캐러셀 ---
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -119,27 +98,12 @@ function SpotDetailContent({
   }, [spot.description]);
 
   return (
-    <div
-      ref={outerRef}
-      className="w-full flex items-center justify-center overflow-hidden "
-      style={{ height: "100dvh" }}
-    >
-      <div style={{ width: DESIGN_WIDTH * scale, height: DESIGN_HEIGHT * scale }}>
-        <div
-          className="relative bg-white pb-8"
-          style={{
-            width: DESIGN_WIDTH,
-            height: DESIGN_HEIGHT,
-            overflowY: "auto",
-            paddingTop: 44,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
-        >
+    <div className="relative mx-auto overflow-y-auto overflow-x-hidden bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
+      <div className="pb-8" style={{ paddingTop: 44 }}>
           <div className="px-[17px]">
             <header
-              className="flex items-start justify-center mb-2"
-              style={{ width: 359, height: 28, gap: 303 }}
+              className="flex w-full items-center justify-between mb-2"
+              style={{ height: 28 }}
             >
               <button
                 aria-label="뒤로가기"
@@ -170,12 +134,12 @@ function SpotDetailContent({
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{ width: 393, height: 253 }}
+            className="relative flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            style={{ aspectRatio: "393 / 253" }}
           >
             {images.length > 0 ? (
               images.map((url, i) => (
-                <div key={i} className="relative shrink-0 snap-center" style={{ width: 393, height: 253 }}>
+                <div key={i} className="relative w-full shrink-0 snap-center" style={{ aspectRatio: "393 / 253" }}>
                   <img
                     src={url}
                     alt={`${spot.title} 이미지 ${i + 1}`}
@@ -184,7 +148,7 @@ function SpotDetailContent({
                 </div>
               ))
             ) : (
-              <div className="relative shrink-0 snap-center" style={{ width: 393, height: 253 }}>
+              <div className="relative w-full shrink-0 snap-center" style={{ aspectRatio: "393 / 253" }}>
                 <img
                   src="/festivals/noimage.jpg"
                   alt="이미지 없음"
@@ -246,7 +210,7 @@ function SpotDetailContent({
             <div
               ref={mapRef}
               className="mt-6 flex items-center justify-center bg-[#EEEEEE] text-sm text-gray-400"
-              style={{ width: 360, height: 222 }}
+              style={{ width: "100%", aspectRatio: "360 / 222" }}
             >
               {isMapSdkError && "지도를 불러오지 못했습니다"}
               {!isMapSdkReady && !isMapSdkError && "지도 로딩 중..."}
@@ -268,7 +232,6 @@ function SpotDetailContent({
               지도 확인하기
             </button>
           </div>
-        </div>
       </div>
     </div>
   );
