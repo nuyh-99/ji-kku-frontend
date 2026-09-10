@@ -45,10 +45,12 @@ export default function EventRegionGlowOverlay({
   aria-hidden="true"
 >
   <defs>
-    <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-  <feDropShadow dx="0" dy="0" stdDeviation="2.5" floodColor="#6CA59C" floodOpacity="1" />
-  <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor="#6CA59C" floodOpacity="0.8" />
-  <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#6CA59C" floodOpacity="0.5" />
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+  <feGaussianBlur stdDeviation="6" result="blur" />
+  <feMerge>
+    <feMergeNode in="blur" />
+    <feMergeNode in="SourceGraphic" />
+  </feMerge>
 </filter>
   </defs>
 
