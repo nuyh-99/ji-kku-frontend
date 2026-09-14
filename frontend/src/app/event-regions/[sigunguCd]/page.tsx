@@ -257,6 +257,7 @@ function EventRegionContent({
 
   return (
     <div className="relative mx-auto overflow-y-auto overflow-x-hidden select-none bg-white h-dvh w-full max-w-[430px] scrollbar-hide">
+      <div className="relative min-h-full">
         <div
           className="pointer-events-none absolute z-0 overflow-hidden"
           style={{ top: -2, left: -20, right: -20, bottom: -20 }}
@@ -396,6 +397,7 @@ function EventRegionContent({
             </div>
           )}
         </div>
+      </div>
     </div>
   );
 }
@@ -509,16 +511,32 @@ function MissionSpotMarker({
 
 function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
   const clamped = Math.min(5, Math.max(0, visitedCount));
-  const TRACK_WIDTH = 333;
+
+  // 트랙이 이제 고정폭이 아니라 컨테이너 폭에 맞춰 늘어나므로, 실제 렌더링된 폭을 측정해서 채움 폭을 계산한다.
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [trackWidth, setTrackWidth] = useState(333);
+
+  useLayoutEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+
+    const update = () => setTrackWidth(el.clientWidth);
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // 라벨 0~5, 5칸으로 트랙을 균등 분할 — 왼쪽 끝(0)에서 시작해 5/5에서 트랙 오른쪽 끝까지 정확히 채운다.
-  const STEP = TRACK_WIDTH / 5;
+  const STEP = trackWidth / 5;
   const fillWidth = STEP * clamped;
 
   return (
     <div className="relative h-[100px] w-full">
       <div
         className="absolute flex justify-between"
-        style={{ top: 0, left: 13, width: 327, height: 14 }}
+        style={{ top: 0, left: 13, right: 19, height: 14 }}
       >
         {[0, 1, 2, 3, 4, 5].map((num) => (
           <span key={num} className="text-[12px] text-[#294E49]" >
@@ -528,8 +546,9 @@ function EventRegionGauge({ visitedCount }: { visitedCount: number }) {
       </div>
 
       <div
+        ref={trackRef}
         className="absolute rounded-[126px]"
-        style={{ top: 19, left: 13, width: TRACK_WIDTH, height: 26, background: "#6CA59CB0" }}
+        style={{ top: 19, left: 13, right: 13, height: 26, background: "#6CA59CB0" }}
       >
         {clamped > 0 && (
           <div
