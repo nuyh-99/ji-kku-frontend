@@ -29,7 +29,7 @@ import {
   DEFAULT_PHOTO_CARD_WIDTH,
   DEFAULT_STICKER_SIZE,
 } from "../store/decorateStore";
-import { stickerNameByUrl } from "../stickers";
+import { stickerLabel } from "../stickers";
 import { mapKeys } from "./queryKeys";
 import type {
   EmdFillResponse,
@@ -142,7 +142,7 @@ function toPlacedSticker(res: MapStickerResponse, vb: ViewBox): PlacedSticker {
     id: String(res.mapStickerId),
     stickerId: String(res.stickerId ?? ""),
     src: res.stickerUrl ?? "",
-    name: stickerNameByUrl(res.stickerUrl ?? ""),
+    name: stickerLabel(res.stickerId),
     x,
     y,
     size: (res.scale || 1) * DEFAULT_STICKER_SIZE,

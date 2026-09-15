@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DatePickerPopover from "@/components/common/DatePickerPopover";
-import { ChevronLeftIcon, MenuIcon } from "@/components/common/icons";
+import { ChevronLeftIcon } from "@/components/common/icons";
 import { getEupmyeondongMap } from "@/data/regions/eupmyeondong";
 import { GANGWON_REGIONS } from "@/data/regions/gangwon";
 import { useRegionPosts } from "../hooks/useRegionPosts";
@@ -79,7 +79,7 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
   return (
     <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-white pt-11">
       {/* 상단 44px 는 OS status bar(시계·배터리) 자리로 비워둔다 — 디자인 프레임과 동일. */}
-      <header className="relative flex h-14 shrink-0 items-center px-2">
+      <header className="flex h-14 shrink-0 items-center px-2">
         <button
           type="button"
           onClick={() => router.back()}
@@ -88,16 +88,9 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
         >
           <ChevronLeftIcon className="size-6" />
         </button>
-        <button
-          type="button"
-          aria-label="메뉴"
-          className="absolute right-2 grid size-10 place-items-center rounded-full text-zinc-800 hover:bg-black/5"
-        >
-          <MenuIcon className="size-6" />
-        </button>
       </header>
 
-      <div className="flex items-center justify-center gap-1 pb-4">
+      <div className="relative flex items-center justify-center gap-1 pb-4">
         <h1 className="text-base font-medium" style={{ color: BRAND }}>
           {regionName}
         </h1>
@@ -110,6 +103,19 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/map/calendar.png" alt="" className="size-[23px] object-contain" />
         </button>
+
+        {pickerOpen && (
+          <DatePickerPopover
+            // 고른 날짜가 없으면 오늘 달을 펼쳐 보여준다(선택 표시는 끈다).
+            value={selectedDate ?? new Date()}
+            showSelection={selectedDate !== null}
+            onSelect={handleSelectDate}
+            onClose={() => setPickerOpen(false)}
+            // 지역명 줄에 붙여 그 바로 아래에 띄운다. 화면 위에서 잰 px 로 박아두면
+            // 상단 여백(status bar 자리 등)이 바뀔 때 지역명과 달력 버튼을 덮는다.
+            className="absolute top-[calc(100%-4px)] left-1/2 -translate-x-1/2"
+          />
+        )}
       </div>
 
       {isLoading ? (
@@ -171,18 +177,6 @@ export default function RegionPostList({ sigunguCd, eupmyeondongCd }: RegionPost
             </li>
           ))}
         </ul>
-      )}
-
-      {pickerOpen && (
-        <DatePickerPopover
-          // 고른 날짜가 없으면 오늘 달을 펼쳐 보여준다(선택 표시는 끈다).
-          value={selectedDate ?? new Date()}
-          showSelection={selectedDate !== null}
-          onSelect={handleSelectDate}
-          onClose={() => setPickerOpen(false)}
-          // 헤더(56) + 지역명 줄 아래.
-          className="absolute top-[92px] left-1/2 -translate-x-1/2"
-        />
       )}
     </div>
   );

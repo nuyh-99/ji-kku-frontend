@@ -102,7 +102,13 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
     if (usable.length > 0) setImages((prev) => [...prev, ...usable]);
   };
 
-  const backToMap = () => router.push("/map");
+  // 이 화면은 지도에서 push 로 들어온다(MapView 의 기록 작성 도구). 지도로 돌아갈 때 또 push 하면
+  // 히스토리가 지도 → 작성 → 지도 로 쌓여, 지도에서 뒤로가기를 누르면 빈 작성 화면이 다시 열린다.
+  // 그래서 들어온 걸 되돌린다. 주소를 직접 열어 되돌아갈 곳이 없으면 이 화면을 지도로 바꿔 끼운다.
+  const backToMap = () => {
+    if (window.history.length > 1) router.back();
+    else router.replace("/map");
+  };
 
   /** 서버 제약(title 1자 이상, blocks 1개 이상)을 미리 본다. 통과하면 null. */
   const validate = (): string | null => {
@@ -171,7 +177,8 @@ export default function RecordEditor({ sigunguCd, eupmyeondongCd }: RecordEditor
   const handleSaveOnly = () =>
     submit(() => {
       // 방금 쓴 기록이 다른 지역 것들 사이에 묻히지 않게 그 읍·면·동 목록으로 보낸다(디자인 583:4425).
-      router.push(`/map/${sigunguCd}/posts?emd=${encodeURIComponent(eupmyeondongCd)}`);
+      // 작성 화면은 바꿔 끼운다 — 목록에서 뒤로가기를 누르면 작성 화면이 아니라 지도로 가야 한다.
+      router.replace(`/map/${sigunguCd}/posts?emd=${encodeURIComponent(eupmyeondongCd)}`);
     });
 
   const handleDisplayOnMap = () =>
