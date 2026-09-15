@@ -39,6 +39,7 @@ import {
   useCloseTool,
   useDecorateTool,
   useFabOpen,
+  useResetDecorate,
   useSelectPhotoCard,
   useSelectSticker,
   useSelectedPhotoCardId,
@@ -84,6 +85,18 @@ export default function MapView() {
   const selectPhotoCard = useSelectPhotoCard();
   const { mutate: placePhotoCard } = usePlacePhotoCard();
   const photoCardEdits = usePhotoCardEdits(activeSigungu);
+
+  // 스토어는 모듈 전역이라 화면을 떠나도 남는다. 메뉴를 연 채(또는 도구를 켠 채) 다른 화면에
+  // 갔다 오면 흐린 지도·안내 문구가 그대로 떠 있으므로, 떠날 때 꾸미기 상태와 지역 선택을 푼다.
+  // 들어가 있던 시군구(activeSigungu)는 남긴다 — 기록 목록에서 돌아오면 그 지도로 와야 한다.
+  const resetDecorate = useResetDecorate();
+  useEffect(
+    () => () => {
+      resetDecorate();
+      selectRegion(null);
+    },
+    [resetDecorate, selectRegion],
+  );
 
   // 기록 작성에서 "지도에 표시하기"로 넘어온 건이 있으면 그 지역으로 들어가 카드를 놓는다.
   // takeMapDisplayHandoff 는 꺼내면서 지우므로 지도를 다시 열어도 또 생기지 않는다.

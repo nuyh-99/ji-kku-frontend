@@ -62,13 +62,19 @@ interface DecorateState {
   /** 편집 대상 지정/해제 */
   selectSticker: (id: string | null) => void;
   selectPhotoCard: (id: string | null) => void;
+  /** 초기 상태로 되돌리기(지도 화면을 떠날 때). */
+  reset: () => void;
 }
 
-export const useDecorateStore = create<DecorateState>()((set) => ({
+const INITIAL_STATE = {
   fabOpen: false,
   tool: null,
   selectedStickerId: null,
   selectedPhotoCardId: null,
+} satisfies Pick<DecorateState, "fabOpen" | "tool" | "selectedStickerId" | "selectedPhotoCardId">;
+
+export const useDecorateStore = create<DecorateState>()((set) => ({
+  ...INITIAL_STATE,
 
   toggleFab: () => set((state) => ({ fabOpen: !state.fabOpen })),
   closeFab: () => set({ fabOpen: false }),
@@ -77,4 +83,5 @@ export const useDecorateStore = create<DecorateState>()((set) => ({
   closeTool: () => set({ tool: null, selectedStickerId: null, selectedPhotoCardId: null }),
   selectSticker: (id) => set({ selectedStickerId: id }),
   selectPhotoCard: (id) => set({ selectedPhotoCardId: id }),
+  reset: () => set(INITIAL_STATE),
 }));

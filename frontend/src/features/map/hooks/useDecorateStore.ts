@@ -11,6 +11,7 @@ export const useToggleFab = () => useDecorateStore((state) => state.toggleFab);
 export const useCloseFab = () => useDecorateStore((state) => state.closeFab);
 export const useOpenTool = () => useDecorateStore((state) => state.openTool);
 export const useCloseTool = () => useDecorateStore((state) => state.closeTool);
+export const useResetDecorate = () => useDecorateStore((state) => state.reset);
 
 export const useSelectedStickerId = () => useDecorateStore((state) => state.selectedStickerId);
 export const useSelectSticker = () => useDecorateStore((state) => state.selectSticker);
