@@ -150,7 +150,7 @@ export default function StickerLayer({
                 {/* 삭제(×) — 오른쪽 위 */}
                 <g
                   role="button"
-                  aria-label={`${s.name} 스티커 삭제`}
+                  aria-label={`${s.name} 삭제`}
                   className="cursor-pointer"
                   style={{ touchAction: "none" }}
                   onPointerDown={(event) => {
@@ -176,7 +176,7 @@ export default function StickerLayer({
                 {/* 크기조절 — 오른쪽 아래 */}
                 <g
                   role="button"
-                  aria-label={`${s.name} 스티커 크기 조절`}
+                  aria-label={`${s.name} 크기 조절`}
                   className="cursor-nwse-resize"
                   style={{ touchAction: "none" }}
                   onPointerDown={(event) => handleResizePointerDown(event, s.id)}

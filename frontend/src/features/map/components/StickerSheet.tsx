@@ -4,10 +4,9 @@
 // 스티커 탭 → 지도 중앙에 배치되고 바로 편집(점선 박스) 상태가 된다.
 // 여러 번 눌러도 정확히 겹치지 않도록 배치할 때마다 조금씩 어긋나게 놓는다.
 //
-// 목록은 서버 카탈로그(GET /stickers)다. 배치할 때 서버가 stickerId(숫자)를 요구해서,
-// public/stickers 의 로컬 이미지는 이름을 되찾는 용도로만 남는다(stickerNameByUrl).
+// 목록은 서버 카탈로그(GET /stickers)다. 이름을 주지 않아 라벨은 번호로 붙인다(stickerLabel).
 import { useStickerCatalog } from "../hooks/useMapDesign";
-import { stickerNameByUrl } from "../stickers";
+import { stickerLabel } from "../stickers";
 
 interface StickerSheetProps {
   /** 지도 좌표계 — 배치 기준점(중앙)을 여기서 구한다. */
@@ -48,7 +47,7 @@ export default function StickerSheet({ viewBox, placedCount, onPick, onClose }: 
       ) : (
         <div className="grid flex-1 grid-cols-4 gap-x-6 gap-y-5 overflow-y-auto px-7 pt-2 pb-8">
           {catalog.map((sticker) => {
-            const name = stickerNameByUrl(sticker.stickerUrl);
+            const name = stickerLabel(sticker.stickerId);
             return (
               <button
                 key={sticker.stickerId}
@@ -62,7 +61,7 @@ export default function StickerSheet({ viewBox, placedCount, onPick, onClose }: 
                     y: centerY,
                   })
                 }
-                aria-label={`${name} 스티커 추가`}
+                aria-label={`${name} 추가`}
                 className="grid aspect-square place-items-center transition-transform active:scale-95"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

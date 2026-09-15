@@ -1,41 +1,14 @@
-// 스티커 카탈로그 — Figma 디자인(스티커 추가, node 481:4199)의 12칸.
-// 이미지는 public/stickers/*.png (디자인에서 원본 그대로 내려받음).
+// 스티커 표시명(a11y 라벨).
 //
-// 디자인 그리드는 4열 3행 = 12칸인데 원본 이미지는 11종이다.
-// "파라솔"이 2행 2열과 3행 4열에 두 번 들어가 있어서, 카탈로그도 그대로 두 번 노출한다.
+// 서버 카탈로그(GET /stickers)는 { stickerId, stickerUrl } 만 주고 이름이 없다. 이미지 파일명도
+// 생성 도구가 붙인 해시라(Gemini_Generated_Image_…) 뜻을 되찾을 수 없다.
+// (예전에는 디자인에서 받은 12종 로컬 카탈로그와 파일명으로 맞춰 이름을 붙였는데, 서버 카탈로그가
+//  바뀌면서 하나도 맞지 않아 전부 "스티커 스티커 추가" 로 읽혔다.)
+//
+// 그래서 카탈로그 id 로 번호를 붙인다 — 시트의 버튼과 지도에 놓인 스티커가 같은 번호로 불려서
+// 화면 낭독기로도 무엇을 놓았는지 이어서 알 수 있다. 서버가 이름을 주게 되면 이 함수만 바꾸면 된다.
 
-/** 시트에 노출되는 스티커 한 종. */
-export interface StickerAsset {
-  /** 카탈로그 id. 같은 이미지가 두 칸에 나오므로 칸마다 고유하게 둔다. */
-  id: string;
-  /** a11y 라벨 및 배치된 스티커 이름. */
-  name: string;
-  src: string;
-}
-
-export const STICKERS: StickerAsset[] = [
-  { id: "travel-case", name: "여행 가방", src: "/stickers/travel-case.png" },
-  { id: "travel-map", name: "여행 지도", src: "/stickers/travel-map.png" },
-  { id: "street-food", name: "길거리 음식", src: "/stickers/street-food.png" },
-  { id: "food-bar", name: "분식", src: "/stickers/food-bar.png" },
-  { id: "beach", name: "야자수 해변", src: "/stickers/beach.png" },
-  { id: "beach-umbrella", name: "파라솔", src: "/stickers/beach-umbrella.png" },
-  { id: "beach-chair-ball", name: "파라솔과 비치 의자", src: "/stickers/beach-chair-ball.png" },
-  { id: "beach-ball", name: "비치볼", src: "/stickers/beach-ball.png" },
-  { id: "vacation-chair", name: "해변 의자", src: "/stickers/vacation-chair.png" },
-  { id: "beach-ball-color", name: "컬러 비치볼", src: "/stickers/beach-ball-color.png" },
-  { id: "train", name: "기차", src: "/stickers/train.png" },
-  // 디자인 3행 4열 — 2행 2열과 같은 파라솔 이미지가 한 번 더 놓여 있다.
-  { id: "beach-umbrella-2", name: "파라솔", src: "/stickers/beach-umbrella.png" },
-];
-
-/**
- * 서버 스티커 URL에서 표시명을 되찾는다.
- * `GET /stickers` 는 id와 url만 주고 이름을 주지 않아서, 파일명이 같으면 위 카탈로그의
- * 한글 이름을 붙여 a11y 라벨로 쓴다. 못 찾으면 "스티커" 로 떨어진다(렌더에는 지장 없음).
- */
-export function stickerNameByUrl(url: string): string {
-  const file = url.split("/").pop()?.split("?")[0];
-  if (!file) return "스티커";
-  return STICKERS.find((s) => s.src.endsWith(`/${file}`))?.name ?? "스티커";
+/** 스티커 카탈로그 id → 표시명. id 가 없으면(사진 카드 행 등) 그냥 "스티커". */
+export function stickerLabel(stickerId: number | null | undefined): string {
+  return stickerId == null ? "스티커" : `스티커 ${stickerId}번`;
 }
