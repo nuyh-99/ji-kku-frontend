@@ -174,11 +174,8 @@ export default function Calendar({
       <div className="grid grid-cols-7 gap-y-1">
         {cells.map(
           ({ day, currentMonth, dateObj }, idx) => {
-            // 선택된 날짜인지
-            const isSelected = isSameDate(
-              dateObj,
-              selectedDate
-            );
+            // 오늘 날짜인지
+            const isToday = isSameDate(dateObj, today);
 
             // 방문 기록이 있는 날짜인지
             const isVisited = visitedDates.includes(
@@ -187,8 +184,8 @@ export default function Calendar({
 
             let circleStyle = "";
 
-            if (isSelected) {
-              // 선택한 날짜 → 초록색
+            if (isToday) {
+              // 오늘 날짜 → 초록색
               circleStyle =
                 "bg-[#6CA59C] text-white font-medium";
             } else if (isVisited) {

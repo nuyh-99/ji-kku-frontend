@@ -32,7 +32,15 @@ export default function SigunguRecordsPage({
     enabled: Number.isFinite(sigunguCd),
   });
 
+  // 캘린더의 방문 기록(회색) 표시는 날짜 필터와 무관하게 항상 전체 기록 기준이어야 한다.
+  const { data: allData } = useQuery({
+    queryKey: ["eupmyeondongTravelPosts", sigunguCd, "all"],
+    queryFn: () => getEupmyeondongTravelPosts(sigunguCd),
+    enabled: Number.isFinite(sigunguCd),
+  });
+
   const posts = data?.content ?? [];
+  const allPosts = allData?.content ?? [];
 
   const handleSelectDate = (d: Date) => {
     // 이미 선택된 날짜를 다시 누르면 -> 선택 해제 (전체보기)
@@ -134,7 +142,7 @@ export default function SigunguRecordsPage({
           <Calendar
             selectedDate={selectedDate}
             onSelectDate={handleSelectDate}
-            visitedDates={posts.map((post) => post.logDate)}
+            visitedDates={allPosts.map((post) => post.logDate)}
           />
         </div>
       )}
