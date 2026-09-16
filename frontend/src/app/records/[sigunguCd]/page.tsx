@@ -2,9 +2,9 @@
 
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { getEupmyeondongTravelPosts } from "@/lib/api/travelPost";
+import { getEupmyeondongTravelPosts, getTravelPostDetail } from "@/lib/api/travelPost";
 import { masterSigunguList } from "@/data/master-sigungu";
 import Calendar from "../components/Calendar";
 
@@ -41,6 +41,26 @@ export default function SigunguRecordsPage({
 
   const posts = data?.content ?? [];
   const allPosts = allData?.content ?? [];
+
+  // 카드에 제목 밑 overview(본문 두 줄 미리보기)를 보여주기 위해 각 기록의 상세를 따로 가져온다.
+  const detailQueries = useQueries({
+    queries: posts.map((post) => ({
+      queryKey: ["travelPostDetail", post.travelPostId],
+      queryFn: () => getTravelPostDetail(String(post.travelPostId)),
+      enabled: posts.length > 0,
+    })),
+  });
+
+  const overviewByPostId = new Map<number, string>();
+  detailQueries.forEach((q) => {
+    if (!q.data) return;
+    const overview = q.data.blocks
+      .filter((block) => block.blockType === "TEXT" && block.textContent)
+      .map((block) => block.textContent)
+      .join(" ")
+      .trim();
+    overviewByPostId.set(q.data.travelPostId, overview);
+  });
 
   const handleSelectDate = (d: Date) => {
     // 이미 선택된 날짜를 다시 누르면 -> 선택 해제 (전체보기)
@@ -177,7 +197,7 @@ export default function SigunguRecordsPage({
             className="
               relative
               w-[175px]
-              h-[186px]
+              h-[196px]
               rounded-[9px]
               bg-[#DCE7E6]
               shadow-[0px_3px_4px_0px_rgba(0,0,0,0.25)]
@@ -244,9 +264,14 @@ export default function SigunguRecordsPage({
               </span>
             </div>
 
-            {/* 제목 텍스트 */}
-            <p className="absolute top-[132px] left-[6px] w-[163px] text-sm text-gray-700 line-clamp-2">
+            {/* 제목 텍스트: 한 줄만 보여주고 아래 overview에 자리를 내준다 */}
+            <p className="absolute top-[132px] left-[6px] w-[163px] text-sm text-gray-700 truncate">
               {post.title}
+            </p>
+
+            {/* overview: 기록 본문을 두 줄 미리보기로, 넘치면 ...으로 마무리 */}
+            <p className="absolute top-[152px] left-[6px] w-[163px] text-xs text-gray-500 line-clamp-2">
+              {overviewByPostId.get(post.travelPostId)}
             </p>
           </button>
         ))}
